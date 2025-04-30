@@ -14,8 +14,6 @@
   
   ![Downloads (latest)](https://img.shields.io/github/downloads/C0C0B01/PupuXposed/latest/total?style=for-the-badge&logo=github&label=Downloads%20(Latest)&color=blue)
   ![Total downloads](https://img.shields.io/github/downloads/C0C0B01/PupuXposed/total?style=for-the-badge&logo=github&label=Downloads%20(Total)&color=blue)
-  ![GitHub top language](https://img.shields.io/github/languages/top/C0C0B01/PupuXposed?style=for-the-badge)
-    [![Stars](https://img.shields.io/github/stars/C0C0B01/PupuManager?logo=github&style=for-the-badge)](https://github.com/C0C0B01/PupuXposed/stargazers)
 
   <br>
   

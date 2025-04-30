@@ -1,4 +1,4 @@
-package io.github.pyoncord.xposed
+package cocobo1.pupu.xposed
 
 import android.content.Context
 import android.graphics.Color
@@ -35,7 +35,7 @@ data class Theme(
     val data: ThemeData
 )
 
-class ThemeModule : PyonModule() {
+class ThemeModule : PupuModule() {
     private lateinit var param: XC_LoadPackage.LoadPackageParam
 
     private var theme: Theme? = null
@@ -67,8 +67,8 @@ class ThemeModule : PyonModule() {
 
     private fun getTheme(): Theme? {
         val filesDir = File(param.appInfo.dataDir, "files").apply { mkdirs() }
-        val pyonDir = File(filesDir, "pyoncord").apply { mkdirs() }
-        val themeFile = File(pyonDir, "current-theme.json")
+        val pupuDir = File(filesDir, "pupu").apply { mkdirs() }
+        val themeFile = File(pupuDir, "current-theme.json")
 
         val legacyThemeFile = File(filesDir, "vendetta_theme.json")
         if (legacyThemeFile.isValidish() && !themeFile.isValidish()) {

@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "io.github.pyoncord.xposed"
-    compileSdk = 35
+    namespace = "cocobo1.pupu.xposed"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "io.github.pyoncord.xposed"
-        minSdk = 24
-        targetSdk = 35
-        versionCode = 300
-        versionName = "0.3.0"
+        applicationId = "cocobo1.pupu.xposed"
+        minSdk = 22
+        targetSdk = 36
+        versionCode = 010
+        versionName = "0.1"
     }
 
     buildTypes {

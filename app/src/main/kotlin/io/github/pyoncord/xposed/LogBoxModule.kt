@@ -59,7 +59,7 @@ class LogBoxModule: PyonModule() {
                             }
                         }
                     } catch (ex: Exception) {
-                        Log.e("Bunny", "Failed to show dev options dialog: $ex")
+                        Log.e("Pupu", "Failed to show dev options dialog: $ex")
                         alertDialog = null
                     }
 
@@ -84,7 +84,7 @@ class LogBoxModule: PyonModule() {
 
     private fun showRecoveryAlert(context: Context, onClose: () -> Unit): AlertDialog {
         return AlertDialog.Builder(context)
-            .setTitle("Bunny Recovery Options")
+            .setTitle("Pupu Recovery Options")
             .setItems(arrayOf("Reload", "Delete bundle.js")) { _, which ->
                 when (which) {
                     0 -> {

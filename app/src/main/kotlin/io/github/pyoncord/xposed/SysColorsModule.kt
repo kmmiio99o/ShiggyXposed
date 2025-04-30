@@ -1,4 +1,4 @@
-package io.github.pyoncord.xposed
+package cocobo1.pupu.xposed
 
 import android.app.AndroidAppHelper
 import android.content.Context
@@ -16,7 +16,7 @@ data class SysColors(
     val accent3: List<String>
 )
 
-class SysColorsModule : PyonModule() {
+class SysColorsModule : PupuModule() {
     private lateinit var context: Context
     private fun isSupported() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 

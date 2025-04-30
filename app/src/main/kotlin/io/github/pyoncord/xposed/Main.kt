@@ -43,7 +43,7 @@ class Main : IXposedHookLoadPackage {
 
     fun buildLoaderJsonString(): String {
         val obj = buildJsonObject {
-            put("loaderName", "BunnyXposed")
+            put("loaderName", "PupuXposed")
             put("loaderVersion", BuildConfig.VERSION_NAME)
 
             for (module in pyonModules) {
@@ -134,14 +134,14 @@ class Main : IXposedHookLoadPackage {
                     install(HttpTimeout) {
                         requestTimeoutMillis = if (bundle.exists()) 5000 else 10000
                     }
-                    install(UserAgent) { agent = "BunnyXposed" }
+                    install(UserAgent) { agent = "PupuXposed" }
                 }
 
                 val url = 
                     if (config.customLoadUrl.enabled) config.customLoadUrl.url 
-                    else "https://raw.githubusercontent.com/pyoncord/detta-builds/main/bunny.min.js"
+                    else "https://raw.githubusercontent.com/pyoncord/detta-builds/main/pupu.min.js"
 
-                Log.e("Bunny", "Fetching JS bundle from $url")
+                Log.e("Pupu", "Fetching JS bundle from $url")
                 
                 val response: HttpResponse = client.get(url) {
                     headers { 
@@ -163,19 +163,19 @@ class Main : IXposedHookLoadPackage {
                 return@async
             } catch (e: RedirectResponseException) {
                 if (e.response.status != HttpStatusCode.NotModified) throw e
-                Log.e("Bunny", "Server responded with status code 304 - no changes to file")
+                Log.e("Pupu", "Server responded with status code 304 - no changes to file")
             } catch (e: Throwable) {
                 onActivityCreate { activity ->
                     activity.runOnUiThread {
                         Toast.makeText(
                             activity.applicationContext,
-                            "Failed to fetch JS bundle, Bunny may not load!",
+                            "Failed to fetch JS bundle, Pupu may not load!",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
 
-                Log.e("Bunny", "Failed to download bundle", e)
+                Log.e("Pupu", "Failed to download bundle", e)
             }
         }
 
