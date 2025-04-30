@@ -1,4 +1,4 @@
-package io.github.pyoncord.xposed
+package cocobo1.pupu.xposed
 
 import android.app.Activity
 import android.content.res.AssetManager
@@ -34,7 +34,7 @@ data class LoaderConfig(
 )
 
 class Main : IXposedHookLoadPackage {
-    private val pyonModules: Array<PyonModule> = arrayOf(
+    private val pupuModules: Array<PupuModule> = arrayOf(
         ThemeModule(),
         SysColorsModule(),
         FontsModule(),
@@ -46,7 +46,7 @@ class Main : IXposedHookLoadPackage {
             put("loaderName", "PupuXposed")
             put("loaderVersion", BuildConfig.VERSION_NAME)
 
-            for (module in pyonModules) {
+            for (module in pupuModules) {
                 module.buildJson(this)
             }
         }
@@ -82,7 +82,7 @@ class Main : IXposedHookLoadPackage {
     ) = with (param) {
         val catalystInstanceImpl = classLoader.loadClass("com.facebook.react.bridge.CatalystInstanceImpl")
 
-        for (module in pyonModules) module.onInit(param)
+        for (module in pupuModules) module.onInit(param)
 
         val loadScriptFromAssets = catalystInstanceImpl.getDeclaredMethod(
             "loadScriptFromAssets",
@@ -104,8 +104,8 @@ class Main : IXposedHookLoadPackage {
             String::class.java
         ).apply { isAccessible = true }
 
-        val cacheDir = File(appInfo.dataDir, "cache/pyoncord").apply { mkdirs() }
-        val filesDir = File(appInfo.dataDir, "files/pyoncord").apply { mkdirs() }
+        val cacheDir = File(appInfo.dataDir, "cache/pupu").apply { mkdirs() }
+        val filesDir = File(appInfo.dataDir, "files/pupu").apply { mkdirs() }
 
         val preloadsDir = File(filesDir, "preloads").apply { mkdirs() }
         val bundle = File(cacheDir, "bundle.js")
@@ -186,7 +186,7 @@ class Main : IXposedHookLoadPackage {
                 XposedBridge.invokeOriginalMethod(
                     setGlobalVariable, 
                     param.thisObject, 
-                    arrayOf("__PYON_LOADER__", buildLoaderJsonString())
+                    arrayOf("__PUPU_LOADER__", buildLoaderJsonString())
                 )
 
                 preloadsDir

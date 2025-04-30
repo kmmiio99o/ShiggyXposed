@@ -35,7 +35,7 @@ data class FontDefinition(
     val main: Map<String, String>,
 )
 
-class FontsModule: PyonModule() {
+class FontsModule: PupuModule() {
     private val EXTENSIONS = arrayOf("", "_bold", "_italic", "_bold_italic")
     private val FILE_EXTENSIONS = arrayOf(".ttf", ".otf")
     private val FONTS_ASSET_PATH = "fonts/"
@@ -63,7 +63,7 @@ class FontsModule: PyonModule() {
                 }
             })
 
-        val fontDefFile = File(appInfo.dataDir, "files/pyoncord/fonts.json")
+        val fontDefFile = File(appInfo.dataDir, "files/pupu/fonts.json")
         if (!fontDefFile.exists()) return@with
 
         val fontDef = try {
@@ -71,7 +71,7 @@ class FontsModule: PyonModule() {
             json.decodeFromString<FontDefinition>(fontDefFile.readText())
         } catch (_: Throwable) { return@with }
 
-        fontsDownloadsDir = File(appInfo.dataDir, "files/pyoncord/downloads/fonts").apply { mkdirs() }
+        fontsDownloadsDir = File(appInfo.dataDir, "files/pupu/downloads/fonts").apply { mkdirs() }
         fontsDir = File(fontsDownloadsDir, fontDef.name!!).apply { mkdirs() }
         fontsAbsPath = fontsDir.absolutePath + "/"
 

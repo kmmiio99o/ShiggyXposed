@@ -1,4 +1,4 @@
-package io.github.pyoncord.xposed
+package cocobo1.pupu.xposed
 
 import android.app.AlertDialog
 import android.app.AndroidAppHelper
@@ -91,7 +91,7 @@ class LogBoxModule: PupuModule() {
                         reloadApp()
                     }
                     1 -> {
-                        val bundleFile = File(packageParam.appInfo.dataDir, "cache/pyoncord/bundle.js")
+                        val bundleFile = File(packageParam.appInfo.dataDir, "cache/pupu/bundle.js")
                         if (bundleFile.exists()) {
                             bundleFile.delete()
                         }
