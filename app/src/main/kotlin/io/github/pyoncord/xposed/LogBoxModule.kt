@@ -12,7 +12,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.io.File
 import kotlin.system.exitProcess
 
-class LogBoxModule: PyonModule() {
+class LogBoxModule: PupuModule() {
     lateinit var packageParam: XC_LoadPackage.LoadPackageParam
 
     override fun onInit(packageParam: XC_LoadPackage.LoadPackageParam) = with (packageParam) {

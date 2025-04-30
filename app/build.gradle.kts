@@ -12,7 +12,7 @@ android {
         applicationId = "cocobo1.pupu.xposed"
         minSdk = 22
         targetSdk = 36
-        versionCode = 010
+        versionCode = 100
         versionName = "0.1"
     }
 
