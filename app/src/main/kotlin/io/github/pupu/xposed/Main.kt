@@ -65,13 +65,13 @@ class Main : IXposedHookLoadPackage {
         XposedBridge.hookMethod(reactActivity.getDeclaredMethod("onCreate", Bundle::class.java), object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 activity = param.thisObject as Activity
-                onActivityCreateCallback.forEach { cb -> cb(activity) }
+                onActivityCreateCallback.forEach { cb -> cb(activity!!) }
                 onActivityCreateCallback.clear()
             }
         })
 
         init(lpparam) { cb ->
-            if (activity != null) cb(activity)
+            if (activity != null) cb(activity!!)
             else onActivityCreateCallback.add(cb)
         }
     }
@@ -186,7 +186,7 @@ class Main : IXposedHookLoadPackage {
                 XposedBridge.invokeOriginalMethod(
                     setGlobalVariable, 
                     param.thisObject, 
-                    arrayOf("__PUPU_LOADER__", buildLoaderJsonString())
+                    arrayOf("__PYON_LOADER__", buildLoaderJsonString())
                 )
 
                 preloadsDir
