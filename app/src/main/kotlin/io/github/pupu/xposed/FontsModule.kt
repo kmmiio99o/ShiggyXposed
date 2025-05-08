@@ -50,11 +50,15 @@ class FontsModule: PupuModule() {
         }
     }
 
-    override fun onInit(packageParam: XC_LoadPackage.LoadPackageParam) = with (packageParam) {
-        XposedHelpers.findAndHookMethod("com.facebook.react.views.text.ReactFontManager", classLoader, "createAssetTypeface",
+    private fun hookClass(classLoader: ClassLoader, className: String) {
+        XposedHelpers.findAndHookMethod(
+            className,
+            classLoader,
+            "createAssetTypeface",
             String::class.java,
             Int::class.java,
-            "android.content.res.AssetManager", object : XC_MethodReplacement() {
+            "android.content.res.AssetManager",
+            object : XC_MethodReplacement() {
                 override fun replaceHookedMethod(param: MethodHookParam): Typeface? {
                     val fontFamilyName: String = param.args[0].toString()
                     val style: Int = param.args[1] as Int
@@ -62,8 +66,34 @@ class FontsModule: PupuModule() {
                     return createAssetTypeface(fontFamilyName, style, assetManager)
                 }
             })
+    }
 
-        val fontDefFile = File(appInfo.dataDir, "files/pupu/fonts.json")
+//    override fun onInit(packageParam: XC_LoadPackage.LoadPackageParam) = with (packageParam) {
+//        XposedHelpers.findAndHookMethod("com.facebook.react.views.text.ReactFontManager", classLoader, "createAssetTypeface",
+//            String::class.java,
+//            Int::class.java,
+//            "android.content.res.AssetManager", object : XC_MethodReplacement() {
+//                override fun replaceHookedMethod(param: MethodHookParam): Typeface? {
+//                    val fontFamilyName: String = param.args[0].toString()
+//                    val style: Int = param.args[1] as Int
+//                    val assetManager: AssetManager = param.args[2] as AssetManager
+//                    return createAssetTypeface(fontFamilyName, style, assetManager)
+//                }
+//            })
+
+    override fun onInit(packageParam: XC_LoadPackage.LoadPackageParam) = with (packageParam) {
+        try {
+            // Try to hook on versions (280201+)
+            hookClass(classLoader, "com.facebook.react.views.text.ReactFontManager\$Companion")
+        } catch (e: Throwable) {
+            when (e) {
+                // Hook old class (280200-)
+                is NoClassDefFoundError, is XposedHelpers.ClassNotFoundError -> hookClass(classLoader, "com.facebook.react.views.text.ReactFontManager")
+                else -> throw e
+            }
+        }
+
+        val fontDefFile = File(appInfo.dataDir, "files/pyon/fonts.json")
         if (!fontDefFile.exists()) return@with
 
         val fontDef = try {
@@ -71,7 +101,7 @@ class FontsModule: PupuModule() {
             json.decodeFromString<FontDefinition>(fontDefFile.readText())
         } catch (_: Throwable) { return@with }
 
-        fontsDownloadsDir = File(appInfo.dataDir, "files/pupu/downloads/fonts").apply { mkdirs() }
+        fontsDownloadsDir = File(appInfo.dataDir, "files/pyon/downloads/fonts").apply { mkdirs() }
         fontsDir = File(fontsDownloadsDir, fontDef.name!!).apply { mkdirs() }
         fontsAbsPath = fontsDir.absolutePath + "/"
 
