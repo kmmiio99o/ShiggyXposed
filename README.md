@@ -6,7 +6,7 @@
 
   Easily install Pupu on your rooted device!
 
-  [![Latest release](https://img.shields.io/github/v/release/C0C0B01/PupuManager?color=3AB8BA&display_name=release&label=Latest&style=for-the-badge)](https://github.com/C0C0B01/PupuXposed/releases/latest)
+  [![Latest release](https://img.shields.io/github/v/release/C0C0B01/PupuXposed?color=3AB8BA&display_name=release&label=Latest&style=for-the-badge)](https://github.com/C0C0B01/PupuXposed/releases/latest)
   
   ---
 
