@@ -91,7 +91,7 @@ class LogBoxModule: Module() {
                         reloadApp()
                     }
                     1 -> {
-                        val bundleFile = File(packageParam.appInfo.dataDir, "cache/pyon/bundle.js")
+                        val bundleFile = File(packageParam.appInfo.dataDir, "cache/pyoncord/bundle.js")
                         if (bundleFile.exists()) {
                             bundleFile.delete()
                         }

@@ -67,7 +67,7 @@ class ThemeModule : Module() {
 
     private fun getTheme(): Theme? {
         val filesDir = File(param.appInfo.dataDir, "files").apply { mkdirs() }
-        val pyonDir = File(filesDir, "pyon").apply { mkdirs() }
+        val pyonDir = File(filesDir, "pyoncord").apply { mkdirs() }
         val themeFile = File(pyonDir, "current-theme.json")
 
         val legacyThemeFile = File(filesDir, "vendetta_theme.json")
