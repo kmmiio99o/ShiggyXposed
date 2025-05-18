@@ -104,8 +104,8 @@ class Main : IXposedHookLoadPackage {
             String::class.java
         ).apply { isAccessible = true }
 
-        val cacheDir = File(appInfo.dataDir, "cache/pupu").apply { mkdirs() }
-        val filesDir = File(appInfo.dataDir, "files/pupu").apply { mkdirs() }
+        val cacheDir = File(appInfo.dataDir, "cache/pyon").apply { mkdirs() }
+        val filesDir = File(appInfo.dataDir, "files/pyon").apply { mkdirs() }
 
         val preloadsDir = File(filesDir, "preloads").apply { mkdirs() }
         val bundle = File(cacheDir, "bundle.js")
