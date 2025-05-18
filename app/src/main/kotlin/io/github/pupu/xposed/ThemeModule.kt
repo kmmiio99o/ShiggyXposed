@@ -67,8 +67,8 @@ class ThemeModule : PupuModule() {
 
     private fun getTheme(): Theme? {
         val filesDir = File(param.appInfo.dataDir, "files").apply { mkdirs() }
-        val pupuDir = File(filesDir, "pupu").apply { mkdirs() }
-        val themeFile = File(pupuDir, "current-theme.json")
+        val pyonDir = File(filesDir, "pyon").apply { mkdirs() }
+        val themeFile = File(pyonDir, "current-theme.json")
 
         val legacyThemeFile = File(filesDir, "vendetta_theme.json")
         if (legacyThemeFile.isValidish() && !themeFile.isValidish()) {
