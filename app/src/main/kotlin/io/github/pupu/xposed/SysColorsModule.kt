@@ -16,7 +16,7 @@ data class SysColors(
     val accent3: List<String>
 )
 
-class SysColorsModule : PupuModule() {
+class SysColorsModule : Module() {
     private lateinit var context: Context
     private fun isSupported() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 

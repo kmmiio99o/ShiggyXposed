@@ -35,7 +35,7 @@ data class Theme(
     val data: ThemeData
 )
 
-class ThemeModule : PupuModule() {
+class ThemeModule : Module() {
     private lateinit var param: XC_LoadPackage.LoadPackageParam
 
     private var theme: Theme? = null

@@ -34,7 +34,7 @@ data class LoaderConfig(
 )
 
 class Main : IXposedHookLoadPackage {
-    private val pupuModules: Array<PupuModule> = arrayOf(
+    private val Modules: Array<Module> = arrayOf(
         ThemeModule(),
         SysColorsModule(),
         FontsModule(),
@@ -46,7 +46,7 @@ class Main : IXposedHookLoadPackage {
             put("loaderName", "PupuXposed")
             put("loaderVersion", BuildConfig.VERSION_NAME)
 
-            for (module in pupuModules) {
+            for (module in Modules) {
                 module.buildJson(this)
             }
         }
@@ -82,7 +82,7 @@ class Main : IXposedHookLoadPackage {
     ) = with (param) {
         val catalystInstanceImpl = classLoader.loadClass("com.facebook.react.bridge.CatalystInstanceImpl")
 
-        for (module in pupuModules) module.onInit(param)
+        for (module in Modules) module.onInit(param)
 
         val loadScriptFromAssets = catalystInstanceImpl.getDeclaredMethod(
             "loadScriptFromAssets",

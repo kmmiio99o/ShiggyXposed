@@ -35,7 +35,7 @@ data class FontDefinition(
     val main: Map<String, String>,
 )
 
-class FontsModule: PupuModule() {
+class FontsModule: Module() {
     private val EXTENSIONS = arrayOf("", "_bold", "_italic", "_bold_italic")
     private val FILE_EXTENSIONS = arrayOf(".ttf", ".otf")
     private val FONTS_ASSET_PATH = "fonts/"
