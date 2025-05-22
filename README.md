@@ -1,19 +1,19 @@
 <div align="center">
 
-  <img src="Images/pupu_logo.png" alt="Pupu logo" width="200px" style="border-radius: 50%" />
+  <img src="Images/Kettu_logo.png" alt="Kettu logo" width="200px" style="border-radius: 50%" />
   
-  # PupuXposed
+  # KettuXposed
 
-  Easily install Pupu on your rooted device!
+  Easily install Kettu on your rooted device!
 
-  [![Latest release](https://img.shields.io/github/v/release/C0C0B01/PupuXposed?color=3AB8BA&display_name=release&label=Latest&style=for-the-badge)](https://github.com/C0C0B01/PupuXposed/releases/latest)
+  [![Latest release](https://img.shields.io/github/v/release/C0C0B01/KettuXposed?color=3AB8BA&display_name=release&label=Latest&style=for-the-badge)](https://github.com/C0C0B01/KettuXposed/releases/latest)
   
   ---
 
   <br>
   
-  ![Downloads (latest)](https://img.shields.io/github/downloads/C0C0B01/PupuXposed/latest/total?style=for-the-badge&logo=github&label=Downloads%20(Latest)&color=blue)
-  ![Total downloads](https://img.shields.io/github/downloads/C0C0B01/PupuXposed/total?style=for-the-badge&logo=github&label=Downloads%20(Total)&color=blue)
+  ![Downloads (latest)](https://img.shields.io/github/downloads/C0C0B01/KettuXposed/latest/total?style=for-the-badge&logo=github&label=Downloads%20(Latest)&color=blue)
+  ![Total downloads](https://img.shields.io/github/downloads/C0C0B01/KettuXposed/total?style=for-the-badge&logo=github&label=Downloads%20(Total)&color=blue)
 
   <br>
   
@@ -25,4 +25,4 @@ This is an open-source project, you can do so without any programming.
 
 Here are a few things you can do:
 
-- [Test and report issues](https://github.com/C0C0B01/PupuXposed/issues/new/choose)
+- [Test and report issues](https://github.com/C0C0B01/KettuXposed/issues/new/choose)

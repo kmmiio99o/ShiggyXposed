@@ -43,7 +43,7 @@ class Main : IXposedHookLoadPackage {
 
     fun buildLoaderJsonString(): String {
         val obj = buildJsonObject {
-            put("loaderName", "PupuXposed")
+            put("loaderName", "KettuXposed")
             put("loaderVersion", BuildConfig.VERSION_NAME)
 
             for (module in Modules) {
@@ -134,14 +134,14 @@ class Main : IXposedHookLoadPackage {
                     install(HttpTimeout) {
                         requestTimeoutMillis = if (bundle.exists()) 5000 else 10000
                     }
-                    install(UserAgent) { agent = "PupuXposed" }
+                    install(UserAgent) { agent = "KettuXposed" }
                 }
 
                 val url = 
                     if (config.customLoadUrl.enabled) config.customLoadUrl.url 
-                    else "https://raw.githubusercontent.com/C0C0B01/Pupu/refs/heads/main/dist/pupu.js"
+                    else "https://raw.githubusercontent.com/C0C0B01/Kettu/refs/heads/main/dist/kettu.js"
 
-                Log.e("Pupu", "Fetching JS bundle from $url")
+                Log.e("Kettu", "Fetching JS bundle from $url")
                 
                 val response: HttpResponse = client.get(url) {
                     headers { 
@@ -163,19 +163,19 @@ class Main : IXposedHookLoadPackage {
                 return@async
             } catch (e: RedirectResponseException) {
                 if (e.response.status != HttpStatusCode.NotModified) throw e
-                Log.e("Pupu", "Server responded with status code 304 - no changes to file")
+                Log.e("Kettu", "Server responded with status code 304 - no changes to file")
             } catch (e: Throwable) {
                 onActivityCreate { activity ->
                     activity.runOnUiThread {
                         Toast.makeText(
                             activity.applicationContext,
-                            "Failed to fetch JS bundle, Pupu may not load!",
+                            "Failed to fetch JS bundle, Kettu may not load!",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
 
-                Log.e("Pupu", "Failed to download bundle", e)
+                Log.e("Kettu", "Failed to download bundle", e)
             }
         }
 

@@ -1,2 +1,2 @@
-rootProject.name = "PupuXposed"
+rootProject.name = "KettuXposed"
 include(":app")

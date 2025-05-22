@@ -59,7 +59,7 @@ class LogBoxModule: Module() {
                             }
                         }
                     } catch (ex: Exception) {
-                        Log.e("Pupu", "Failed to show dev options dialog: $ex")
+                        Log.e("Kettu", "Failed to show dev options dialog: $ex")
                         alertDialog = null
                     }
 
@@ -84,7 +84,7 @@ class LogBoxModule: Module() {
 
     private fun showRecoveryAlert(context: Context, onClose: () -> Unit): AlertDialog {
         return AlertDialog.Builder(context)
-            .setTitle("Pupu Recovery Options")
+            .setTitle("Kettu Recovery Options")
             .setItems(arrayOf("Reload", "Delete bundle.js")) { _, which ->
                 when (which) {
                     0 -> {

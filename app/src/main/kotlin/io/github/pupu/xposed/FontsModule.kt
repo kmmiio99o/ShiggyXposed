@@ -97,7 +97,7 @@ class FontsModule: Module() {
             if (!fileName.startsWith(".")) {
                 val fontName = fileName.split('.')[0]
                 if (fontDef.main.keys.none { it == fontName }) {
-                    Log.i("Pupu", "Deleting font file: $fileName")
+                    Log.i("Kettu", "Deleting font file: $fileName")
                     file.delete()
                 }
             }
@@ -109,12 +109,12 @@ class FontsModule: Module() {
                 async {
                     val url = fontDef.main.getValue(name)
                     try {
-                        Log.i("Pupu", "Downloading $name from $url")
+                        Log.i("Kettu", "Downloading $name from $url")
                         val file = File(fontsDir, "$name${FILE_EXTENSIONS.first { url.endsWith(it) }}")
                         if (file.exists()) return@async
 
                         val client = HttpClient(CIO) {
-                            install(UserAgent) { agent = "PupuXposed" }
+                            install(UserAgent) { agent = "KettuXposed" }
                         }
 
                         val response: HttpResponse = client.get(url)
@@ -125,7 +125,7 @@ class FontsModule: Module() {
 
                         return@async
                     } catch (e: Throwable) {
-                        Log.e("Pupu", "Failed to download fonts ($name from $url)", e)
+                        Log.e("Kettu", "Failed to download fonts ($name from $url)", e)
                     }
                 }
             }.awaitAll()
