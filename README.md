@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="Images/Kettu_logo.png" alt="Kettu logo" width="200px" style="border-radius: 50%" />
+  <img src="Images/kettu.png" alt="Kettu logo" width="200px" style="border-radius: 50%" />
   
   # KettuXposed
 
