@@ -39,12 +39,31 @@ android {
     }
 }
 
+repositories {
+    maven("https://jitpack.io")
+}
+
 dependencies {
     compileOnly("de.robv.android.xposed:api:82")
+    compileOnly(libs.xposed)
 
-    implementation("androidx.core:core-ktx:1.15.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
-    implementation("io.ktor:ktor-client-core:3.1.1")
-    implementation("io.ktor:ktor-client-cio:3.1.1")
+    implementation(libs.libunbound)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.kotlin.reflect)
+
+    implementation(libs.yuki.api)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+
+    testImplementation(libs.junit)
+
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
