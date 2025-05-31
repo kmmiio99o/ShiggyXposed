@@ -132,14 +132,14 @@ class Main : IXposedHookLoadPackage {
                 val client = HttpClient(CIO) {
                     expectSuccess = true
                     install(HttpTimeout) {
-                        requestTimeoutMillis = if (bundle.exists()) 5000 else 10000
+                        requestTimeoutMillis = if (bundle.exists()) 4000 else 20000
                     }
                     install(UserAgent) { agent = "KettuXposed" }
                 }
 
                 val url = 
                     if (config.customLoadUrl.enabled) config.customLoadUrl.url 
-                    else "https://raw.githubusercontent.com/C0C0B01/Kettu/refs/heads/main/dist/kettu.js"
+                    else "https://raw.githubusercontent.com/C0C0B01/Kettu/refs/heads/dist/kettu.min.js"
 
                 Log.e("Kettu", "Fetching JS bundle from $url")
                 
