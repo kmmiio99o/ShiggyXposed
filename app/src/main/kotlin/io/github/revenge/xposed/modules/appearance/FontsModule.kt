@@ -1,31 +1,31 @@
-// credits to janisslsm from his PR: https://github.com/vendetta-mod/VendettaXposed/pull/17
-// hooks are modified function from RN codebase
-
-package cocobo1.pupu.xposed
+package cocobo1.pupu.xposed.modules.appearance
 
 import android.content.res.AssetManager
-import android.os.Build
 import android.graphics.Typeface
 import android.graphics.Typeface.CustomFallbackBuilder
 import android.graphics.fonts.Font
 import android.graphics.fonts.FontFamily
-import android.util.Log
+import android.os.Build
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.*
-import java.io.IOException
-import java.io.File
-import kotlinx.coroutines.*
-
+import cocobo1.pupu.xposed.Constants
+import cocobo1.pupu.xposed.Module
+import cocobo1.pupu.xposed.Utils.Companion.JSON
+import cocobo1.pupu.xposed.Utils.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.request.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.statement.*
 import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObjectBuilder
+import kotlinx.serialization.json.put
+import java.io.File
+import java.io.IOException
 
 @Serializable
 data class FontDefinition(
@@ -35,24 +35,26 @@ data class FontDefinition(
     val main: Map<String, String>,
 )
 
-class FontsModule: Module() {
-    private val EXTENSIONS = arrayOf("", "_bold", "_italic", "_bold_italic")
-    private val FILE_EXTENSIONS = arrayOf(".ttf", ".otf")
-    private val FONTS_ASSET_PATH = "fonts/"
+class FontsModule : Module() {
+    private companion object {
+        val EXTENSIONS = arrayOf("", "_bold", "_italic", "_bold_italic")
+        val FILE_EXTENSIONS = arrayOf(".ttf", ".otf")
+        const val FONTS_ASSET_PATH = "fonts/"
+    }
 
     private lateinit var fontsDir: File
     private lateinit var fontsDownloadsDir: File
     private var fontsAbsPath: String? = null
 
-    override fun buildJson(builder: JsonObjectBuilder) {
+    override fun buildPayload(builder: JsonObjectBuilder) {
         builder.apply {
             put("fontPatch", 2)
         }
     }
 
-    private fun hookClass(classLoader: ClassLoader, className: String) {
+    override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         XposedHelpers.findAndHookMethod(
-            className,
+            "com.facebook.react.views.text.ReactFontManager\$Companion",
             classLoader,
             "createAssetTypeface",
             String::class.java,
@@ -66,30 +68,18 @@ class FontsModule: Module() {
                     return createAssetTypeface(fontFamilyName, style, assetManager)
                 }
             })
-    }
 
-    override fun onInit(packageParam: XC_LoadPackage.LoadPackageParam) = with (packageParam) {
-        try {
-            // Try to hook on versions (280201+)
-            hookClass(classLoader, "com.facebook.react.views.text.ReactFontManager\$Companion")
-        } catch (e: Throwable) {
-            when (e) {
-                // Hook old class (280200-)
-                is NoClassDefFoundError, is XposedHelpers.ClassNotFoundError -> hookClass(classLoader, "com.facebook.react.views.text.ReactFontManager")
-                else -> throw e
-            }
-        }
-
-        val fontDefFile = File(appInfo.dataDir, "files/pyoncord/fonts.json")
+        val fontDefFile = File(appInfo.dataDir, "${Constants.FILES_DIR}/fonts.json").apply { asFile() }
         if (!fontDefFile.exists()) return@with
 
         val fontDef = try {
-            val json = Json { ignoreUnknownKeys = true }
-            json.decodeFromString<FontDefinition>(fontDefFile.readText())
-        } catch (_: Throwable) { return@with }
+            JSON.decodeFromString<FontDefinition>(fontDefFile.readText())
+        } catch (_: Throwable) {
+            return@with
+        }
 
-        fontsDownloadsDir = File(appInfo.dataDir, "files/pyoncord/downloads/fonts").apply { mkdirs() }
-        fontsDir = File(fontsDownloadsDir, fontDef.name!!).apply { mkdirs() }
+        fontsDownloadsDir = File(appInfo.dataDir, "${Constants.FILES_DIR}/downloads/fonts").apply { asDir() }
+        fontsDir = File(fontsDownloadsDir, fontDef.name!!).apply { asDir() }
         fontsAbsPath = fontsDir.absolutePath + "/"
 
         fontsDir.listFiles()?.forEach { file ->
@@ -97,7 +87,7 @@ class FontsModule: Module() {
             if (!fileName.startsWith(".")) {
                 val fontName = fileName.split('.')[0]
                 if (fontDef.main.keys.none { it == fontName }) {
-                    Log.i("Kettu", "Deleting font file: $fileName")
+                    Log.i("Deleting font file: $fileName")
                     file.delete()
                 }
             }
@@ -109,35 +99,29 @@ class FontsModule: Module() {
                 async {
                     val url = fontDef.main.getValue(name)
                     try {
-                        Log.i("Kettu", "Downloading $name from $url")
-                        val file = File(fontsDir, "$name${FILE_EXTENSIONS.first { url.endsWith(it) }}")
+                        Log.i("Downloading $name from $url")
+                        val file =
+                            File(fontsDir, "$name${FILE_EXTENSIONS.first { url.endsWith(it) }}").apply { asFile() }
                         if (file.exists()) return@async
 
                         val client = HttpClient(CIO) {
-                            install(UserAgent) { agent = "KettuXposed" }
+                            install(UserAgent) { agent = Constants.USER_AGENT }
                         }
 
                         val response: HttpResponse = client.get(url)
-
-                        if (response.status == HttpStatusCode.OK) {
-                            file.writeBytes(response.body())
-                        }
+                        if (response.status == HttpStatusCode.OK) file.writeBytes(response.body())
 
                         return@async
                     } catch (e: Throwable) {
-                        Log.e("Kettu", "Failed to download fonts ($name from $url)", e)
+                        Log.e("Failed to download fonts ($name from $url)", e)
                     }
                 }
             }.awaitAll()
-        } 
-
-        return@with
+        }
     }
 
     private fun createAssetTypefaceWithFallbacks(
-        fontFamilyNames: Array<String>,
-        style: Int,
-        assetManager: AssetManager
+        fontFamilyNames: Array<String>, style: Int, assetManager: AssetManager
     ): Typeface? {
         val fontFamilies: MutableList<FontFamily> = ArrayList()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -147,31 +131,29 @@ class FontsModule: Module() {
                 try {
                     for (fileExtension in FILE_EXTENSIONS) {
                         val (customName, refName) = fontFamilyName.split(":")
-                        val file = File(fontsDownloadsDir, "$customName/$refName.$fileExtension")
+                        val file = File(fontsDownloadsDir, "$customName/$refName.$fileExtension").apply { asFile() }
                         val font = Font.Builder(file).build()
                         val family = FontFamily.Builder(font).build()
                         fontFamilies.add(family)
                     }
-                } catch (e: Throwable) {
-                    // ignore
+                } catch (_: Throwable) {
                 }
 
                 for (fontRootPath in arrayOf(fontsAbsPath, FONTS_ASSET_PATH).filterNotNull()) {
                     for (fileExtension in FILE_EXTENSIONS) {
-                        val fileName = java.lang.StringBuilder()
-                            .append(fontRootPath)
-                            .append(fontFamilyName)
-                            .append(fileExtension)
-                            .toString()
+                        val fileName =
+                            StringBuilder().append(fontRootPath).append(fontFamilyName).append(fileExtension).toString()
                         try {
-                            val builder = if (fileName[0] == '/') Font.Builder(File(fileName)) else Font.Builder(assetManager, fileName)
+                            val builder = if (fileName[0] == '/') Font.Builder(File(fileName)) else Font.Builder(
+                                assetManager, fileName
+                            )
                             val font = builder.build()
                             val family = FontFamily.Builder(font).build()
                             fontFamilies.add(family)
-                        } catch (e: java.lang.RuntimeException) {
+                        } catch (_: RuntimeException) {
                             // If the typeface asset does not exist, try another extension.
                             continue
-                        } catch (e: IOException) {
+                        } catch (_: IOException) {
                             // If the font asset does not exist, try another extension.
                             continue
                         }
@@ -180,9 +162,8 @@ class FontsModule: Module() {
             }
 
             // If there's some problem constructing fonts, fall back to the default behavior.
-            if (fontFamilies.size == 0) {
-                return createAssetTypeface(fontFamilyNames[0], style, assetManager)
-            }
+            if (fontFamilies.isEmpty()) return createAssetTypeface(fontFamilyNames[0], style, assetManager)
+
             val fallbackBuilder = CustomFallbackBuilder(fontFamilies[0])
             for (i in 1 until fontFamilies.size) {
                 fallbackBuilder.addCustomFallback(fontFamilies[i])
@@ -193,15 +174,12 @@ class FontsModule: Module() {
     }
 
     private fun createAssetTypeface(
-        fontFamilyName_: String, style: Int, assetManager: AssetManager
+        fontFamilyName: String, style: Int, assetManager: AssetManager
     ): Typeface? {
         // This logic attempts to safely check if the frontend code is attempting to use
         // fallback fonts, and if it is, to use the fallback typeface creation logic.
-        var fontFamilyName: String = fontFamilyName_
-        val fontFamilyNames =
-            fontFamilyName.split(",".toRegex())
-                .dropLastWhile { it.isEmpty() }
-                .toTypedArray()
+        var fontFamilyName: String = fontFamilyName
+        val fontFamilyNames = fontFamilyName.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         for (i in fontFamilyNames.indices) {
             fontFamilyNames[i] = fontFamilyNames[i].trim()
         }
@@ -222,31 +200,25 @@ class FontsModule: Module() {
         try {
             for (fileExtension in FILE_EXTENSIONS) {
                 val (customName, refName) = fontFamilyName.split(":")
-                val file = File(fontsDownloadsDir, "$customName/$refName.$fileExtension")
+                val file = File(fontsDownloadsDir, "$customName/$refName.$fileExtension").apply { asFile() }
                 if (!file.exists()) throw Exception()
                 return Typeface.createFromFile(file.absolutePath)
             }
-        } catch (e: Throwable) {
-            // ignore
+        } catch (_: Throwable) {
         }
 
         // Lastly, after all those checks above, this is the original RN logic for
         // getting the typeface.
         for (fontRootPath in arrayOf(fontsAbsPath, FONTS_ASSET_PATH).filterNotNull()) {
             for (fileExtension in FILE_EXTENSIONS) {
-                val fileName = java.lang.StringBuilder()
-                    .append(fontRootPath)
-                    .append(fontFamilyName)
-                    .append(extension)
-                    .append(fileExtension)
-                    .toString()
-                
+                val fileName =
+                    StringBuilder().append(fontRootPath).append(fontFamilyName).append(extension).append(fileExtension)
+                        .toString()
+
                 return try {
-                    if (fileName[0] == '/')
-                        Typeface.createFromFile(fileName)
-                    else
-                        Typeface.createFromAsset(assetManager, fileName)
-                } catch (e: java.lang.RuntimeException) {
+                    if (fileName[0] == '/') Typeface.createFromFile(fileName)
+                    else Typeface.createFromAsset(assetManager, fileName)
+                } catch (_: RuntimeException) {
                     // If the typeface asset does not exist, try another extension.
                     continue
                 }

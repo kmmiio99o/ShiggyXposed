@@ -13,6 +13,3 @@ build
 .externalNativeBuild
 .cxx
 local.properties
-.idea/AndroidProjectSystem.xml
-/app/release
-/app/build

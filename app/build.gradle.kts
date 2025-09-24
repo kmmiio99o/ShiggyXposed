@@ -10,21 +10,21 @@ android {
 
     defaultConfig {
         applicationId = "cocobo1.pupu.xposed"
-        minSdk = 22
+        minSdk = 24
         targetSdk = 36
-        versionCode = 1130
-        versionName = "1.1.3"
+        versionCode = 1200
+        versionName = "1.2.0"
     }
 
     buildTypes {
         debug {
             isDebuggable = true
             isMinifyEnabled = false
+            isShrinkResources = false
             applicationIdSuffix = ".debug"
         }
         release {
             isDebuggable = false
-            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -39,31 +39,12 @@ android {
     }
 }
 
-repositories {
-    maven("https://jitpack.io")
-}
-
 dependencies {
     compileOnly("de.robv.android.xposed:api:82")
-    compileOnly(libs.xposed)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
-    implementation(libs.libunbound)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.kotlin.reflect)
-
-    implementation(libs.yuki.api)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-
-    testImplementation(libs.junit)
-
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    implementation("androidx.core:core-ktx:1.17.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("io.ktor:ktor-client-core:3.3.0")
+    implementation("io.ktor:ktor-client-cio:3.3.0")
 }
