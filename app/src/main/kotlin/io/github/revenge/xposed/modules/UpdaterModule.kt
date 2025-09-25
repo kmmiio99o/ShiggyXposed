@@ -49,8 +49,8 @@ class UpdaterModule : Module() {
     companion object {
         var job: Job? = null
 
-        private const val TIMEOUT_CACHED = 2000L
-        private const val TIMEOUT = 80000L
+        private const val TIMEOUT_CACHED = 5000L
+        private const val TIMEOUT = 50000L
         private const val ETAG_FILE = "etag.txt"
         private const val CONFIG_FILE = "loader.json"
 
@@ -143,21 +143,7 @@ class UpdaterModule : Module() {
 
     override fun onActivity(activity: Activity) {
         error ?: return
-
-        AlertDialog.Builder(activity).setTitle("Kettu Update Failed").setMessage(
-            """
-                Unable to download the latest version of Kettu.
-                This is usually caused by bad network connection.
-                
-                Error: ${error?.message ?: error.toString()}
-                """.trimIndent()
-        ).setNegativeButton("Dismiss") { dialog, _ ->
-            dialog.dismiss()
-        }.setPositiveButton("Retry Update") { dialog, _ ->
-            error = null
-            downloadScript(activity)
-            Toast.makeText(activity, "Retrying download in background...", Toast.LENGTH_SHORT).show()
-            dialog.dismiss()
-        }.show()
+        error = null
+        downloadScript(activity)
     }
 }
