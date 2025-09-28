@@ -115,12 +115,6 @@ class UpdaterModule : Module() {
                             // This is a retry, so we show a dialog
                             if (activity != null) {
                                 withContext(Dispatchers.Main) {
-                                    AlertDialog.Builder(activity).setTitle("Kettu Update Successful")
-                                        .setMessage("A reload is required for changes to take effect.")
-                                        .setPositiveButton("Reload") { dialog, _ ->
-                                            reloadApp()
-                                            dialog.dismiss()
-                                        }.setCancelable(false).show()
                                 }
                             }
                         }
