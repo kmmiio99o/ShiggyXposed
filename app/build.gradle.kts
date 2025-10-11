@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "cocobo1.pupu.xposed"
+    namespace = "ShiggyXposed.xposed"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "cocobo1.pupu.xposed"
+        applicationId = "ShiggyXposed.xposed"
         minSdk = 22
         targetSdk = 36
-        versionCode = 1130
-        versionName = "1.1.3"
+        versionCode = 1000
+        versionName = "1.0.0"
     }
 
     buildTypes {
@@ -29,41 +29,30 @@ android {
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "21"
-    }
-    buildFeatures {
-        buildConfig = true
-    }
+    kotlinOptions { jvmTarget = "17" }
+    buildFeatures { buildConfig = true }
 }
 
-repositories {
-    maven("https://jitpack.io")
+repositories { 
+    mavenCentral()
+    google()
+    maven("https://jitpack.io") 
 }
 
 dependencies {
     compileOnly("de.robv.android.xposed:api:82")
-    compileOnly(libs.xposed)
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
-    implementation(libs.libunbound)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.kotlin.reflect)
-
-    implementation(libs.yuki.api)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-
-    testImplementation(libs.junit)
-
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.0")
+    implementation("io.ktor:ktor-client-core:3.3.0")
+    implementation("io.ktor:ktor-client-cio:3.3.0")
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.11.0")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
