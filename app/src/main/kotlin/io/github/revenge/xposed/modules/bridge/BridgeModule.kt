@@ -49,7 +49,7 @@ typealias BridgeMethodArgs = ArrayList<Any>
  */
 class BridgeModule : Module() {
     private lateinit var readableMapGetString: Method
-    private lateinit var readableMapToHashMap: Method
+    private lateinit var readableMapToHashMapMethod: Method
     private lateinit var argumentsMakeNative: Method
 
     companion object {
@@ -126,42 +126,45 @@ class BridgeModule : Module() {
         }
     }
 
-    override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) =
-            with(packageParam) {
-                val arguments = classLoader.loadClass("com.facebook.react.bridge.Arguments")
-                val readableMap = classLoader.loadClass("com.facebook.react.bridge.ReadableMap")
-                val promise = classLoader.loadClass("com.facebook.react.bridge.Promise")
+    override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) {
+        with(packageParam) {
+            val arguments = classLoader.loadClass("com.facebook.react.bridge.Arguments")
+            val readableMap = classLoader.loadClass("com.facebook.react.bridge.ReadableMap")
+            val promise = classLoader.loadClass("com.facebook.react.bridge.Promise")
 
-                val promiseResolve = promise.method("resolve", Object::class.java)
-                argumentsMakeNative = arguments.method("makeNativeObject", Object::class.java)
-                readableMapGetString = readableMap.method("getString", String::class.java)
-                readableMapToHashMap = readableMap.method("toHashMap")
+            val promiseResolve = promise.method("resolve", Object::class.java)
+            argumentsMakeNative = arguments.method("makeNativeObject", Object::class.java)
+            readableMapGetString = readableMap.method("getString", String::class.java)
+            readableMapToHashMapMethod = readableMap.method("toHashMap")
 
-                classLoader.loadClass("com.horcrux.svg.RNSVGRenderableManager").hookMethod(
-                                "getBBox",
-                                Double::class.javaObjectType,
-                                readableMap
-                        ) {
-                    before {
-                        callBridgeMethod(readableMapToHashMap(args[1]!!))?.let {
-                            result = it.toNativeObject()
-                        }
+            classLoader.loadClass("com.horcrux.svg.RNSVGRenderableManager").hookMethod(
+                            "getBBox",
+                            Double::class.javaObjectType,
+                            readableMap
+                    ) {
+                before {
+                    callBridgeMethod(readableMapToHashMapConverter(args[1]!!))?.let {
+                        result = it.toNativeObject()
                     }
                 }
-
-                classLoader.loadClass("com.facebook.react.modules.blob.FileReaderModule")
-                        .hookMethod("readAsDataURL", readableMap, promise) {
-                            before {
-                                val (readableMap, promise) = args
-                                callBridgeMethod(readableMapToHashMap(readableMap!!))?.let {
-                                    promiseResolve.invoke(promise, it.toNativeObject())
-                                    result = null
-                                }
-                            }
-                        }
-
-                return@with
             }
+
+            classLoader.loadClass("com.facebook.react.modules.blob.FileReaderModule").hookMethod(
+                            "readAsDataURL",
+                            readableMap,
+                            promise
+                    ) {
+                before {
+                    // Avoid shadowing the outer `readableMap` and `promise` variables
+                    val (readableMapArg, promiseArg) = args
+                    callBridgeMethod(readableMapToHashMapConverter(readableMapArg!!))?.let {
+                        promiseResolve.invoke(promiseArg, it.toNativeObject())
+                        result = null
+                    }
+                }
+            }
+        }
+    }
 
     private fun Any?.toNativeObject(): Any? =
             argumentsMakeNative.invoke(
@@ -172,18 +175,21 @@ class BridgeModule : Module() {
                     }
             )
 
-    private fun readableMapToHashMap(map: Any): HashMap<String, Any?> {
-        @Suppress("UNCHECKED_CAST") return readableMapToHashMap.invoke(map) as HashMap<String, Any?>
+    private fun readableMapToHashMapConverter(map: Any): HashMap<String, Any?> {
+        @Suppress("UNCHECKED_CAST")
+        return readableMapToHashMapMethod.invoke(map) as HashMap<String, Any?>
     }
 
-    private fun callBridgeMethod(hashMap: HashMap<String, Any?>): Map<String, Any?>? =
-            try {
-                val (method, args) = getBridgeCallData(hashMap) ?: return null
-                val ret = method(args).toNativeObject()
-                mapOf("result" to ret)
-            } catch (e: Throwable) {
-                mapOf("error" to e.toString())
-            }
+    private fun callBridgeMethod(hashMap: HashMap<String, Any?>): Map<String, Any?>? {
+        try {
+            val pair = getBridgeCallData(hashMap) ?: return null
+            val (method, args) = pair
+            val ret = method(args).toNativeObject()
+            return mapOf("result" to ret)
+        } catch (e: Throwable) {
+            return mapOf("error" to e.toString())
+        }
+    }
 
     private fun getBridgeCallData(
             hashMap: HashMap<String, Any?>

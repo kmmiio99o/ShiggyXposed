@@ -7,21 +7,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: "17"
 
-      - name: "Setup Gradle"
-        uses: gradle/gradle-build-action@v2
-
       - name: "Grant execution permission"
         run: chmod +x ./gradlew
 
       - name: "Build APKs"
-        run: ./gradlew build
+        run: |
+          # Retry the Gradle build up to 3 times to mitigate transient cache/service errors
+          ATTEMPT=0
+          until [ $ATTEMPT -ge 3 ]
+          do
+            ./gradlew build --no-daemon --stacktrace && break
+            ATTEMPT=$((ATTEMPT+1))
+            echo "Gradle build failed, retrying ($ATTEMPT/3)..."
+            sleep 5
+          done
+          if [ $ATTEMPT -ge 3 ]; then
+            echo "Gradle build failed after 3 attempts"
+            exit 1
+          fi
 
       - name: "Setup directories"
         run: |

@@ -98,11 +98,10 @@ class UpdaterModule : Module() {
 
                                                 // Retries don't need timeout
                                                 if (activity != null) {
-                                                    timeout {
-                                                        requestTimeoutMillis =
-                                                                if (!bundle.exists()) TIMEOUT
-                                                                else TIMEOUT_CACHED
-                                                    }
+                                                    val timeoutMs =
+                                                            if (!bundle.exists()) TIMEOUT
+                                                            else TIMEOUT_CACHED
+                                                    timeout { requestTimeoutMillis = timeoutMs }
                                                 }
                                             }
 
