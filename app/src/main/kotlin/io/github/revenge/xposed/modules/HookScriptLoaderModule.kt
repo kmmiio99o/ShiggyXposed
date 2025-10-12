@@ -110,7 +110,30 @@ class HookScriptLoaderModule : Module() {
         }
 
         try {
-            preloadsDir.walk().filter { it.isFile }.forEach(runScriptFile)
+            // Safe mode enforcement:
+            // If a preload file with a '00_' prefix exists (or legacy 'rv_safe_mode.js'), treat
+            // this as a safe-mode indicator and load only those safe preloads (skip other
+            // preloads), but still load the main bundle afterwards.
+            val safeFiles =
+                    preloadsDir
+                            .listFiles()
+                            ?.filter {
+                                it.isFile &&
+                                        (it.name.startsWith("00_") || it.name == "rv_safe_mode.js")
+                            }
+                            ?.sortedBy { it.name }
+
+            if (!safeFiles.isNullOrEmpty()) {
+                Log.i(
+                        "Safe mode detected - loading only safe preloads: ${safeFiles.map { it.name }}"
+                )
+                // Load only safe preloads; do not load other preloads. Continue and load main
+                // bundle.
+                safeFiles.forEach(runScriptFile)
+            } else {
+                // Normal behavior: run all preloads
+                preloadsDir.walk().filter { it.isFile }.forEach(runScriptFile)
+            }
 
             if (mainScript.exists()) runScriptFile(mainScript)
             else {
