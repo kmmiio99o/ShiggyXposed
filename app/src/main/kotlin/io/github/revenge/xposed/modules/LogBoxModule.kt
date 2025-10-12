@@ -24,13 +24,11 @@ import kotlinx.serialization.json.*
 
 /**
  * Replacement for the old recovery/dev dialog. Shows a dark-themed dialog on the main thread with:
- * - Safe Mode toggle (writes/removes preloads/00_rv_safe_mode.js)
  * - Load from custom URL toggle + URL input (persists to files/pyoncord/loader.json)
  * - Save & Reload, Delete bundle, Close actions
  *
- * Safe Mode toggle now behaves like the React snippet: toggles immediately (no reload) and opens a
- * confirmation modal asking whether to reload now or later. The confirmation modal uses a custom
- * in-dialog layout so button colors and text can be controlled for dark styling.
+ * This simplified version removes the Safe Mode toggle and the per-addon list. Save only persists
+ * the custom URL configuration.
  */
 class LogBoxModule : Module() {
     lateinit var packageParam: XC_LoadPackage.LoadPackageParam
@@ -135,10 +133,6 @@ class LogBoxModule : Module() {
         // Always perform UI operations on the main thread to avoid runtime exceptions
         Handler(Looper.getMainLooper()).post {
             try {
-                // Wrap with a dark dialog theme from module resources (AppCompat-based).
-                // Use the provided activity/context directly to avoid inflating module resources
-                // into the host process (some hosts fail to resolve module resources). We set
-                // colors programmatically on views instead of relying on theme attributes.
                 val themed = context
 
                 // Prepare paths
@@ -148,7 +142,7 @@ class LogBoxModule : Module() {
                 val preloadsDir =
                         File(filesDir, HookScriptLoaderModule.PRELOADS_DIR).apply { mkdirs() }
 
-                // Read existing loader.json (guarded)
+                // Read existing loader.json (guarded) for custom URL
                 var customEnabled = false
                 var customUrl = ""
                 try {
@@ -167,9 +161,7 @@ class LogBoxModule : Module() {
                     )
                 }
 
-                // Build the dialog UI programmatically to avoid inflating module resources which
-                // can
-                // fail when injected into some host apps.
+                // Build the dialog UI programmatically.
                 val padding = (themed.resources.displayMetrics.density * 16).toInt()
                 val container =
                         LinearLayout(themed).apply {
@@ -218,127 +210,9 @@ class LogBoxModule : Module() {
                     return Pair(tv, sw)
                 }
 
-                // Create rows
-                val safeRow = addSwitchRow("Safe mode (disable add-ons)", false)
-                val safeSwitch = safeRow.second
+                // Create rows: custom URL toggle
                 val customRow = addSwitchRow("Load from custom URL", false)
                 val customSwitch = customRow.second
-
-                // URL label + input
-                val lblUrl =
-                        TextView(themed).apply {
-                            text = "Custom bundle URL"
-                            setTextColor(0xFFFFFFFF.toInt())
-                            textSize = 13f
-                            val lp =
-                                    LinearLayout.LayoutParams(
-                                            LinearLayout.LayoutParams.MATCH_PARENT,
-                                            LinearLayout.LayoutParams.WRAP_CONTENT
-                                    )
-                            lp.topMargin = (themed.resources.displayMetrics.density * 8).toInt()
-                            layoutParams = lp
-                        }
-                val urlInput =
-                        EditText(themed).apply {
-                            hint = "https://example.com/bundle.js"
-                            setTextColor(0xFFFFFFFF.toInt())
-                            setHintTextColor(0xFFBDBDBD.toInt())
-                            setBackgroundColor(0xFF1E1E1E.toInt())
-                            val lp =
-                                    LinearLayout.LayoutParams(
-                                            LinearLayout.LayoutParams.MATCH_PARENT,
-                                            LinearLayout.LayoutParams.WRAP_CONTENT
-                                    )
-                            lp.topMargin = (themed.resources.displayMetrics.density * 6).toInt()
-                            layoutParams = lp
-                            visibility = View.GONE
-                        }
-                container.addView(lblUrl)
-                container.addView(urlInput)
-
-                // Buttons row - keep primary actions (Delete / Close) on one row,
-                // place the Save & Reload button on a separate row below so it's not squeezed.
-                val buttonsRow =
-                        LinearLayout(themed).apply {
-                            orientation = LinearLayout.HORIZONTAL
-                            val lp =
-                                    LinearLayout.LayoutParams(
-                                            LinearLayout.LayoutParams.MATCH_PARENT,
-                                            LinearLayout.LayoutParams.WRAP_CONTENT
-                                    )
-                            lp.topMargin = (themed.resources.displayMetrics.density * 12).toInt()
-                            layoutParams = lp
-                        }
-
-                fun createButton(text: String): Button {
-                    return Button(themed).apply {
-                        this.text = text
-                        setAllCaps(false)
-                        setTextColor(0xFFFFFFFF.toInt())
-                        val bLp =
-                                LinearLayout.LayoutParams(
-                                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                                        LinearLayout.LayoutParams.WRAP_CONTENT
-                                )
-                        bLp.marginEnd = (themed.resources.displayMetrics.density * 8).toInt()
-                        layoutParams = bLp
-                        // default transparent background so host drawable still applies
-                        setBackgroundColor(0x00000000)
-                    }
-                }
-
-                val deleteBtn = createButton("Delete bundle")
-                val closeBtn = createButton("Close")
-                val saveBtn =
-                        createButton("Save & Reload").apply {
-                            // accent background + readable text
-                            setBackgroundColor(0xFFBB86FC.toInt())
-                            setTextColor(0xFF000000.toInt())
-                        }
-
-                // Add Delete and Close to the top (horizontal) row
-                buttonsRow.addView(deleteBtn)
-                buttonsRow.addView(closeBtn)
-                container.addView(buttonsRow)
-
-                // Create a separate row for the Save button so it sits below and can span full
-                // width
-                val saveRow =
-                        LinearLayout(themed).apply {
-                            orientation = LinearLayout.HORIZONTAL
-                            val lp =
-                                    LinearLayout.LayoutParams(
-                                            LinearLayout.LayoutParams.MATCH_PARENT,
-                                            LinearLayout.LayoutParams.WRAP_CONTENT
-                                    )
-                            lp.topMargin = (themed.resources.displayMetrics.density * 8).toInt()
-                            layoutParams = lp
-                        }
-
-                val saveLp =
-                        LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
-                        )
-                saveRow.addView(saveBtn, saveLp)
-                container.addView(saveRow)
-
-                // Expose these variables below using the local names expected by the rest of the
-                // function (safeSwitch, customSwitch, urlInput, saveBtn, deleteBtn, closeBtn).
-                // They are already defined above as local vals.
-
-                // Initialize state - check for any sentinel file that indicates safe mode.
-                // Be robust: accept any file that starts with "00_" (legacy sentinel pattern)
-                // or the legacy "rv_safe_mode.js".
-                val safePresent =
-                        preloadsDir.listFiles()?.any {
-                            it.isFile && (it.name.startsWith("00_") || it.name == "rv_safe_mode.js")
-                        }
-                                ?: false
-                safeSwitch.isChecked = safePresent
-                customSwitch.isChecked = customEnabled
-                urlInput.setText(customUrl)
-                urlInput.visibility = if (customEnabled) View.VISIBLE else View.GONE
 
                 // Confirmation modal helper (keeps previous messaging/behavior)
                 fun showReloadConfirmModal(parentCtx: Context, turningOn: Boolean) {
@@ -382,6 +256,14 @@ class LogBoxModule : Module() {
                                     text = "Reload Now"
                                     setTextColor(0xFF000000.toInt())
                                     setBackgroundColor(0xFFBB86FC.toInt())
+                                    val wlp =
+                                            LinearLayout.LayoutParams(
+                                                    0,
+                                                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                    1f
+                                            )
+                                    wlp.marginEnd = 8
+                                    layoutParams = wlp
                                     setOnClickListener {
                                         try {
                                             reloadApp()
@@ -392,24 +274,32 @@ class LogBoxModule : Module() {
                                 Button(parentCtx).apply {
                                     text = "Later"
                                     setTextColor(0xFFFFFFFF.toInt())
+                                    val wlp =
+                                            LinearLayout.LayoutParams(
+                                                    0,
+                                                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                    1f
+                                            )
+                                    layoutParams = wlp
                                 }
 
-                        val lpBtn =
+                        buttonsRow.addView(
+                                reloadNowBtn,
                                 LinearLayout.LayoutParams(
                                                 0,
                                                 LinearLayout.LayoutParams.WRAP_CONTENT,
                                                 1f
                                         )
                                         .apply { marginEnd = 8 }
-                        val lpBtn2 =
+                        )
+                        buttonsRow.addView(
+                                laterBtn,
                                 LinearLayout.LayoutParams(
                                         0,
                                         LinearLayout.LayoutParams.WRAP_CONTENT,
                                         1f
                                 )
-
-                        buttonsRow.addView(reloadNowBtn, lpBtn)
-                        buttonsRow.addView(laterBtn, lpBtn2)
+                        )
 
                         dialogContainer.addView(buttonsRow)
 
@@ -436,54 +326,115 @@ class LogBoxModule : Module() {
                     }
                 }
 
-                // Safe switch toggles the safe preload file immediately (no automatic reload),
-                // then prompts the user whether to reload now or later (matching React UI).
-                safeSwitch.setOnCheckedChangeListener {
-                        _: android.widget.CompoundButton,
-                        checked: Boolean ->
-                    try {
-                        val safeFile = File(preloadsDir, "00_rv_safe_mode.js")
-                        if (checked) {
-                            val safeJs =
-                                    "(function(){try{var g=(typeof globalThis!=='undefined'?globalThis:(typeof global!=='undefined'?global:this));if(!g)g={};if(!g.console)g.console={log:function(){},error:function(){},warn:function(){},info:function(){}};g.__SHIGGY_SAFE_MODE=true;}catch(e){}})();"
-                            runCatching { safeFile.writeText(safeJs) }.onFailure { t ->
-                                Log.e("Failed to write safe preload: ${t.message}", t)
-                                XposedBridge.log(
-                                        "ShiggyXposed: write safe preload failed: ${android.util.Log.getStackTraceString(t)}"
-                                )
-                            }
-                        } else {
-                            // Remove any safe-mode sentinel files (be forgiving about filenames)
-                            try {
-                                preloadsDir
-                                        .listFiles()
-                                        ?.filter {
-                                            it.isFile &&
-                                                    (it.name.startsWith("00_") ||
-                                                            it.name == "rv_safe_mode.js")
-                                        }
-                                        ?.forEach { it.delete() }
-                            } catch (_: Throwable) {}
-                        }
-                    } catch (t: Throwable) {
-                        Log.e("Safe toggle persistence failed: ${t.message}", t)
-                        XposedBridge.log(
-                                "ShiggyXposed: Safe toggle persistence failed: ${android.util.Log.getStackTraceString(t)}"
-                        )
-                    }
+                // Safe mode toggle removed; no-op.
 
-                    // Show confirmation (no automatic reload) with option to reload now
-                    showReloadConfirmModal(themed, checked)
+                // URL label + input
+                val lblUrl =
+                        TextView(themed).apply {
+                            text = "Custom bundle URL"
+                            setTextColor(0xFFFFFFFF.toInt())
+                            textSize = 13f
+                            val lp =
+                                    LinearLayout.LayoutParams(
+                                            LinearLayout.LayoutParams.MATCH_PARENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT
+                                    )
+                            lp.topMargin = (themed.resources.displayMetrics.density * 8).toInt()
+                            layoutParams = lp
+                        }
+                val urlInput =
+                        EditText(themed).apply {
+                            hint = "https://example.com/bundle.js"
+                            setTextColor(0xFFFFFFFF.toInt())
+                            setHintTextColor(0xFFBDBDBD.toInt())
+                            setBackgroundColor(0xFF1E1E1E.toInt())
+                            val lp =
+                                    LinearLayout.LayoutParams(
+                                            LinearLayout.LayoutParams.MATCH_PARENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT
+                                    )
+                            lp.topMargin = (themed.resources.displayMetrics.density * 6).toInt()
+                            layoutParams = lp
+                            visibility = View.GONE
+                        }
+                container.addView(lblUrl)
+                container.addView(urlInput)
+
+                // Buttons row - weighted buttons for consistent spacing
+                val buttonsRow =
+                        LinearLayout(themed).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            val lp =
+                                    LinearLayout.LayoutParams(
+                                            LinearLayout.LayoutParams.MATCH_PARENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT
+                                    )
+                            lp.topMargin = (themed.resources.displayMetrics.density * 12).toInt()
+                            layoutParams = lp
+                        }
+
+                fun createButton(text: String): Button {
+                    return Button(themed).apply {
+                        this.text = text
+                        setAllCaps(false)
+                        setTextColor(0xFFFFFFFF.toInt())
+                        val bLp =
+                                LinearLayout.LayoutParams(
+                                        0,
+                                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                                        1f
+                                )
+                        bLp.marginEnd = (themed.resources.displayMetrics.density * 8).toInt()
+                        layoutParams = bLp
+                        minHeight = (themed.resources.displayMetrics.density * 36).toInt()
+                        setBackgroundColor(0x00000000)
+                    }
                 }
 
-                // Custom URL toggle behavior
-                customSwitch.setOnCheckedChangeListener {
-                        _: android.widget.CompoundButton,
-                        checked: Boolean ->
+                val deleteBtn = createButton("Delete bundle")
+                val closeBtn = createButton("Close")
+                val saveBtn =
+                        createButton("Save & Reload").apply {
+                            setBackgroundColor(0xFFBB86FC.toInt())
+                            setTextColor(0xFF000000.toInt())
+                        }
+
+                // Add Delete and Close to the top row (equal width)
+                buttonsRow.addView(deleteBtn)
+                buttonsRow.addView(closeBtn)
+                container.addView(buttonsRow)
+
+                // Save button in its own row (full-width look)
+                val saveRow =
+                        LinearLayout(themed).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            val lp =
+                                    LinearLayout.LayoutParams(
+                                            LinearLayout.LayoutParams.MATCH_PARENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT
+                                    )
+                            lp.topMargin = (themed.resources.displayMetrics.density * 8).toInt()
+                            layoutParams = lp
+                        }
+
+                val saveLp =
+                        LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                saveBtn.layoutParams = saveLp
+                saveBtn.minHeight = (themed.resources.displayMetrics.density * 40).toInt()
+                saveRow.addView(saveBtn)
+                container.addView(saveRow)
+
+                // Initialize UI state
+                customSwitch.isChecked = customEnabled
+                urlInput.setText(customUrl)
+                urlInput.visibility = if (customEnabled) View.VISIBLE else View.GONE
+
+                // Toggle URL input visibility when switching custom URL on/off
+                customSwitch.setOnCheckedChangeListener { _, checked ->
                     urlInput.visibility = if (checked) View.VISIBLE else View.GONE
                 }
 
-                // Save button: persist loader.json and safe file state, then reload
+                // Save button: only persist custom URL config and then reload
                 saveBtn.setOnClickListener {
                     try {
                         val enabled = customSwitch.isChecked
@@ -496,25 +447,6 @@ class LogBoxModule : Module() {
                             XposedBridge.log(
                                     "ShiggyXposed: write loader.json failed: ${android.util.Log.getStackTraceString(t)}"
                             )
-                        }
-                        // ensure safe file persisted if switch is checked
-                        val safeFile = File(preloadsDir, "00_rv_safe_mode.js")
-                        if (safeSwitch.isChecked) {
-                            val safeJs =
-                                    "(function(){try{var g=(typeof globalThis!=='undefined'?globalThis:(typeof global!=='undefined'?global:this));if(!g)g={};if(!g.console)g.console={log:function(){},error:function(){},warn:function(){},info:function(){}};g.__SHIGGY_SAFE_MODE=true;}catch(e){}})();"
-                            runCatching { safeFile.writeText(safeJs) }
-                        } else {
-                            // Ensure we remove any existing safe-mode sentinel files
-                            try {
-                                preloadsDir
-                                        .listFiles()
-                                        ?.filter {
-                                            it.isFile &&
-                                                    (it.name.startsWith("00_") ||
-                                                            it.name == "rv_safe_mode.js")
-                                        }
-                                        ?.forEach { it.delete() }
-                            } catch (_: Throwable) {}
                         }
                     } catch (t: Throwable) {
                         Log.e("Failed to save loader.json: ${t.message}", t)
