@@ -14,6 +14,21 @@ import cocobo1.pupu.xposed.modules.appearance.ThemesModule
 import cocobo1.pupu.xposed.modules.bridge.AdditionalBridgeMethodsModule
 import cocobo1.pupu.xposed.modules.bridge.BridgeModule
 
+object HookStateHolder {
+    /**
+     * Whether all hooks are completed, and we are ready to load the JS bundle.
+     */
+    val readyDeferred = CompletableDeferred<Unit>()
+
+    /**
+     * Whether we have successfully received a [Context] yet.
+     * Sometimes the app process is recreated and Xposed hooks way too late for us to get [Context] from [ContextWrapper.attachBaseContext].
+     * But since Xposed hooks before [Activity.onCreate], we can still get it from there and still initialize properly.
+     */
+    @Volatile
+    var gotContext = false
+}
+
 class Main : Module(), IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var hooked = false
     private val modules = mutableListOf(
@@ -22,6 +37,8 @@ class Main : Module(), IXposedHookLoadPackage, IXposedHookZygoteInit {
         AdditionalBridgeMethodsModule(),
         UpdaterModule(),
         FixResourcesModule(),
+        BlockDeepLinksTrackingModule(),
+        BlockCrashReportingModule(),
         LogBoxModule(),
         FontsModule(),
         ThemesModule(),
