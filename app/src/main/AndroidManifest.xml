@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest
+    package="ShiggyXposed.xposed"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="UniquePermission"
 >
 
-    <permission
-        android:name="dev.shiggy.cord.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-        android:protectionLevel="signature"
-    />
     <uses-permission
         android:name="dev.shiggy.cord.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
     />
