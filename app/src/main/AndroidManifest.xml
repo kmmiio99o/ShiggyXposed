@@ -4,10 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
 >
 
-    <permission
-        android:name="dev.shiggy.cord.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-        android:protectionLevel="signature"
-    />
     <uses-permission
         android:name="dev.shiggy.cord.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
     />
