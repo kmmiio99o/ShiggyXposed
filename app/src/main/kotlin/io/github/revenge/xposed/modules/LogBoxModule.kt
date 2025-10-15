@@ -20,9 +20,11 @@ class LogBoxModule : Module() {
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         this@LogBoxModule.packageParam = packageParam
 
-        try {
-            val dcdReactNativeHostClass = classLoader.loadClass("com.discord.bridge.DCDReactNativeHost")
-            bridgeDevSupportManagerClass = classLoader.loadClass("com.facebook.react.devsupport.BridgeDevSupportManager")
+        // Only enable this module in debug builds
+        if (!BuildConfig.DEBUG) return@with
+
+        val dcdReactNativeHostClass = classLoader.loadClass("com.discord.bridge.DCDReactNativeHost")
+        val getUseDeveloperSupportMethod = dcdReactNativeHostClass.methods.first { it.name == "getUseDeveloperSupport" }
 
             val getUseDeveloperSupportMethod = dcdReactNativeHostClass.methods.first { it.name == "getUseDeveloperSupport" }
             val handleReloadJSMethod = bridgeDevSupportManagerClass.methods.first { it.name == "handleReloadJS" }
