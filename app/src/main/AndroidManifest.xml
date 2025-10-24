@@ -5,6 +5,9 @@
     xmlns:tools="http://schemas.android.com/tools"
 >
 
+    <permission
+        android:name="dev.shiggy.cord.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+    />
     <uses-permission
         android:name="dev.shiggy.cord.DYNAMIC_RECEIVE_NOT_EXPORTED_PERMISSION"
     />
