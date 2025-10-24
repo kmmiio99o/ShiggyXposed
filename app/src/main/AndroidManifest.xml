@@ -6,8 +6,9 @@
 >
 
     <uses-permission
-        android:name="dev.shiggy.cord.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="dev.shiggy.cord.DYNAMIC_RECEIVE_NOT_EXPORTED_PERMISSION"
     />
+    <uses-permission android:name="dev.shiggy.cord.DYNAMIC_RECEIVE" />
 
     <application
         android:allowBackup="true"
