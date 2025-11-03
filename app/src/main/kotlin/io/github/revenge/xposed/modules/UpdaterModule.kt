@@ -46,7 +46,7 @@ class UpdaterModule : Module() {
         private const val CONFIG_FILE = "loader.json"
 
         private const val DEFAULT_BUNDLE_URL =
-                "https://github.com/kmmiio99o/ShiggyCord/releases/latest/download/shiggycord.js"
+                "https://github.com/OTKUSteyler/GoonCord/releases/download/1.1.5/goooncord.js"
     }
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) =
