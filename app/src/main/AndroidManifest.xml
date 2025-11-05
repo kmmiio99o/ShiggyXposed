@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest
-    package="ShiggyXposed.xposed"
+    package="GoonXposed.xposed"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
 >
 
     <permission
-        android:name="dev.shiggy.cord.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="dev.goon.cord.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
     />
     <uses-permission
-        android:name="dev.shiggy.cord.DYNAMIC_RECEIVE_NOT_EXPORTED_PERMISSION"
+        android:name="dev.goon.cord.DYNAMIC_RECEIVE_NOT_EXPORTED_PERMISSION"
     />
-    <uses-permission android:name="dev.shiggy.cord.DYNAMIC_RECEIVE" />
+    <uses-permission android:name="dev.goon.cord.DYNAMIC_RECEIVE" />
 
     <application
         android:allowBackup="true"
@@ -22,7 +22,7 @@
         <meta-data android:name="xposedmodule" android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="Xposed module to inject ShiggyCord into discord"
+            android:value="Xposed module to inject GoonCord into discord"
         />
         <meta-data android:name="xposedminversion" android:value="82" />
         <meta-data android:name="xposedscope" android:value="com.discord" />
