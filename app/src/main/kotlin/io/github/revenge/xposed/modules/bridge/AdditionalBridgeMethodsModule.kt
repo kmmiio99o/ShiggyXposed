@@ -1,6 +1,6 @@
-package ShiggyXposed.xposed.modules.bridge
+package GoonXposed.xposed.modules.bridge
 
-import ShiggyXposed.xposed.Module
+import GoonXposed.xposed.Module
 import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -22,10 +22,10 @@ class AdditionalBridgeMethodsModule : Module() {
                     val clip = ClipData.newPlainText("Stack Trace", errorString)
 
                     AlertDialog.Builder(this)
-                            .setTitle("ShiggyXposed Error")
+                            .setTitle("GoonXposed Error")
                             .setMessage(
                                     """
-                    ShiggyXposed: $version
+                    GoonXposed: $version
                     ${app.name}: ${app.version} (${app.versionCode})
                     Device: ${Build.MANUFACTURER} ${Build.MODEL}
 
