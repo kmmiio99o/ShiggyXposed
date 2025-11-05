@@ -1,11 +1,11 @@
-package ShiggyXposed.xposed
+package GoonXposed.xposed
 
-import ShiggyXposed.xposed.modules.*
-import ShiggyXposed.xposed.modules.appearance.FontsModule
-import ShiggyXposed.xposed.modules.appearance.SysColorsModule
-import ShiggyXposed.xposed.modules.appearance.ThemesModule
-import ShiggyXposed.xposed.modules.bridge.AdditionalBridgeMethodsModule
-import ShiggyXposed.xposed.modules.bridge.BridgeModule
+import GoonXposed.xposed.modules.*
+import GoonXposed.xposed.modules.appearance.FontsModule
+import GoonXposed.xposed.modules.appearance.SysColorsModule
+import GoonXposed.xposed.modules.appearance.ThemesModule
+import GoonXposed.xposed.modules.bridge.AdditionalBridgeMethodsModule
+import GoonXposed.xposed.modules.bridge.BridgeModule
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
