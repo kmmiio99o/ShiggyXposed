@@ -1,9 +1,9 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
-import ShiggyXposed.xposed.Constants
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils.Companion.JSON
-import ShiggyXposed.xposed.Utils.Log
+import GoonXposed.xposed.Constants
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils.Companion.JSON
+import GoonXposed.xposed.Utils.Log
 import android.app.Activity
 import android.util.AtomicFile
 import androidx.core.util.writeBytes
