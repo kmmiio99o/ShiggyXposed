@@ -1,8 +1,8 @@
-package ShiggyXposed.xposed.modules.appearance
+package GoonXposed.xposed.module.appearance
 
-import ShiggyXposed.xposed.Constants
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils.Companion.JSON
+import GoonXposed.xposed.Constants
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils.Companion.JSON
 import android.content.Context
 import android.content.res.Resources
 import androidx.core.graphics.toColorInt
