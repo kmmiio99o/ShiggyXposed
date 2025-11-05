@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed
+package GoonXposed.xposed
 
 import android.app.AndroidAppHelper
 import android.content.Intent
