@@ -1,9 +1,9 @@
-package ShiggyXposed.xposed.modules.bridge
+package GoonXposed.xposed.modules.bridge
 
-import ShiggyXposed.xposed.BuildConfig
-import ShiggyXposed.xposed.Constants
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils.Log
+import GoonXposed.xposed.BuildConfig
+import GoonXposed.xposed.Constants
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils.Log
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import java.io.File
 import java.lang.reflect.Method
