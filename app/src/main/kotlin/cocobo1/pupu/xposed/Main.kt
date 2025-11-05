@@ -7,12 +7,16 @@ import android.os.Bundle
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.callbacks.XC_LoadPackage
+import cocobo1.pupu.xposed.Utils.Log
 import cocobo1.pupu.xposed.modules.*
 import cocobo1.pupu.xposed.modules.appearance.FontsModule
 import cocobo1.pupu.xposed.modules.appearance.SysColorsModule
 import cocobo1.pupu.xposed.modules.appearance.ThemesModule
 import cocobo1.pupu.xposed.modules.bridge.AdditionalBridgeMethodsModule
 import cocobo1.pupu.xposed.modules.bridge.BridgeModule
+import cocobo1.pupu.xposed.modules.no_track.BlockCrashReportingModule
+import cocobo1.pupu.xposed.modules.no_track.BlockDeepLinksTrackingModule
+import kotlinx.coroutines.CompletableDeferred
 
 object HookStateHolder {
     /**
@@ -35,11 +39,13 @@ class Main : Module(), IXposedHookLoadPackage, IXposedHookZygoteInit {
         HookScriptLoaderModule(),
         BridgeModule(),
         AdditionalBridgeMethodsModule(),
-        UpdaterModule(),
+        PluginsModule(),
+        UpdaterModule,
         FixResourcesModule(),
         BlockDeepLinksTrackingModule(),
         BlockCrashReportingModule(),
         LogBoxModule(),
+        CacheModule(),
         FontsModule(),
         ThemesModule(),
         SysColorsModule()
@@ -60,13 +66,25 @@ class Main : Module(), IXposedHookLoadPackage, IXposedHookZygoteInit {
 
         ContextWrapper::class.java.hookMethod("attachBaseContext", Context::class.java) {
             after {
-                this@Main.onContext(args[0] as Context)
+                val ctx = args[0] as Context
+                HookStateHolder.gotContext = true
+                Log.i("Received Context")
+                this@Main.onContext(ctx)
             }
         }
 
         reactActivity.hookMethod("onCreate", Bundle::class.java) {
             after {
-                this@Main.onActivity(thisObject as Activity)
+                val act = thisObject as Activity
+                Log.i("Received Activity")
+
+                if (!HookStateHolder.gotContext) {
+                    Log.w("Activity created before we got Context, process may have been recreated!")
+                    this@Main.onContext(act.applicationContext)
+                }
+
+                this@Main.onActivity(act)
+                HookStateHolder.readyDeferred.complete(Unit)
             }
         }
 

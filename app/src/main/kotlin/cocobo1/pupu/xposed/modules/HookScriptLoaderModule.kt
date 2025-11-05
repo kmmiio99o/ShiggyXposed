@@ -6,9 +6,12 @@ import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import cocobo1.pupu.xposed.Constants
+import cocobo1.pupu.xposed.HookStateHolder
 import cocobo1.pupu.xposed.Module
 import cocobo1.pupu.xposed.Utils.Log
 import cocobo1.pupu.xposed.modules.HookScriptLoaderModule.Companion.PRELOADS_DIR
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.lang.reflect.Method
@@ -19,7 +22,7 @@ import java.lang.reflect.Method
  * Preload scripts should be placed in the [PRELOADS_DIR] directory inside the module's files directory.
  *
  * The main bundle should be placed in the [Constants.CACHE_DIR] directory named [Constants.MAIN_SCRIPT_FILE].
- * If the bundle file does not exist, it will attempt to load `assets://revenge.bundle` from the module's assets.
+ * If the bundle file does not exist, it will attempt to load `assets://kettu.bundle` from the module's assets.
  */
 class HookScriptLoaderModule : Module() {
     private lateinit var preloadsDir: File
@@ -84,8 +87,12 @@ class HookScriptLoaderModule : Module() {
     private fun HookScope.runCustomScripts(loadScriptFromFile: Method, loadScriptFromAssets: Method) {
         Log.i("Running custom scripts...")
 
-        // TODO: Is there a better way to do this?
-        runBlocking { UpdaterModule.job?.join() }
+        runBlocking {
+            val ready = async { HookStateHolder.readyDeferred.join() }
+            val download = async { UpdaterModule.downloadScript().join() }
+
+            awaitAll(ready, download)
+        }
 
         val loadSynchronously = args[2]
         val runScriptFile = { file: File ->
@@ -115,7 +122,7 @@ class HookScriptLoaderModule : Module() {
                 XposedBridge.invokeOriginalMethod(
                     loadScriptFromAssets,
                     thisObject,
-                    arrayOf(resources.assets, "assets://bundle.js", loadSynchronously)
+                    arrayOf(resources.assets, "assets://kettu.bundle", loadSynchronously)
                 )
             }
         } catch (e: Throwable) {

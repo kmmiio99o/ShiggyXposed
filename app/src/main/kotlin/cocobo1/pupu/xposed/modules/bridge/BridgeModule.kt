@@ -5,7 +5,6 @@ import cocobo1.pupu.xposed.BuildConfig
 import cocobo1.pupu.xposed.Constants
 import cocobo1.pupu.xposed.Module
 import cocobo1.pupu.xposed.Utils.Log
-import java.io.File
 import java.lang.reflect.Method
 
 /**
@@ -24,7 +23,7 @@ typealias BridgeMethodArgs = ArrayList<Any>
  * To call a method, pass an object with the following structure to a hooked method:
  * ```js
  * {
- *   revenge: {
+ *   kettu: {
  *     method: "method.name",
  *     args: [arg1, arg2, ...]
  *   }
@@ -52,20 +51,15 @@ class BridgeModule : Module() {
     private lateinit var argumentsMakeNative: Method
 
     companion object {
-        private const val CALL_DATA_KEY = "revenge"
+        private const val CALL_DATA_KEY = "kettu"
         private const val METHOD_NAME_KEY = "method"
         private const val METHOD_ARGS_KEY = "args"
 
-        private fun File.openFileGuarded() {
-            if (!this.exists()) throw Error("Path does not exist: $path")
-            if (!this.isFile) throw Error("Path is not a file: $path")
-        }
-
-        private val methods: MutableMap<String, BridgeMethodCallback> = mutableMapOf("revenge.info" to {
+        private val methods: MutableMap<String, BridgeMethodCallback> = mutableMapOf("kettu.info" to {
             mapOf(
                 "name" to Constants.LOADER_NAME, "version" to BuildConfig.VERSION_CODE
             )
-        }, "revenge.test" to {
+        }, "kettu.test" to {
             mapOf(
                 "string" to "string",
                 "number" to 7256,
@@ -74,25 +68,6 @@ class BridgeModule : Module() {
                 "boolean" to false,
                 "args" to it,
             )
-        }, "revenge.fs.delete" to {
-            val (path) = it
-            File(path as String).run {
-                if (this.isDirectory) this.deleteRecursively()
-                else this.delete()
-            }
-        }, "revenge.fs.exists" to {
-            val (path) = it
-            File(path as String).exists()
-        }, "revenge.fs.read" to { it ->
-            val (path) = it
-            val file = File(path as String).apply { openFileGuarded() }
-
-            file.bufferedReader().use { it.readText() }
-        }, "revenge.fs.write" to { it ->
-            val (path, contents) = it
-            val file = File(path as String).apply { openFileGuarded() }
-
-            file.writeText(contents as String)
         })
 
         /**

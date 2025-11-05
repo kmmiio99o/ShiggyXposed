@@ -13,7 +13,7 @@
                 android:value="true"/>
         <meta-data
                 android:name="xposeddescription"
-                android:value="Xposed module to inject Kettu into discord"/>
+                android:value="an Xposed module to inject Kettu into discord"/>
         <meta-data
                 android:name="xposedminversion"
                 android:value="82"/>
