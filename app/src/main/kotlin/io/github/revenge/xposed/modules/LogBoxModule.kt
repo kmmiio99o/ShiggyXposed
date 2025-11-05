@@ -1,10 +1,10 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
-import ShiggyXposed.xposed.Constants
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils
-import ShiggyXposed.xposed.Utils.Companion.reloadApp
-import ShiggyXposed.xposed.Utils.Log
+import GoonXposed.xposed.Constants
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils
+import GoonXposed.xposed.Utils.Companion.reloadApp
+import GoonXposed.xposed.xposed.Utils.Log
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Handler
@@ -122,7 +122,7 @@ class LogBoxModule : Module() {
                 } catch (e: Exception) {
                     Log.e("Error in LogBoxModule.onLoad: ${e.message}", e)
                     XposedBridge.log(
-                            "ShiggyXposed: LogBoxModule.onLoad error: ${android.util.Log.getStackTraceString(e)}"
+                            "GoonXposed: LogBoxModule.onLoad error: ${android.util.Log.getStackTraceString(e)}"
                     )
                 }
 
@@ -157,7 +157,7 @@ class LogBoxModule : Module() {
                 } catch (t: Throwable) {
                     Log.e("Failed to parse loader.json: ${t.message}", t)
                     XposedBridge.log(
-                            "ShiggyXposed: loader.json parse failed: ${android.util.Log.getStackTraceString(t)}"
+                            "GoonXposed: loader.json parse failed: ${android.util.Log.getStackTraceString(t)}"
                     )
                 }
 
@@ -309,7 +309,7 @@ class LogBoxModule : Module() {
                     } catch (t: Throwable) {
                         Log.e("Failed to show reload confirm modal: ${t.message}", t)
                         XposedBridge.log(
-                                "ShiggyXposed: Reload confirm modal failed: ${android.util.Log.getStackTraceString(t)}"
+                                "GoonXposed: Reload confirm modal failed: ${android.util.Log.getStackTraceString(t)}"
                         )
                         try {
                             AlertDialog.Builder(parentCtx)
@@ -482,7 +482,7 @@ class LogBoxModule : Module() {
 
                 try {
                     AlertDialog.Builder(context)
-                            .setTitle("ShiggyXposed Recovery Options")
+                            .setTitle("GoonXposed Recovery Options")
                             .setItems(arrayOf("Reload", "Delete bundle.js")) { _, which ->
                                 when (which) {
                                     0 -> reloadApp()
@@ -501,7 +501,7 @@ class LogBoxModule : Module() {
                 } catch (t: Throwable) {
                     Log.e("Fallback dialog also failed: ${t.message}", t)
                     XposedBridge.log(
-                            "ShiggyXposed: Fallback dialog failed: ${android.util.Log.getStackTraceString(t)}"
+                            "GoonXposed: Fallback dialog failed: ${android.util.Log.getStackTraceString(t)}"
                     )
                 }
             }
