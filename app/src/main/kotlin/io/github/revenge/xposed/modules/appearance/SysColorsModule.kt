@@ -1,6 +1,6 @@
-package ShiggyXposed.xposed.modules.appearance
+package GoonXposed.xposed.modules.appearance
 
-import ShiggyXposed.xposed.Module
+import GoonXposed.xposed.Module
 import android.R.color
 import android.app.AndroidAppHelper
 import android.content.Context
