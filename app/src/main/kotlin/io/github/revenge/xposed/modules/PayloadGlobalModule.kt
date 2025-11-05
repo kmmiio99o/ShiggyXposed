@@ -1,10 +1,10 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
-import ShiggyXposed.xposed.BuildConfig
-import ShiggyXposed.xposed.Constants
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils.Companion.JSON
-import ShiggyXposed.xposed.modules.HookScriptLoaderModule.Companion.PRELOADS_DIR
+import GoonXposed.xposed.BuildConfig
+import GoonXposed.xposed.Constants
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils.Companion.JSON
+import GoonXposed.xposed.modules.HookScriptLoaderModule.Companion.PRELOADS_DIR
 import android.content.res.AssetManager
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
