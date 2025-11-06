@@ -1,5 +1,6 @@
 package GoonXposed.xposed.module.appearance
 
+import GoonXposed.xposed.MethodHookBuilder
 import GoonXposed.xposed.modules.appearance.ThemesModule
 import GoonXposed.xposed.Constants
 import GoonXposed.xposed.Module
