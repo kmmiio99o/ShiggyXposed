@@ -37,29 +37,29 @@ jobs:
 
       - name: "Setup directories"
         run: |
-          mkdir -p /tmp/GoonXposedbuild/apks
-          mkdir -p /tmp/GoonXposedbuild/tools
+          mkdir -p /tmp/ShiggyXposedbuild/apks
+          mkdir -p /tmp/ShiggyXposedbuild/tools
 
       - name: "Move debug APK"
-        run: mv ./app/build/outputs/apk/debug/app-debug.apk /tmp/GoonXposedbuild/apks
+        run: mv ./app/build/outputs/apk/debug/app-debug.apk /tmp/ShiggyXposedbuild/apks
 
       - name: "Download uber-apk-signer"
         run: wget -nv "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.2.1/uber-apk-signer-1.2.1.jar" -O /tmp/ShiggyXposedbuild/tools/uber-apk-signer.jar
 
       - name: "Sign release APK"
-        run: java -jar /tmp/GoonXposedbuild/tools/uber-apk-signer.jar --apks ./app/build/outputs/apk/release/app-release-unsigned.apk --out /tmp/ShiggyXposedbuild/apks/
+        run: java -jar /tmp/ShiggyXposedbuild/tools/uber-apk-signer.jar --apks ./app/build/outputs/apk/release/app-release-unsigned.apk --out /tmp/ShiggyXposedbuild/apks/
 
       - name: "Rename release APK"
-        run: mv /tmp/GoonXposedbuild/apks/app-release-aligned-debugSigned.apk /tmp/GoonXposedbuild/apks/app-release.apk
+        run: mv /tmp/ShiggyXposedbuild/apks/app-release-aligned-debugSigned.apk /tmp/ShiggyXposedbuild/apks/app-release.apk
 
       - name: "Upload debug APK"
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: /tmp/GoonXposedbuild/apks/app-debug.apk
+          path: /tmp/ShiggyXposedbuild/apks/app-debug.apk
 
       - name: "Upload release APK"
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: /tmp/GoonXposedbuild/apks/app-release.apk
+          path: /tmp/ShiggyXposedbuild/apks/app-release.apk
