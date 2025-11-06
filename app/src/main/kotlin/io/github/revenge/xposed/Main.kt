@@ -1,6 +1,7 @@
 package GoonXposed.xposed
 
 import GoonXposed.xposed.modules.*
+import GoonXposed.xposed.module.appearance.ThemesModule 
 import GoonXposed.xposed.modules.appearance.FontsModule
 import GoonXposed.xposed.modules.appearance.SysColorsModule
 import GoonXposed.xposed.modules.appearance.ThemesModule
