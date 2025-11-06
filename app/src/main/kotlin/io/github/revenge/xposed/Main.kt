@@ -25,7 +25,8 @@ class Main : Module(), IXposedHookLoadPackage, IXposedHookZygoteInit {
                     FixResourcesModule(),
                     LogBoxModule(),
                     FontsModule(),
-                    SysColorsModule()
+                    SysColorsModule(),
+                    ThemesModule(),
             )
 
     init {
