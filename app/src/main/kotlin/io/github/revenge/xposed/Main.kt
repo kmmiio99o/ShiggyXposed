@@ -1,4 +1,4 @@
-package Goonposed.xposed
+package GoonXposed.xposed
 
 import GoonXposed.xposed.modules.*
 import GoonXposed.xposed.modules.appearance.FontsModule
