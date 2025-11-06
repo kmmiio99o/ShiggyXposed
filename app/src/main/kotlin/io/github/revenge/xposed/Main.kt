@@ -4,7 +4,6 @@ import GoonXposed.xposed.modules.*
 import GoonXposed.xposed.module.appearance.ThemesModule 
 import GoonXposed.xposed.modules.appearance.FontsModule
 import GoonXposed.xposed.modules.appearance.SysColorsModule
-import GoonXposed.xposed.modules.appearance.ThemesModule
 import GoonXposed.xposed.modules.bridge.AdditionalBridgeMethodsModule
 import GoonXposed.xposed.modules.bridge.BridgeModule
 import android.app.Activity
