@@ -9,7 +9,7 @@ class Constants {
         const val CACHE_DIR = "cache/pyoncord"
         const val MAIN_SCRIPT_FILE = "bundle.js"
 
-        const val LOG_TAG = "ShiggyXposed"
+        const val LOG_TAG = "GoonXposed"
 
         const val LOADER_NAME = "GoonXposed"
 
