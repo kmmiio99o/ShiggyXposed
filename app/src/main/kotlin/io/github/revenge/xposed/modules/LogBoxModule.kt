@@ -4,7 +4,7 @@ import GoonXposed.xposed.Constants
 import GoonXposed.xposed.Module
 import GoonXposed.xposed.Utils
 import GoonXposed.xposed.Utils.Companion.reloadApp
-import GoonXposed.xposed.xposed.Utils.Log
+import GoonXposed.xposed.Utils.Log
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Handler
@@ -157,7 +157,7 @@ class LogBoxModule : Module() {
                 } catch (t: Throwable) {
                     Log.e("Failed to parse loader.json: ${t.message}", t)
                     XposedBridge.log(
-                            "GoonXposed: loader.json parse failed: ${android.util.Log.getStackTraceString(t)}"
+                            "ShiggyXposed: loader.json parse failed: ${android.util.Log.getStackTraceString(t)}"
                     )
                 }
 
