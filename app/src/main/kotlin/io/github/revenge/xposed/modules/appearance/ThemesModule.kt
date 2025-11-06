@@ -1,10 +1,9 @@
 package GoonXposed.xposed.module.appearance
 
-import GoonXposed.xposed.MethodHookBuilder
-import GoonXposed.xposed.modules.appearance.ThemesModule
-import GoonXposed.xposed.Constants
 import GoonXposed.xposed.Module
+import GoonXposed.xposed.Constants
 import GoonXposed.xposed.Utils.Companion.JSON
+import GoonXposed.xposed.MethodHookBuilder
 import android.content.Context
 import android.content.res.Resources
 import androidx.core.graphics.toColorInt
