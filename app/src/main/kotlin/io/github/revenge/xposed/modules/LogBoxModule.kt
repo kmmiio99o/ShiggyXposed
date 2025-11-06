@@ -110,7 +110,7 @@ class LogBoxModule : Module() {
                                                 ex
                                         )
                                         XposedBridge.log(
-                                                "ShiggyXposed: Failed to show dev options dialog: ${android.util.Log.getStackTraceString(ex)}"
+                                                "GoonXposed: Failed to show dev options dialog: ${android.util.Log.getStackTraceString(ex)}"
                                         )
                                     }
 
@@ -445,7 +445,7 @@ class LogBoxModule : Module() {
                         runCatching { configFile.writeText(json) }.onFailure { t ->
                             Log.e("Failed to write loader.json: ${t.message}", t)
                             XposedBridge.log(
-                                    "ShiggyXposed: write loader.json failed: ${android.util.Log.getStackTraceString(t)}"
+                                    "GoonXposed: write loader.json failed: ${android.util.Log.getStackTraceString(t)}"
                             )
                         }
                     } catch (t: Throwable) {
@@ -477,7 +477,7 @@ class LogBoxModule : Module() {
                 // Log and fallback to old simple dialog
                 Log.e("Dialog failed, falling back: ${e.message}", e)
                 XposedBridge.log(
-                        "ShiggyXposed: Dialog failed: ${android.util.Log.getStackTraceString(e)}"
+                        "GoonXposed: Dialog failed: ${android.util.Log.getStackTraceString(e)}"
                 )
 
                 try {
