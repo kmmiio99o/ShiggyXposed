@@ -1,11 +1,11 @@
 package ShiggyXposed.xposed.modules.appearance
 
-import ShiggyXposed.xposed.Module
 import android.R.color
 import android.app.AndroidAppHelper
 import android.content.Context
 import android.os.Build
 import androidx.core.content.ContextCompat
+import ShiggyXposed.xposed.Module
 import kotlinx.serialization.json.*
 
 class SysColorsModule : Module() {
@@ -19,22 +19,19 @@ class SysColorsModule : Module() {
 
         builder.apply {
             put("isSysColorsSupported", isSupported())
-            if (isSupported())
-                    putJsonObject("sysColors") {
-                        for (accent in accents) putJsonArray(accent) {
-                            for (shade in shades) {
-                                val colorName = "system_" + accent + "_" + shade
+            if (isSupported()) putJsonObject("sysColors") {
+                for (accent in accents) putJsonArray(accent) {
+                    for (shade in shades) {
+                        val colorName = "system_" + accent + "_" + shade
 
-                                val colorResourceId =
-                                        runCatching {
-                                            color::class.java.getField(colorName).getInt(null)
-                                        }
-                                                .getOrElse { 0 }
+                        val colorResourceId = runCatching {
+                            color::class.java.getField(colorName).getInt(null)
+                        }.getOrElse { 0 }
 
-                                add(convertToColor(colorResourceId))
-                            }
-                        }
+                        add(convertToColor(colorResourceId))
                     }
+                }
+            }
         }
     }
 
