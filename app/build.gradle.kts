@@ -10,10 +10,10 @@ android {
 
     defaultConfig {
         applicationId = "GoonXposed.xposed"
-        minSdk = 22
+        minSdk = 24
         targetSdk = 36
-        versionCode = 1051
-        versionName = "1.0.51"
+        versionCode = 1100
+        versionName = "1.2.0"
     }
 
     buildTypes {
