@@ -12,7 +12,7 @@ android {
         applicationId = "ShiggyXposed.xposed"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1100
+        versionCode = 1110
         versionName = "1.1.0"
     }
 
@@ -47,4 +47,5 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("io.ktor:ktor-client-core:3.3.1")
     implementation("io.ktor:ktor-client-cio:3.3.1")
+    implementation("com.google.android.material:material:1.12.0")
 }
