@@ -114,56 +114,68 @@ class LogBoxModule : Module() {
             if (isSafeModeEnabled(context)) "Disable Safe Mode" else "Enable Safe Mode",
             "Refetch Bundle",
             "Load Custom Bundle",
-            "Reload App"
+            "Reload App",
+            "Clear Cache & Reset"
         )
 
-        // Try to get dark mode colors from your resources
-        val surfaceColorId = context.resources.getIdentifier("md_theme_dark_surface", "color", context.packageName)
-        val onSurfaceColorId = context.resources.getIdentifier("md_theme_dark_onSurface", "color", context.packageName)
-        val primaryColorId = context.resources.getIdentifier("md_theme_dark_primary", "color", context.packageName)
-
-        val onSurfaceColor = if (onSurfaceColorId != 0) context.getColor(onSurfaceColorId) else null
-        val primaryColor = if (primaryColorId != 0) context.getColor(primaryColorId) else null
-        val surfaceColor = if (surfaceColorId != 0) context.getColor(surfaceColorId) else null
-
-        // Custom adapter to set text and background color for items
-        val adapter = object : android.widget.ArrayAdapter<String>(context, android.R.layout.select_dialog_item, options) {
-            override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
-                val view = super.getView(position, convertView, parent)
-                (view as? android.widget.TextView)?.setTextColor(android.graphics.Color.WHITE)
-                view.setBackgroundColor(android.graphics.Color.BLACK)
-                return view
+        val adapter =
+            object : android.widget.ArrayAdapter<String>(context, android.R.layout.select_dialog_item, options) {
+                override fun getView(
+                    position: Int,
+                    convertView: android.view.View?,
+                    parent: android.view.ViewGroup
+                ): android.view.View {
+                    val view = super.getView(position, convertView, parent)
+                    (view as? android.widget.TextView)?.apply {
+                        setTextColor(0xFFFFFFFF.toInt())
+                        textSize = 14f
+                        setPadding(
+                            (16 * context.resources.displayMetrics.density).toInt(),
+                            (12 * context.resources.displayMetrics.density).toInt(),
+                            (16 * context.resources.displayMetrics.density).toInt(),
+                            (12 * context.resources.displayMetrics.density).toInt()
+                        )
+                        setTypeface(typeface, android.graphics.Typeface.NORMAL)
+                    }
+                    view.setBackgroundColor(0xFF2D2D2D.toInt())
+                    return view
+                }
             }
-        }
 
         val dialog = AlertDialog.Builder(context)
             .setTitle("ShiggyXposed Recovery Menu")
             .setAdapter(adapter) { _, which ->
                 handleMenuSelection(context, which)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("Close", null)
             .create()
 
         dialog.setOnShowListener {
-            // Set button text color to white
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.apply {
-                setTextColor(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.BLACK)
-                textSize = 14f
+                setTextColor(0xFFBB86FC.toInt())
+                setBackgroundColor(0xFF1E1E1E.toInt())
+                textSize = 12f
+                setPadding(
+                    (20 * context.resources.displayMetrics.density).toInt(),
+                    (8 * context.resources.displayMetrics.density).toInt(),
+                    (20 * context.resources.displayMetrics.density).toInt(),
+                    (8 * context.resources.displayMetrics.density).toInt()
+                )
             }
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
-                setTextColor(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.BLACK)
-                textSize = 14f
-            }
-            // Set dialog background to black
-            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.BLACK))
-            // Set title text color to white
+
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFF1E1E1E.toInt()))
+
             val titleId = context.resources.getIdentifier("alertTitle", "id", "android")
             val titleView = dialog.findViewById<android.widget.TextView>(titleId)
-            titleView?.setTextColor(android.graphics.Color.WHITE)
-            // Set ListView background to black
-            dialog.listView?.setBackgroundColor(android.graphics.Color.BLACK)
+            titleView?.apply {
+                setTextColor(0xFFBB86FC.toInt())
+                textSize = 16f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+            }
+
+            dialog.listView?.setBackgroundColor(0xFF1E1E1E.toInt())
+            dialog.listView?.divider = android.graphics.drawable.ColorDrawable(0xFF444444.toInt())
+            dialog.listView?.dividerHeight = 1
         }
         dialog.show()
     }
@@ -171,40 +183,239 @@ class LogBoxModule : Module() {
     private fun handleMenuSelection(context: Context, index: Int) {
         when (index) {
             0 -> toggleSafeMode(context)
-            1 -> confirmAction(context, "refetch the bundle") { refetchBundle(context) }
-            2 -> loadCustomBundle(context)
+            1 -> showConfirmAction(
+                context, "Refetch Bundle",
+                "This will download the latest bundle from the official server."
+            ) { refetchBundle(context) }
+
+            2 -> showCustomBundleDialog(context)
             3 -> reloadApp()
+            4 -> showConfirmAction(
+                context, "Clear Cache & Reset",
+                "This will clear all cached bundles and reset to default settings."
+            ) { clearCacheAndReset(context) }
         }
     }
 
-    private fun confirmAction(context: Context, actionText: String, action: () -> Unit) {
+    private fun showConfirmAction(context: Context, title: String, message: String, action: () -> Unit) {
         val dialog = AlertDialog.Builder(context)
-            .setTitle("Confirm Action")
-            .setMessage("Are you sure you want to $actionText?")
+            .setTitle(title)
+            .setMessage(message)
             .setPositiveButton("Confirm") { _, _ -> action() }
             .setNegativeButton("Cancel", null)
             .create()
+
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.apply {
-                setTextColor(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.BLACK)
-                textSize = 14f
+                setTextColor(0xFFFFFFFF.toInt())
+                setBackgroundColor(0xFF1E1E1E.toInt())
+                textSize = 12f
             }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
-                setTextColor(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.BLACK)
-                textSize = 14f
+                setTextColor(0xFFBB86FC.toInt())
+                setBackgroundColor(0xFF1E1E1E.toInt())
+                textSize = 12f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
             }
-            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.BLACK))
+
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFF1E1E1E.toInt()))
+
             val titleId = context.resources.getIdentifier("alertTitle", "id", "android")
             val titleView = dialog.findViewById<android.widget.TextView>(titleId)
-            titleView?.setTextColor(android.graphics.Color.WHITE)
-            // Set message text color to white
+            titleView?.apply {
+                setTextColor(0xFFBB86FC.toInt())
+                textSize = 16f
+            }
+
             val messageId = context.resources.getIdentifier("message", "id", "android")
             val messageView = dialog.findViewById<android.widget.TextView>(messageId)
-            messageView?.setTextColor(android.graphics.Color.WHITE)
+            messageView?.apply {
+                setTextColor(0xFFFFFFFF.toInt())
+                textSize = 14f
+                setPadding(
+                    (5 * context.resources.displayMetrics.density).toInt(),
+                    paddingTop,
+                    (5 * context.resources.displayMetrics.density).toInt(),
+                    paddingBottom
+                )
+            }
         }
         dialog.show()
+    }
+
+    private fun showCustomBundleDialog(context: Context) {
+        val filesDir = File(context.filesDir, "pyoncord")
+        val configFile = File(filesDir, "loader.json")
+        var currentUrl: String? = null
+
+        if (configFile.exists()) {
+            try {
+                val json = JSONObject(configFile.readText())
+                val customLoadUrl = json.optJSONObject("customLoadUrl")
+                if (customLoadUrl != null && customLoadUrl.optBoolean("enabled", false)) {
+                    currentUrl = customLoadUrl.optString("url", "")
+                }
+            } catch (_: Exception) {
+            }
+        }
+
+        val urlInput = EditText(context).apply {
+            hint = "http://localhost:4040/shiggycord.js"
+            setTextColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xFF2D2D2D.toInt())
+            setHintTextColor(0xFF888888.toInt())
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_URI
+            setText(currentUrl ?: "")
+            gravity = android.view.Gravity.START
+            textAlignment = android.view.View.TEXT_ALIGNMENT_VIEW_START
+            textSize = 14f
+            setPadding(
+                (12 * context.resources.displayMetrics.density).toInt(),
+                (10 * context.resources.displayMetrics.density).toInt(),
+                (12 * context.resources.displayMetrics.density).toInt(),
+                (10 * context.resources.displayMetrics.density).toInt()
+            )
+        }
+
+        val container = android.widget.FrameLayout(context)
+        val params = android.widget.FrameLayout.LayoutParams(
+            (context.resources.displayMetrics.widthPixels * 0.85).toInt(),
+            android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+        params.leftMargin = (15 * context.resources.displayMetrics.density).toInt()
+        params.rightMargin = (15 * context.resources.displayMetrics.density).toInt()
+        urlInput.layoutParams = params
+        container.addView(urlInput)
+
+        val dialog = AlertDialog.Builder(context)
+            .setTitle("Custom Bundle URL")
+            .setView(container)
+            .setPositiveButton("Save", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.apply {
+                setTextColor(0xFFBB86FC.toInt())
+                setBackgroundColor(0xFF1E1E1E.toInt())
+                textSize = 12f
+            }
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
+                setTextColor(0xFFBB86FC.toInt())
+                setBackgroundColor(0xFF1E1E1E.toInt())
+                textSize = 12f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+            }
+
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFF1E1E1E.toInt()))
+
+            val titleId = context.resources.getIdentifier("alertTitle", "id", "android")
+            val titleView = dialog.findViewById<android.widget.TextView>(titleId)
+            titleView?.apply {
+                setTextColor(0xFFBB86FC.toInt())
+                textSize = 16f
+            }
+        }
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
+            try {
+                val url = urlInput.text?.toString()?.trim() ?: ""
+                if (url.isNotEmpty()) {
+                    setCustomBundleURL(context, url)
+                    dialog.dismiss()
+                } else {
+                    disableCustomBundle(context)
+                    dialog.dismiss()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to set custom bundle: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun showError(context: Context, title: String, message: String?) {
+        val dialog = AlertDialog.Builder(context)
+            .setTitle(title)
+            .setMessage(message ?: "An unknown error occurred")
+            .setPositiveButton("Close", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
+                setTextColor(0xFFBB86FC.toInt())
+                setBackgroundColor(0xFF1E1E1E.toInt())
+                textSize = 12f
+            }
+
+            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFF1E1E1E.toInt()))
+
+            val titleId = context.resources.getIdentifier("alertTitle", "id", "android")
+            val titleView = dialog.findViewById<android.widget.TextView>(titleId)
+            titleView?.setTextColor(0xFFBB86FC.toInt())
+
+            val messageId = context.resources.getIdentifier("message", "id", "android")
+            val messageView = dialog.findViewById<android.widget.TextView>(messageId)
+            messageView?.setTextColor(0xFFFFFFFF.toInt())
+        }
+        dialog.show()
+    }
+
+    private fun clearCacheAndReset(context: Context) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val pyoncordDir = getPyoncordDirectory(context)
+                val bundleFile = File(pyoncordDir, "bundle.js")
+                val configFile = File(pyoncordDir, "loader.json")
+
+                bundleFile.delete()
+
+                if (configFile.exists()) {
+                    val config = JSONObject(configFile.readText())
+                    val customLoadUrl = config.optJSONObject("customLoadUrl") ?: JSONObject()
+                    customLoadUrl.put("enabled", false)
+                    customLoadUrl.put("url", "http://localhost:4040/shiggycord.js")
+                    config.put("customLoadUrl", customLoadUrl)
+                    configFile.writeText(config.toString())
+                }
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Cache cleared successfully", Toast.LENGTH_SHORT).show()
+                    reloadApp()
+                }
+
+            } catch (e: Exception) {
+                Log.e("Error clearing cache: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Failed to clear cache", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun disableCustomBundle(context: Context) {
+        try {
+            val configFile = File(getPyoncordDirectory(context), "loader.json")
+            val config = if (configFile.exists()) {
+                JSONObject(configFile.readText())
+            } else {
+                JSONObject().apply {
+                    put("loadReactDevTools", false)
+                }
+            }
+
+            val customLoadUrl = config.optJSONObject("customLoadUrl") ?: JSONObject()
+            customLoadUrl.put("enabled", false)
+            customLoadUrl.put("url", "http://localhost:4040/shiggycord.js")
+            config.put("customLoadUrl", customLoadUrl)
+
+            configFile.writeText(config.toString())
+            Toast.makeText(context, "Custom bundle disabled", Toast.LENGTH_SHORT).show()
+            reloadApp()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Failed to disable custom bundle", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun isSafeModeEnabled(context: Context): Boolean {
@@ -289,7 +500,6 @@ class LogBoxModule : Module() {
 
             bundleFile.delete()
 
-            // Reset config
             if (configFile.exists()) {
                 val config = JSONObject(configFile.readText())
                 config.put("customLoadUrlEnabled", false)
@@ -301,94 +511,6 @@ class LogBoxModule : Module() {
         } catch (e: Exception) {
             Log.e("Error resetting bundle: ${e.message}")
             showError(context, "Failed to reset bundle", e.message)
-        }
-    }
-
-    private fun loadCustomBundle(context: Context) {
-        val filesDir = java.io.File(context.filesDir, "pyoncord")
-        val configFile = java.io.File(filesDir, "loader.json")
-        var currentUrl: String? = null
-
-        // Try to read the current custom URL from loader.json
-        if (configFile.exists()) {
-            try {
-                val json = org.json.JSONObject(configFile.readText())
-                val customLoadUrl = json.optJSONObject("customLoadUrl")
-                if (customLoadUrl != null && customLoadUrl.optBoolean("enabled", false)) {
-                    currentUrl = customLoadUrl.optString("url", "")
-                }
-            } catch (_: Exception) {}
-        }
-
-        val urlInput = EditText(context).apply {
-            hint = "http://localhost:4040/ShiggyCord.js"
-            setTextColor(android.graphics.Color.WHITE)
-            setBackgroundColor(android.graphics.Color.BLACK)
-            setHintTextColor(android.graphics.Color.GRAY)
-            inputType = android.text.InputType.TYPE_TEXT_VARIATION_URI
-            setText(currentUrl ?: "")
-            gravity = android.view.Gravity.START
-            textAlignment = android.view.View.TEXT_ALIGNMENT_VIEW_START
-            setPadding(
-                (24 * context.resources.displayMetrics.density).toInt(), // left
-                paddingTop,
-                (24 * context.resources.displayMetrics.density).toInt(), // right
-                paddingBottom
-            )
-        }
-        val container = android.widget.FrameLayout(context)
-        val params = android.widget.FrameLayout.LayoutParams(
-            (context.resources.displayMetrics.widthPixels * 0.92).toInt(),
-            android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
-        )
-        params.leftMargin = (16 * context.resources.displayMetrics.density).toInt()
-        params.rightMargin = (16 * context.resources.displayMetrics.density).toInt()
-        urlInput.layoutParams = params
-        container.addView(urlInput)
-
-        val dialog = AlertDialog.Builder(context)
-            .setTitle("Load Custom Bundle")
-            .setView(container)
-            .setPositiveButton("Save", null)
-            .setNegativeButton("Cancel", null)
-            .create()
-
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.apply {
-                setTextColor(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.BLACK)
-                textSize = 14f
-            }
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
-                setTextColor(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.BLACK)
-                textSize = 14f
-            }
-            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.BLACK))
-            val titleId = context.resources.getIdentifier("alertTitle", "id", "android")
-            val titleView = dialog.findViewById<android.widget.TextView>(titleId)
-            titleView?.setTextColor(android.graphics.Color.WHITE)
-        }
-
-        dialog.show()
-
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
-            try {
-                val url = urlInput.text?.toString()?.trim() ?: ""
-                val enabled = url.isNotEmpty()
-                val escapedUrl = url.replace("\\", "\\\\").replace("\"", "\\\"")
-                val json = "{\"customLoadUrl\":{\"enabled\":$enabled,\"url\":\"$escapedUrl\"}}"
-                configFile.writeText(json)
-                java.io.File(filesDir, "bundle.js").delete()
-                android.widget.Toast.makeText(
-                    context,
-                    if (enabled) "Custom bundle URL saved and enabled." else "Custom bundle URL removed and disabled.",
-                    android.widget.Toast.LENGTH_SHORT
-                ).show()
-                reloadApp()
-            } catch (e: Exception) {
-                android.widget.Toast.makeText(context, "Failed to set custom bundle: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
-            }
         }
     }
 
@@ -424,7 +546,6 @@ class LogBoxModule : Module() {
                     return@launch
                 }
 
-                // Save custom bundle URL
                 withContext(Dispatchers.Main) {
                     setCustomBundleURL(context, urlString)
                 }
@@ -444,11 +565,16 @@ class LogBoxModule : Module() {
             val config = if (configFile.exists()) {
                 JSONObject(configFile.readText())
             } else {
-                JSONObject()
+                JSONObject().apply {
+                    put("loadReactDevTools", false)
+                }
             }
 
-            config.put("customLoadUrlEnabled", true)
-            config.put("customLoadUrl", url)
+            val customLoadUrl = config.optJSONObject("customLoadUrl") ?: JSONObject()
+            customLoadUrl.put("enabled", true)
+            customLoadUrl.put("url", url)
+            config.put("customLoadUrl", customLoadUrl)
+
             configFile.writeText(config.toString())
 
             File(pyoncordDir, "bundle.js").delete()
@@ -468,29 +594,6 @@ class LogBoxModule : Module() {
             dir.mkdirs()
         }
         return dir
-    }
-
-    private fun showError(context: Context, title: String, message: String?) {
-        val dialog = AlertDialog.Builder(context)
-            .setTitle(title)
-            .setMessage(message ?: "An unknown error occurred")
-            .setPositiveButton("OK", null)
-            .create()
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
-                setTextColor(android.graphics.Color.WHITE)
-                setBackgroundColor(android.graphics.Color.BLACK)
-                textSize = 14f
-            }
-            dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.BLACK))
-            val titleId = context.resources.getIdentifier("alertTitle", "id", "android")
-            val titleView = dialog.findViewById<android.widget.TextView>(titleId)
-            titleView?.setTextColor(android.graphics.Color.WHITE)
-            val messageId = context.resources.getIdentifier("message", "id", "android")
-            val messageView = dialog.findViewById<android.widget.TextView>(messageId)
-            messageView?.setTextColor(android.graphics.Color.WHITE)
-        }
-        dialog.show()
     }
 
     override fun onContext(context: Context) {
