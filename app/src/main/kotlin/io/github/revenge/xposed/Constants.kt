@@ -1,4 +1,4 @@
-package cocobo1.pupu.xposed
+package io.github.revenge.xposed
 
 class Constants {
     companion object {
@@ -10,7 +10,7 @@ class Constants {
         const val MAIN_SCRIPT_FILE = "bundle.js"
 
 
-        const val LOG_TAG = "Kettu"
+        const val LOG_TAG = "Revenge"
 
         const val LOADER_NAME = "KettuXposed"
 

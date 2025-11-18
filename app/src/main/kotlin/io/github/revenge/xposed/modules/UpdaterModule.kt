@@ -1,4 +1,4 @@
-package cocobo1.pupu.xposed.modules
+package io.github.revenge.xposed.modules
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -7,12 +7,12 @@ import android.util.AtomicFile
 import android.widget.Toast
 import androidx.core.util.writeBytes
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.Constants
-import cocobo1.pupu.xposed.Module
-import cocobo1.pupu.xposed.Utils
-import cocobo1.pupu.xposed.Utils.Companion.JSON
-import cocobo1.pupu.xposed.Utils.Companion.reloadApp
-import cocobo1.pupu.xposed.Utils.Log
+import io.github.revenge.xposed.Constants
+import io.github.revenge.xposed.Module
+import io.github.revenge.xposed.Utils
+import io.github.revenge.xposed.Utils.Companion.JSON
+import io.github.revenge.xposed.Utils.Companion.reloadApp
+import io.github.revenge.xposed.Utils.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -111,7 +111,7 @@ object UpdaterModule : Module() {
                         // This is a retry, so we show a dialog
                         if (activity != null) {
                             withContext(Dispatchers.Main) {
-                                AlertDialog.Builder(activity).setTitle("Kettu Update Successful")
+                                AlertDialog.Builder(activity).setTitle("Revenge Update Successful")
                                     .setMessage("A reload is required for changes to take effect.")
                                     .setPositiveButton("Reload") { dialog, _ ->
                                         reloadApp()
@@ -142,6 +142,26 @@ object UpdaterModule : Module() {
 
     fun showErrorDialog(e: Throwable) {
         val activity = lastActivity?.get() ?: return
+
+        activity.runOnUiThread {
+            AlertDialog.Builder(activity).setTitle("Revenge Update Failed").setMessage(
+                """
+                Unable to download the latest version of Revenge.
+                This is usually caused by bad network connection.
+            
+                Error: ${e.message ?: e.stackTraceToString()}
+                """.trimIndent()
+            ).setNegativeButton("Dismiss") { dialog, _ ->
+                dialog.dismiss()
+            }.setPositiveButton("Retry Update") { dialog, _ ->
+                downloadScript(activity)
+                Toast.makeText(activity, "Retrying download in background...", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }.setNeutralButton("Recovery") { dialog, _ ->
+                Utils.showRecoveryAlert(activity)
+                dialog.dismiss()
+            }.show()
+        }
     }
 
     fun resetLoaderConfig(context: Context) {

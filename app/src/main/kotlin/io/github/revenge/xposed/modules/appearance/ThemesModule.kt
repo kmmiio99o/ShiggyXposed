@@ -1,12 +1,12 @@
-package cocobo1.pupu.xposed.modules.appearance
+package io.github.revenge.xposed.modules.appearance
 
 import android.content.Context
 import android.content.res.Resources
 import androidx.core.graphics.toColorInt
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.Constants
-import cocobo1.pupu.xposed.Module
-import cocobo1.pupu.xposed.Utils.Companion.JSON
+import io.github.revenge.xposed.Constants
+import io.github.revenge.xposed.Module
+import io.github.revenge.xposed.Utils.Companion.JSON
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObjectBuilder

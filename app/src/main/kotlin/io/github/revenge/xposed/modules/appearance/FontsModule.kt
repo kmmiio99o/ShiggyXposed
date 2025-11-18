@@ -1,4 +1,4 @@
-package cocobo1.pupu.xposed.modules.appearance
+package io.github.revenge.xposed.modules.appearance
 
 import android.content.res.AssetManager
 import android.graphics.Typeface
@@ -9,10 +9,10 @@ import android.os.Build
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.Constants
-import cocobo1.pupu.xposed.Module
-import cocobo1.pupu.xposed.Utils.Companion.JSON
-import cocobo1.pupu.xposed.Utils.Log
+import io.github.revenge.xposed.Constants
+import io.github.revenge.xposed.Module
+import io.github.revenge.xposed.Utils.Companion.JSON
+import io.github.revenge.xposed.Utils.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*

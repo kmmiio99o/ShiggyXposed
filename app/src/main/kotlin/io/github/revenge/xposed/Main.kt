@@ -1,4 +1,4 @@
-package cocobo1.pupu.xposed
+package io.github.revenge.xposed
 
 import android.app.Activity
 import android.content.Context
@@ -7,15 +7,15 @@ import android.os.Bundle
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.Utils.Log
-import cocobo1.pupu.xposed.modules.*
-import cocobo1.pupu.xposed.modules.appearance.FontsModule
-import cocobo1.pupu.xposed.modules.appearance.SysColorsModule
-import cocobo1.pupu.xposed.modules.appearance.ThemesModule
-import cocobo1.pupu.xposed.modules.bridge.AdditionalBridgeMethodsModule
-import cocobo1.pupu.xposed.modules.bridge.BridgeModule
-import cocobo1.pupu.xposed.modules.no_track.BlockCrashReportingModule
-import cocobo1.pupu.xposed.modules.no_track.BlockDeepLinksTrackingModule
+import io.github.revenge.xposed.Utils.Log
+import io.github.revenge.xposed.modules.*
+import io.github.revenge.xposed.modules.appearance.FontsModule
+import io.github.revenge.xposed.modules.appearance.SysColorsModule
+import io.github.revenge.xposed.modules.appearance.ThemesModule
+import io.github.revenge.xposed.modules.bridge.AdditionalBridgeMethodsModule
+import io.github.revenge.xposed.modules.bridge.BridgeModule
+import io.github.revenge.xposed.modules.no_track.BlockCrashReportingModule
+import io.github.revenge.xposed.modules.no_track.BlockDeepLinksTrackingModule
 import kotlinx.coroutines.CompletableDeferred
 
 object HookStateHolder {

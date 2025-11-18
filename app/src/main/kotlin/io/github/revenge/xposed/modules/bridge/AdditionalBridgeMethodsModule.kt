@@ -1,4 +1,4 @@
-package cocobo1.pupu.xposed.modules.bridge
+package io.github.revenge.xposed.modules.bridge
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -7,13 +7,13 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import android.widget.Toast
-import cocobo1.pupu.xposed.Module
-import cocobo1.pupu.xposed.Utils
+import io.github.revenge.xposed.Module
+import io.github.revenge.xposed.Utils
 import java.io.File
 
 object AdditionalBridgeMethodsModule : Module() {
     override fun onContext(context: Context) = with(context) {
-        BridgeModule.registerMethod("kettu.fs.getConstants") {
+        BridgeModule.registerMethod("revenge.fs.getConstants") {
             mapOf(
                 "data" to dataDir.absolutePath,
                 "files" to filesDir.absolutePath,
@@ -21,7 +21,7 @@ object AdditionalBridgeMethodsModule : Module() {
             )
         }
 
-        BridgeModule.registerMethod("kettu.fs.delete") {
+        BridgeModule.registerMethod("revenge.fs.delete") {
             val (path) = it
             File(path as String).run {
                 if (this.isDirectory) this.deleteRecursively()
@@ -29,19 +29,19 @@ object AdditionalBridgeMethodsModule : Module() {
             }
         }
 
-        BridgeModule.registerMethod("kettu.fs.exists") {
+        BridgeModule.registerMethod("revenge.fs.exists") {
             val (path) = it
             File(path as String).exists()
         }
 
-        BridgeModule.registerMethod("kettu.fs.read") { it ->
+        BridgeModule.registerMethod("revenge.fs.read") { it ->
             val (path) = it
             val file = File(path as String).apply { openFileGuarded() }
 
             file.bufferedReader().use { it.readText() }
         }
 
-        BridgeModule.registerMethod("kettu.fs.write") {
+        BridgeModule.registerMethod("revenge.fs.write") {
             val (path, contents) = it
             val file = File(path as String).apply { openFileGuarded() }
 
@@ -50,7 +50,7 @@ object AdditionalBridgeMethodsModule : Module() {
     }
 
     override fun onActivity(activity: Activity) = with(activity) {
-        BridgeModule.registerMethod("kettu.alertError") {
+        BridgeModule.registerMethod("revenge.alertError") {
             val (error, version) = it
             val app = getAppInfo()
             val errorString = "$error"
@@ -59,10 +59,10 @@ object AdditionalBridgeMethodsModule : Module() {
             val clip = ClipData.newPlainText("Stack Trace", errorString)
 
             AlertDialog.Builder(this)
-                .setTitle("Kettu Error")
+                .setTitle("Revenge Error")
                 .setMessage(
                     """
-                    Kettu: $version
+                    Revenge: $version
                     ${app.name}: ${app.version} (${app.versionCode})
                     Device: ${Build.MANUFACTURER} ${Build.MODEL}
                     
@@ -82,7 +82,7 @@ object AdditionalBridgeMethodsModule : Module() {
             null
         }
 
-        BridgeModule.registerMethod("kettu.showRecoveryAlert") {
+        BridgeModule.registerMethod("revenge.showRecoveryAlert") {
             Utils.showRecoveryAlert(this)
         }
     }

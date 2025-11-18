@@ -1,10 +1,10 @@
-package cocobo1.pupu.xposed.modules.bridge
+package io.github.revenge.xposed.modules.bridge
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.BuildConfig
-import cocobo1.pupu.xposed.Constants
-import cocobo1.pupu.xposed.Module
-import cocobo1.pupu.xposed.Utils.Log
+import io.github.revenge.xposed.BuildConfig
+import io.github.revenge.xposed.Constants
+import io.github.revenge.xposed.Module
+import io.github.revenge.xposed.Utils.Log
 import java.lang.reflect.Method
 
 /**
@@ -23,7 +23,7 @@ typealias BridgeMethodArgs = ArrayList<Any>
  * To call a method, pass an object with the following structure to a hooked method:
  * ```js
  * {
- *   kettu: {
+ *   revenge: {
  *     method: "method.name",
  *     args: [arg1, arg2, ...]
  *   }
@@ -50,7 +50,7 @@ object BridgeModule : Module() {
     private lateinit var readableMapToHashMap: Method
     private lateinit var argumentsMakeNative: Method
 
-    private const val CALL_DATA_KEY = "kettu"
+    private const val CALL_DATA_KEY = "revenge"
     private const val METHOD_NAME_KEY = "method"
     private const val METHOD_ARGS_KEY = "args"
 

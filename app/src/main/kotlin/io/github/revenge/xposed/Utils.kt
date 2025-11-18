@@ -1,10 +1,10 @@
-package cocobo1.pupu.xposed
+package io.github.revenge.xposed
 
 import android.app.AlertDialog
 import android.app.AndroidAppHelper
 import android.content.Context
 import android.content.Intent
-import cocobo1.pupu.xposed.modules.UpdaterModule
+import io.github.revenge.xposed.modules.UpdaterModule
 import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.system.exitProcess
@@ -21,7 +21,7 @@ class Utils {
         }
 
         fun showRecoveryAlert(context: Context) {
-            AlertDialog.Builder(context).setTitle("Kettu Recovery Options")
+            AlertDialog.Builder(context).setTitle("Revenge Recovery Options")
                 .setItems(arrayOf("Reload", "Delete Script", "Reset Loader Config")) { _, which ->
                     when (which) {
                         0 -> {

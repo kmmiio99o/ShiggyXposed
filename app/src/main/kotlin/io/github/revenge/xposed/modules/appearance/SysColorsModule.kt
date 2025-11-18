@@ -1,11 +1,11 @@
-package cocobo1.pupu.xposed.modules.appearance
+package io.github.revenge.xposed.modules.appearance
 
 import android.R.color
 import android.app.AndroidAppHelper
 import android.content.Context
 import android.os.Build
 import androidx.core.content.ContextCompat
-import cocobo1.pupu.xposed.Module
+import io.github.revenge.xposed.Module
 import kotlinx.serialization.json.*
 import java.lang.ref.WeakReference
 

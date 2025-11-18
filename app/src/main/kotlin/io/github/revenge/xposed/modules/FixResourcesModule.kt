@@ -1,9 +1,9 @@
-package cocobo1.pupu.xposed.modules
+package io.github.revenge.xposed.modules
 
 import android.content.res.Resources
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.Constants.Companion.TARGET_PACKAGE
-import cocobo1.pupu.xposed.Module
+import io.github.revenge.xposed.Constants.Companion.TARGET_PACKAGE
+import io.github.revenge.xposed.Module
 
 /**
  * Hooks [Resources.getIdentifier] to fix resource package name mismatch.

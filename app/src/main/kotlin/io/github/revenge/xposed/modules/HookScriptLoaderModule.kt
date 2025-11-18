@@ -1,15 +1,15 @@
-package cocobo1.pupu.xposed.modules
+package io.github.revenge.xposed.modules
 
 import android.content.res.AssetManager
 import android.content.res.XModuleResources
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.Constants
-import cocobo1.pupu.xposed.HookStateHolder
-import cocobo1.pupu.xposed.Module
-import cocobo1.pupu.xposed.Utils.Log
-import cocobo1.pupu.xposed.modules.HookScriptLoaderModule.Companion.PRELOADS_DIR
+import io.github.revenge.xposed.Constants
+import io.github.revenge.xposed.HookStateHolder
+import io.github.revenge.xposed.Module
+import io.github.revenge.xposed.Utils.Log
+import io.github.revenge.xposed.modules.HookScriptLoaderModule.PRELOADS_DIR
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
@@ -22,7 +22,7 @@ import java.lang.reflect.Method
  * Preload scripts should be placed in the [PRELOADS_DIR] directory inside the module's files directory.
  *
  * The main bundle should be placed in the [Constants.CACHE_DIR] directory named [Constants.MAIN_SCRIPT_FILE].
- * If the bundle file does not exist, it will attempt to load `assets://kettu.bundle` from the module's assets.
+ * If the bundle file does not exist, it will attempt to load `assets://revenge.bundle` from the module's assets.
  */
 object HookScriptLoaderModule : Module() {
     private lateinit var preloadsDir: File
@@ -111,7 +111,7 @@ object HookScriptLoaderModule : Module() {
                 XposedBridge.invokeOriginalMethod(
                     loadScriptFromAssets,
                     thisObject,
-                    arrayOf(resources.assets, "assets://kettu.bundle", loadSynchronously)
+                    arrayOf(resources.assets, "assets://revenge.bundle", loadSynchronously)
                 )
             }
         } catch (e: Throwable) {

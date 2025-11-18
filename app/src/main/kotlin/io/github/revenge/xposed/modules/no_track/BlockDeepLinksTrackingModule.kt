@@ -1,9 +1,9 @@
-package cocobo1.pupu.xposed.modules.no_track
+package io.github.revenge.xposed.modules.no_track
 
 import android.content.Context
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.Module
-import cocobo1.pupu.xposed.Utils.Log
+import io.github.revenge.xposed.Module
+import io.github.revenge.xposed.Utils.Log
 
 /**
  * Hooks Discord's deep links tracking to disable AppsFlyer initialization.

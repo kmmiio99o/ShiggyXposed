@@ -1,4 +1,4 @@
-package cocobo1.pupu.xposed
+package io.github.revenge.xposed
 
 import android.app.Activity
 import android.content.Context

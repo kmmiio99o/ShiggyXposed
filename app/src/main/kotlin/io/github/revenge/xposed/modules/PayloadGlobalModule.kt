@@ -1,14 +1,14 @@
-package cocobo1.pupu.xposed.modules
+package io.github.revenge.xposed.modules
 
 import android.content.res.AssetManager
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import cocobo1.pupu.xposed.BuildConfig
-import cocobo1.pupu.xposed.Constants
-import cocobo1.pupu.xposed.Module
-import cocobo1.pupu.xposed.Utils.Companion.JSON
-import cocobo1.pupu.xposed.modules.HookScriptLoaderModule.Companion.PRELOADS_DIR
+import io.github.revenge.xposed.BuildConfig
+import io.github.revenge.xposed.Constants
+import io.github.revenge.xposed.Module
+import io.github.revenge.xposed.Utils.Companion.JSON
+import io.github.revenge.xposed.modules.HookScriptLoaderModule.PRELOADS_DIR
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.io.File
