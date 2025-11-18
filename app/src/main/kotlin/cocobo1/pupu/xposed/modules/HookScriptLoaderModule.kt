@@ -24,16 +24,14 @@ import java.lang.reflect.Method
  * The main bundle should be placed in the [Constants.CACHE_DIR] directory named [Constants.MAIN_SCRIPT_FILE].
  * If the bundle file does not exist, it will attempt to load `assets://kettu.bundle` from the module's assets.
  */
-class HookScriptLoaderModule : Module() {
+object HookScriptLoaderModule : Module() {
     private lateinit var preloadsDir: File
     private lateinit var mainScript: File
 
     private lateinit var modulePath: String
     private lateinit var resources: XModuleResources
 
-    companion object {
-        const val PRELOADS_DIR = "preloads"
-    }
+    const val PRELOADS_DIR = "preloads"
 
     override fun onInit(startupParam: IXposedHookZygoteInit.StartupParam) {
         this@HookScriptLoaderModule.modulePath = startupParam.modulePath
@@ -51,23 +49,16 @@ class HookScriptLoaderModule : Module() {
             "com.facebook.react.runtime.ReactInstance$1",
             // TODO: Remove once Discord fully switches to Bridgeless
             "com.facebook.react.bridge.CatalystInstanceImpl"
-        ).mapNotNull { classLoader.safeLoadClass(it) }
-            .forEach { hook(it) }
+        ).mapNotNull { classLoader.safeLoadClass(it) }.forEach { hook(it) }
     }
 
     private fun hook(instance: Class<*>) = runCatching {
         val loadScriptFromAssets = instance.method(
-            "loadScriptFromAssets",
-            AssetManager::class.java,
-            String::class.java,
-            Boolean::class.javaPrimitiveType
+            "loadScriptFromAssets", AssetManager::class.java, String::class.java, Boolean::class.javaPrimitiveType
         )
 
         val loadScriptFromFile = instance.method(
-            "loadScriptFromFile",
-            String::class.java,
-            String::class.java,
-            Boolean::class.javaPrimitiveType
+            "loadScriptFromFile", String::class.java, String::class.java, Boolean::class.javaPrimitiveType
         )
 
         loadScriptFromAssets.hook {
@@ -102,25 +93,20 @@ class HookScriptLoaderModule : Module() {
             Log.i("Loading script: ${file.absolutePath}")
 
             XposedBridge.invokeOriginalMethod(
-                loadScriptFromFile,
-                thisObject,
-                arrayOf(file.absolutePath, file.absolutePath, loadSynchronously)
+                loadScriptFromFile, thisObject, arrayOf(file.absolutePath, file.absolutePath, loadSynchronously)
             )
 
             Unit
         }
 
         try {
-            preloadsDir.walk()
-                .filter { it.isFile }
-                .forEach(runScriptFile)
+            preloadsDir.walk().filter { it.isFile }.forEach(runScriptFile)
 
             if (mainScript.exists()) runScriptFile(mainScript)
             else {
                 Log.i("Main script does not exist, falling back")
 
-                if (!::resources.isInitialized) resources =
-                    XModuleResources.createInstance(modulePath, null)
+                if (!::resources.isInitialized) resources = XModuleResources.createInstance(modulePath, null)
 
                 XposedBridge.invokeOriginalMethod(
                     loadScriptFromAssets,

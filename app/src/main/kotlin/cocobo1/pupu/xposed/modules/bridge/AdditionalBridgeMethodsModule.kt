@@ -11,7 +11,7 @@ import cocobo1.pupu.xposed.Module
 import cocobo1.pupu.xposed.Utils
 import java.io.File
 
-class AdditionalBridgeMethodsModule : Module() {
+object AdditionalBridgeMethodsModule : Module() {
     override fun onContext(context: Context) = with(context) {
         BridgeModule.registerMethod("kettu.fs.getConstants") {
             mapOf(

@@ -8,7 +8,7 @@ import cocobo1.pupu.xposed.Utils.Log
 /**
  * Hooks Discord's deep links tracking to disable AppsFlyer initialization.
  */
-class BlockDeepLinksTrackingModule : Module() {
+object BlockDeepLinksTrackingModule : Module() {
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         val deepLinksClass = classLoader.safeLoadClass("com.discord.deep_link.DeepLinks")
         deepLinksClass?.hookMethod(

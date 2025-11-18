@@ -36,23 +36,23 @@ object HookStateHolder {
 class Main : Module(), IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var hooked = false
     private val modules = mutableListOf(
-        HookScriptLoaderModule(),
-        BridgeModule(),
-        AdditionalBridgeMethodsModule(),
+        HookScriptLoaderModule,
+        BridgeModule,
+        AdditionalBridgeMethodsModule,
         PluginsModule(),
         UpdaterModule,
-        FixResourcesModule(),
-        BlockDeepLinksTrackingModule(),
-        BlockCrashReportingModule(),
-        LogBoxModule(),
-        CacheModule(),
-        FontsModule(),
-        ThemesModule(),
-        SysColorsModule()
+        FixResourcesModule,
+        BlockDeepLinksTrackingModule,
+        BlockCrashReportingModule,
+        LogBoxModule,
+        CacheModule,
+        FontsModule,
+        ThemesModule,
+        SysColorsModule
     )
 
     init {
-        modules.add(PayloadGlobalModule(modules))
+        modules += PayloadGlobalModule(modules)
     }
 
     override fun initZygote(startupParam: IXposedHookZygoteInit.StartupParam) {
