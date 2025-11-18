@@ -47,6 +47,7 @@ class HookScriptLoaderModule : Module() {
         mainScript = File(cacheDir, Constants.MAIN_SCRIPT_FILE).apply { asFile() }
 
         listOf(
+            "com.facebook.react.runtime.ReactInstance\$loadJSBundle$1",
             "com.facebook.react.runtime.ReactInstance$1",
             // TODO: Remove once Discord fully switches to Bridgeless
             "com.facebook.react.bridge.CatalystInstanceImpl"
@@ -54,7 +55,7 @@ class HookScriptLoaderModule : Module() {
             .forEach { hook(it) }
     }
 
-    private fun hook(instance: Class<*>) {
+    private fun hook(instance: Class<*>) = runCatching {
         val loadScriptFromAssets = instance.method(
             "loadScriptFromAssets",
             AssetManager::class.java,
@@ -82,6 +83,8 @@ class HookScriptLoaderModule : Module() {
                 runCustomScripts(loadScriptFromFile, loadScriptFromAssets)
             }
         }
+    }.onFailure {
+        Log.e("Failed to hook script loading methods in ${instance.name}:", it)
     }
 
     private fun HookScope.runCustomScripts(loadScriptFromFile: Method, loadScriptFromAssets: Method) {
