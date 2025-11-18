@@ -2,13 +2,26 @@ package io.github.revenge.xposed.modules
 
 import android.content.Context
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import io.github.revenge.xposed.BuildConfig
+import cocobo1.pupu.xposed.BuildConfig
 import io.github.revenge.xposed.Module
 import io.github.revenge.xposed.Utils
 import io.github.revenge.xposed.Utils.Companion.reloadApp
 import io.github.revenge.xposed.Utils.Log
+import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.widget.EditText
+import android.widget.Toast
+import de.robv.android.xposed.XposedHelpers
+import kotlinx.coroutines.*
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
 
-object LogBoxModule : Module() {
+class LogBoxModule : Module() {
     lateinit var packageParam: XC_LoadPackage.LoadPackageParam
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     
@@ -96,6 +109,8 @@ object LogBoxModule : Module() {
     private fun showRecoveryMenu(context: Context) {
         val options = arrayOf(
             if (isSafeModeEnabled(context)) "Disable Safe Mode" else "Enable Safe Mode",
+            "Refetch Bundle",
+            "Load Custom Bundle",
             "Reload App"
         )
         
@@ -111,7 +126,9 @@ object LogBoxModule : Module() {
     private fun handleMenuSelection(context: Context, index: Int) {
         when (index) {
             0 -> toggleSafeMode(context)
-            1 -> reloadApp()
+            1 -> confirmAction(context, "refetch the bundle") { refetchBundle(context) }
+            2 -> loadCustomBundle(context)
+            3 -> reloadApp()
         }
     }
     
@@ -178,6 +195,72 @@ object LogBoxModule : Module() {
         }
     }
     
+    private fun refetchBundle(context: Context) {
+        try {
+            val pyoncordDir = getPyoncordDirectory(context)
+            val bundleFile = File(pyoncordDir, "bundle.js")
+            val backupFile = File(pyoncordDir, "bundle.js.backup")
+            
+            if (bundleFile.exists()) {
+                backupFile.delete()
+                bundleFile.renameTo(backupFile)
+                Log.e("Bundle moved to backup")
+            }
+
+            reloadApp()
+
+        } catch (e: Exception) {
+            Log.e("Error refetching bundle: ${e.message}")
+            showError(context, "Failed to refetch bundle", e.message)
+        }
+    }
+    
+    private fun resetBundle(context: Context) {
+        try {
+            val pyoncordDir = getPyoncordDirectory(context)
+            val bundleFile = File(pyoncordDir, "bundle.js")
+            val configFile = File(pyoncordDir, "loader_config.json")
+            
+            bundleFile.delete()
+            
+            // Reset config
+            if (configFile.exists()) {
+                val config = JSONObject(configFile.readText())
+                config.put("customLoadUrlEnabled", false)
+                config.put("customLoadUrl", "http://localhost:4040/kettu.js")
+                configFile.writeText(config.toString())
+            }
+
+            reloadApp()
+        } catch (e: Exception) {
+            Log.e("Error resetting bundle: ${e.message}")
+            showError(context, "Failed to reset bundle", e.message)
+        }
+    }
+    
+    private fun loadCustomBundle(context: Context) {
+        val input = EditText(context).apply {
+            hint = "http://localhost:4040/kettu.js"
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_URI
+        }
+        
+        AlertDialog.Builder(context)
+            .setTitle("Load Custom Bundle")
+            .setMessage("Enter the URL for your custom bundle:")
+            .setView(input)
+            .setPositiveButton("Load") { _, _ ->
+                val urlString = input.text.toString().trim()
+                if (urlString.isEmpty()) {
+                    showError(context, "Invalid URL", "Please enter a URL")
+                    return@setPositiveButton
+                }
+                
+                validateAndLoadBundle(context, urlString)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
     private fun validateAndLoadBundle(context: Context, urlString: String) {
         scope.launch(Dispatchers.IO) {
             try {
@@ -220,6 +303,40 @@ object LogBoxModule : Module() {
                 }
             }
         }
+    }
+    
+    private fun setCustomBundleURL(context: Context, url: String) {
+        try {
+            val pyoncordDir = getPyoncordDirectory(context)
+            val configFile = File(pyoncordDir, "loader_config.json")
+            
+            val config = if (configFile.exists()) {
+                JSONObject(configFile.readText())
+            } else {
+                JSONObject()
+            }
+            
+            config.put("customLoadUrlEnabled", true)
+            config.put("customLoadUrl", url)
+            configFile.writeText(config.toString())
+            
+            File(pyoncordDir, "bundle.js").delete()
+            
+            Toast.makeText(context, "Custom bundle set", Toast.LENGTH_SHORT).show()
+            
+            reloadApp()
+        } catch (e: Exception) {
+            Log.e("Error setting custom bundle URL: ${e.message}")
+            showError(context, "Failed to save configuration", e.message)
+        }
+    }
+    
+    private fun getPyoncordDirectory(context: Context): File {
+        val dir = File(context.filesDir, "pyoncord")
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+        return dir
     }
     
     private fun showError(context: Context, title: String, message: String?) {

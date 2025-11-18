@@ -4,7 +4,7 @@ import android.content.res.AssetManager
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import io.github.revenge.xposed.BuildConfig
+import cocobo1.pupu.xposed.BuildConfig
 import io.github.revenge.xposed.Constants
 import io.github.revenge.xposed.Module
 import io.github.revenge.xposed.Utils.Companion.JSON
