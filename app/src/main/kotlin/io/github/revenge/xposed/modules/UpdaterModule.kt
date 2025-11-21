@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
 import android.app.Activity
 import android.app.AlertDialog
