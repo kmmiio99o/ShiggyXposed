@@ -19,7 +19,7 @@ import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
-import ShiggyXposed.xposed.Utils.Companion.reloadApp
+import GoonXposed.xposed.Utils.Companion.reloadApp
 
 object LogBoxModule : Module() {
     lateinit var packageParam: XC_LoadPackage.LoadPackageParam
