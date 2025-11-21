@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
 import android.app.AlertDialog
 import android.content.Context
@@ -8,10 +8,10 @@ import android.os.Build
 import android.widget.EditText
 import android.widget.Toast
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import ShiggyXposed.xposed.BuildConfig
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils
-import ShiggyXposed.xposed.Utils.Log
+import GoonXposed.xposed.BuildConfig
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils
+import GoonXposed.xposed.Utils.Log
 import de.robv.android.xposed.XposedHelpers
 import kotlinx.coroutines.*
 import org.json.JSONArray
