@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed.modules.appearance
+package GoonXposed.xposed.modules.appearance
 
 import android.content.res.AssetManager
 import android.graphics.Typeface
