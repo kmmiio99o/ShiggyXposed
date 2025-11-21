@@ -1,11 +1,11 @@
-package ShiggyXposed.xposed.modules.appearance
+package GoonXposed.xposed.modules.appearance
 
 import android.R.color
 import android.app.AndroidAppHelper
 import android.content.Context
 import android.os.Build
 import androidx.core.content.ContextCompat
-import ShiggyXposed.xposed.Module
+import GoonXposed.xposed.Module
 import kotlinx.serialization.json.*
 import java.lang.ref.WeakReference
 
