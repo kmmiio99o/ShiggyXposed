@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed.modules.bridge
+package GoonXposed.xposed.modules.bridge
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -7,8 +7,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import android.widget.Toast
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils
 import java.io.File
 
 object AdditionalBridgeMethodsModule : Module() {
