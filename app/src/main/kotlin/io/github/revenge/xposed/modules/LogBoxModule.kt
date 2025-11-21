@@ -143,7 +143,7 @@ object LogBoxModule : Module() {
             }
 
         val dialog = AlertDialog.Builder(context)
-            .setTitle("ShiggyXposed Recovery Menu")
+            .setTitle("GoonXposed Recovery Menu")
             .setAdapter(adapter) { _, which ->
                 handleMenuSelection(context, which)
             }
