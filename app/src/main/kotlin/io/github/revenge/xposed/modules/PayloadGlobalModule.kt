@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
 import android.content.res.AssetManager
 import de.robv.android.xposed.XC_MethodHook
