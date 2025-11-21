@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
 import android.content.res.Resources
 import de.robv.android.xposed.callbacks.XC_LoadPackage
