@@ -1,45 +1,43 @@
-package GoonXposed.xposed.modules.appearance
+package ShiggyXposed.xposed.modules.appearance
 
-import GoonXposed.xposed.Module
 import android.R.color
 import android.app.AndroidAppHelper
 import android.content.Context
 import android.os.Build
 import androidx.core.content.ContextCompat
+import ShiggyXposed.xposed.Module
 import kotlinx.serialization.json.*
+import java.lang.ref.WeakReference
 
-class SysColorsModule : Module() {
-    private lateinit var context: Context
+object SysColorsModule : Module() {
+    private lateinit var context: WeakReference<Context>
     private fun isSupported() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     override fun buildPayload(builder: JsonObjectBuilder) {
-        context = AndroidAppHelper.currentApplication()
+        context = WeakReference(AndroidAppHelper.currentApplication())
         val accents = arrayOf("accent1", "accent2", "accent3", "neutral1", "neutral2")
         val shades = arrayOf(0, 10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000)
 
         builder.apply {
             put("isSysColorsSupported", isSupported())
-            if (isSupported())
-                    putJsonObject("sysColors") {
-                        for (accent in accents) putJsonArray(accent) {
-                            for (shade in shades) {
-                                val colorName = "system_" + accent + "_" + shade
+            if (isSupported()) putJsonObject("sysColors") {
+                for (accent in accents) putJsonArray(accent) {
+                    for (shade in shades) {
+                        val colorName = "system_" + accent + "_" + shade
 
-                                val colorResourceId =
-                                        runCatching {
-                                            color::class.java.getField(colorName).getInt(null)
-                                        }
-                                                .getOrElse { 0 }
+                        val colorResourceId = runCatching {
+                            color::class.java.getField(colorName).getInt(null)
+                        }.getOrElse { 0 }
 
-                                add(convertToColor(colorResourceId))
-                            }
-                        }
+                        add(convertToColor(colorResourceId))
                     }
+                }
+            }
         }
     }
 
     private fun convertToColor(id: Int): String {
-        val clr = if (isSupported()) ContextCompat.getColor(context, id) else 0
+        val clr = if (isSupported()) ContextCompat.getColor(context.get()!!, id) else 0
         return String.format("#%06X", 0xFFFFFF and clr)
     }
 }

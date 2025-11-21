@@ -1,4 +1,4 @@
-package GoonXposed.xposed.modules
+package ShiggyXposed.xposed.modules
 
 import android.app.AlertDialog
 import android.content.Context
@@ -8,10 +8,10 @@ import android.os.Build
 import android.widget.EditText
 import android.widget.Toast
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import GoonXposed.xposed.BuildConfig
-import GoonXposed.xposed.Module
-import GoonXposed.xposed.Utils
-import GoonXposed.xposed.Utils.Log
+import ShiggyXposed.xposed.BuildConfig
+import ShiggyXposed.xposed.Module
+import ShiggyXposed.xposed.Utils
+import ShiggyXposed.xposed.Utils.Log
 import de.robv.android.xposed.XposedHelpers
 import kotlinx.coroutines.*
 import org.json.JSONArray
@@ -19,9 +19,9 @@ import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
-import GoonXposed.xposed.Utils.Companion.reloadApp
+import ShiggyXposed.xposed.Utils.Companion.reloadApp
 
-class LogBoxModule : Module() {
+object LogBoxModule : Module() {
     lateinit var packageParam: XC_LoadPackage.LoadPackageParam
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -143,7 +143,7 @@ class LogBoxModule : Module() {
             }
 
         val dialog = AlertDialog.Builder(context)
-            .setTitle("GoonXposed Recovery Menu")
+            .setTitle("ShiggyXposed Recovery Menu")
             .setAdapter(adapter) { _, which ->
                 handleMenuSelection(context, which)
             }
@@ -260,7 +260,7 @@ class LogBoxModule : Module() {
         }
 
         val urlInput = EditText(context).apply {
-            hint = "http://localhost:4040/gooncord.js"
+            hint = "http://localhost:4040/shiggycord.js"
             setTextColor(0xFFFFFFFF.toInt())
             setBackgroundColor(0xFF2D2D2D.toInt())
             setHintTextColor(0xFF888888.toInt())
@@ -375,7 +375,7 @@ class LogBoxModule : Module() {
                     val config = JSONObject(configFile.readText())
                     val customLoadUrl = config.optJSONObject("customLoadUrl") ?: JSONObject()
                     customLoadUrl.put("enabled", false)
-                    customLoadUrl.put("url", "http://localhost:4040/gooncord.js")
+                    customLoadUrl.put("url", "http://localhost:4040/shiggycord.js")
                     config.put("customLoadUrl", customLoadUrl)
                     configFile.writeText(config.toString())
                 }
@@ -407,7 +407,7 @@ class LogBoxModule : Module() {
 
             val customLoadUrl = config.optJSONObject("customLoadUrl") ?: JSONObject()
             customLoadUrl.put("enabled", false)
-            customLoadUrl.put("url", "http://localhost:4040/gooncord.js")
+            customLoadUrl.put("url", "http://localhost:4040/shiggycord.js")
             config.put("customLoadUrl", customLoadUrl)
 
             configFile.writeText(config.toString())
@@ -503,7 +503,7 @@ class LogBoxModule : Module() {
             if (configFile.exists()) {
                 val config = JSONObject(configFile.readText())
                 config.put("customLoadUrlEnabled", false)
-                config.put("customLoadUrl", "http://localhost:4040/GoonCord.js")
+                config.put("customLoadUrl", "http://localhost:4040/ShiggyCord.js")
                 configFile.writeText(config.toString())
             }
 

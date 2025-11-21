@@ -1,42 +1,47 @@
-package GoonXposed.xposed.module.appearance
+package ShiggyXposed.xposed.modules.appearance
 
-import GoonXposed.xposed.Constants
-import GoonXposed.xposed.Module
-import GoonXposed.xposed.Utils.Companion.JSON
 import android.content.Context
 import android.content.res.Resources
 import androidx.core.graphics.toColorInt
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import java.io.File
+import ShiggyXposed.xposed.Constants
+import ShiggyXposed.xposed.Module
+import ShiggyXposed.xposed.Utils.Companion.JSON
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.put
+import java.io.File
 
-@Serializable data class Author(val name: String, val id: String? = null)
+@Serializable
+data class Author(
+    val name: String, val id: String? = null
+)
 
 @Serializable
 data class ThemeData(
-        val name: String,
-        val description: String? = null,
-        val authors: List<Author>? = null,
-        val spec: Int,
-        val semanticColors: Map<String, List<String>>? = null,
-        val rawColors: Map<String, String>? = null
+    val name: String,
+    val description: String? = null,
+    val authors: List<Author>? = null,
+    val spec: Int,
+    val semanticColors: Map<String, List<String>>? = null,
+    val rawColors: Map<String, String>? = null
 )
 
-@Serializable data class Theme(val id: String, val selected: Boolean, val data: ThemeData)
+@Serializable
+data class Theme(
+    val id: String, val selected: Boolean, val data: ThemeData
+)
 
-class ThemesModule : Module() {
+object ThemesModule : Module() {
     private lateinit var param: XC_LoadPackage.LoadPackageParam
 
     private var theme: Theme? = null
     private val rawColorMap = mutableMapOf<String, Int>()
 
-    private companion object {
-        const val THEME_FILE = "current-theme.json"
-    }
+    private const val THEME_FILE = "current-theme.json"
+
 
     @ExperimentalSerializationApi
     override fun buildPayload(builder: JsonObjectBuilder) {
@@ -48,9 +53,7 @@ class ThemesModule : Module() {
     }
 
     private fun String.fromScreamingSnakeToCamelCase() =
-            this.split("_").joinToString("") { it ->
-                it.lowercase().replaceFirstChar { it.uppercase() }
-            }
+        this.split("_").joinToString("") { it -> it.lowercase().replaceFirstChar { it.uppercase() } }
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) {
         param = packageParam
@@ -58,7 +61,7 @@ class ThemesModule : Module() {
         hookTheme()
     }
 
-    private fun File.isValidish(): Boolean {
+    private fun File.isValidThemeFile(): Boolean {
         if (!this.exists()) return false
 
         val text = this.readText()
@@ -66,11 +69,8 @@ class ThemesModule : Module() {
     }
 
     private fun getTheme(): Theme? {
-        val themeFile =
-                File(param.appInfo.dataDir, "${Constants.FILES_DIR}/${THEME_FILE}").apply {
-                    asFile()
-                }
-        if (!themeFile.isValidish()) return null
+        val themeFile = File(param.appInfo.dataDir, "${Constants.FILES_DIR}/${THEME_FILE}").apply { asFile() }
+        if (!themeFile.isValidThemeFile()) return null
 
         return try {
             val themeText = themeFile.readText()
@@ -106,34 +106,28 @@ class ThemesModule : Module() {
 
         // If there's any rawColors value, hook the color getter
         if (!theme.data.rawColors.isNullOrEmpty()) {
-            val getColorCompat =
-                    themeManager.getDeclaredMethod(
-                            "getColorCompat",
-                            Resources::class.java,
-                            Int::class.javaPrimitiveType,
-                            Resources.Theme::class.java,
-                    )
+            val getColorCompat = themeManager.getDeclaredMethod(
+                "getColorCompat",
+                Resources::class.java,
+                Int::class.javaPrimitiveType,
+                Resources.Theme::class.java,
+            )
 
-            val getColorCompatLegacy =
-                    themeManager.getDeclaredMethod(
-                            "getColorCompat",
-                            Context::class.java,
-                            Int::class.javaPrimitiveType
-                    )
+            val getColorCompatLegacy = themeManager.getDeclaredMethod(
+                "getColorCompat", Context::class.java, Int::class.javaPrimitiveType
+            )
 
-            val patch =
-                    MethodHookBuilder().run {
-                        before {
-                            val arg1 = args[0]
-                            val resources =
-                                    if (arg1 is Context) arg1.resources else (arg1 as Resources)
-                            val name = resources.getResourceEntryName(args[1] as Int)
+            val patch = MethodHookBuilder().run {
+                before {
+                    val arg1 = args[0]
+                    val resources = if (arg1 is Context) arg1.resources else (arg1 as Resources)
+                    val name = resources.getResourceEntryName(args[1] as Int)
 
-                            if (rawColorMap[name] != null) result = rawColorMap[name]
-                        }
+                    if (rawColorMap[name] != null) result = rawColorMap[name]
+                }
 
-                        build()
-                    }
+                build()
+            }
 
             getColorCompat.hook(patch)
             getColorCompatLegacy.hook(patch)
@@ -153,8 +147,13 @@ class ThemesModule : Module() {
     private fun hookThemeMethod(themeClass: Class<*>, methodName: String, themeValue: Int) {
         try {
             themeClass.getDeclaredMethod(methodName).let { method ->
-                method.hook { before { result = themeValue } }
+                method.hook {
+                    before {
+                        result = themeValue
+                    }
+                }
             }
-        } catch (_: NoSuchMethodException) {}
+        } catch (_: NoSuchMethodException) {
+        }
     }
 }
