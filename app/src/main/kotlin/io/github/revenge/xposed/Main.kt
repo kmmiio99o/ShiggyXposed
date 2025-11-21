@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed
+package GoonXposed.xposed
 
 import android.app.Activity
 import android.content.Context
