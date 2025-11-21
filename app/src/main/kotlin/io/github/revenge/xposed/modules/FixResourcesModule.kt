@@ -2,8 +2,8 @@ package ShiggyXposed.xposed.modules
 
 import android.content.res.Resources
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import ShiggyXposed.xposed.Constants.Companion.TARGET_PACKAGE
-import ShiggyXposed.xposed.Module
+import GoonXposed.xposed.Constants.Companion.TARGET_PACKAGE
+import GoonXposed.xposed.Module
 
 /**
  * Hooks [Resources.getIdentifier] to fix resource package name mismatch.
