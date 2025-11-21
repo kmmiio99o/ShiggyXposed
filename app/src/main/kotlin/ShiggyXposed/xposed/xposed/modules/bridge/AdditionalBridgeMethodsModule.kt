@@ -11,7 +11,7 @@ import ShiggyXposed.xposed.Module
 import ShiggyXposed.xposed.Utils
 import java.io.File
 
-class AdditionalBridgeMethodsModule : Module() {
+object AdditionalBridgeMethodsModule : Module() {
     override fun onContext(context: Context) = with(context) {
         BridgeModule.registerMethod("Shiggy.fs.getConstants") {
             mapOf(

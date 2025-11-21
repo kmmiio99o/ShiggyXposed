@@ -8,7 +8,7 @@ import ShiggyXposed.xposed.Module
 /**
  * Hooks [Resources.getIdentifier] to fix resource package name mismatch.
  */
-class FixResourcesModule : Module() {
+object FixResourcesModule : Module() {
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         if (packageName != TARGET_PACKAGE) {
             Resources::class.java.hookMethod(

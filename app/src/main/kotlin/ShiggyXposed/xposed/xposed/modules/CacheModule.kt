@@ -33,30 +33,30 @@ import java.io.*
  *  The caches are versioned and tied to the app version code. When the app is updated,
  *  the caches are invalidated and new cache files are created.
  */
-class CacheModule : Module() {
-    private companion object {
-        const val CACHE_DIR = "Shiggy"
+object CacheModule : Module() {
 
-        const val MODULES_CACHE_PREFIX = "modules"
-        const val ASSETS_CACHE_PREFIX = "assets"
-    }
+    private const val CACHE_DIR = "revenge"
+
+    private const val MODULES_CACHE_PREFIX = "modules"
+    private const val ASSETS_CACHE_PREFIX = "assets"
+
 
     private lateinit var modulesCache: ModulesCache
     private lateinit var assetsCache: AssetsCache
 
     override fun onContext(context: Context) = with(context) {
-        val ShiggyCacheDir = File(cacheDir, CACHE_DIR).apply { asDir() }
+        val revengeCacheDir = File(cacheDir, CACHE_DIR).apply { asDir() }
         val (_, _, _, versionCode) = getAppInfo()
 
         val modulesCacheFile = File(
-            ShiggyCacheDir, "$MODULES_CACHE_PREFIX.$versionCode"
+            revengeCacheDir, "$MODULES_CACHE_PREFIX.$versionCode"
         ).apply { asFile() }
 
         val assetsCacheFile = File(
-            ShiggyCacheDir, "$ASSETS_CACHE_PREFIX.$versionCode"
+            revengeCacheDir, "$ASSETS_CACHE_PREFIX.$versionCode"
         ).apply { asFile() }
 
-        BridgeModule.registerMethod("Shiggy.caches.modules.read") {
+        BridgeModule.registerMethod("revenge.caches.modules.read") {
             if (::modulesCache.isInitialized) modulesCache.toMap() else ModulesCache.loadFromFileOrNull(modulesCacheFile)
                 ?.let {
                     modulesCache = it
@@ -64,7 +64,7 @@ class CacheModule : Module() {
                 }
         }
 
-        BridgeModule.registerMethod("Shiggy.caches.modules.write") {
+        BridgeModule.registerMethod("revenge.caches.modules.write") {
             val (blacklist, finds) = it
             @Suppress("UNCHECKED_CAST")
             modulesCache = ModulesCache(
@@ -73,7 +73,7 @@ class CacheModule : Module() {
             Log.i("Modules cache saved: ${modulesCacheFile.absolutePath} (blacklisted: ${blacklist.size}, finds: ${finds.size})")
         }
 
-        BridgeModule.registerMethod("Shiggy.caches.assets.read") {
+        BridgeModule.registerMethod("revenge.caches.assets.read") {
             if (::assetsCache.isInitialized) assetsCache.toMap() else AssetsCache.loadFromFileOrNull(assetsCacheFile)
                 ?.let {
                     assetsCache = it
@@ -81,7 +81,7 @@ class CacheModule : Module() {
                 }
         }
 
-        BridgeModule.registerMethod("Shiggy.caches.assets.write") {
+        BridgeModule.registerMethod("revenge.caches.assets.write") {
             val (data) = it
             @Suppress("UNCHECKED_CAST")
             assetsCache =

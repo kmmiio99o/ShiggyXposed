@@ -8,7 +8,7 @@ import ShiggyXposed.xposed.BuildConfig
 import ShiggyXposed.xposed.Constants
 import ShiggyXposed.xposed.Module
 import ShiggyXposed.xposed.Utils.Companion.JSON
-import ShiggyXposed.xposed.modules.HookScriptLoaderModule.Companion.PRELOADS_DIR
+import ShiggyXposed.xposed.modules.HookScriptLoaderModule.PRELOADS_DIR
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.io.File
@@ -28,7 +28,8 @@ class PayloadGlobalModule(private val modules: List<Module>) : Module() {
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         val catalystInstance = classLoader.safeLoadClass("com.facebook.react.bridge.CatalystInstanceImpl")
-        val reactInstance = classLoader.safeLoadClass("com.facebook.react.runtime.ReactInstance$1")
+        val scriptLoader = classLoader.safeLoadClass("com.facebook.react.runtime.ReactInstance\$loadJSBundle$1")
+            ?: classLoader.safeLoadClass("com.facebook.react.runtime.ReactInstance$1")
 
         val setGlobalVariable: (XC_MethodHook.MethodHookParam, String, String) -> Unit = { param, key, json ->
             runCatching {
@@ -43,7 +44,7 @@ class PayloadGlobalModule(private val modules: List<Module>) : Module() {
                     writeText("this[${JSON.encodeToString(key)}]=$json")
 
                     XposedBridge.invokeOriginalMethod(
-                        reactInstance!!.method(
+                        scriptLoader!!.method(
                             "loadScriptFromFile",
                             String::class.java,
                             String::class.java,
@@ -64,7 +65,7 @@ class PayloadGlobalModule(private val modules: List<Module>) : Module() {
             build()
         }
 
-        listOf(catalystInstance, reactInstance).forEach { if (it != null) hook(it, hook) }
+        listOf(catalystInstance, scriptLoader).forEach { if (it != null) hook(it, hook) }
     }
 
     private fun hook(instance: Class<*>, hook: XC_MethodHook) {

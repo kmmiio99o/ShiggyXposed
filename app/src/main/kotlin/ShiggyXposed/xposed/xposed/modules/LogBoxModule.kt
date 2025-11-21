@@ -21,7 +21,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import ShiggyXposed.xposed.Utils.Companion.reloadApp
 
-class LogBoxModule : Module() {
+object LogBoxModule : Module() {
     lateinit var packageParam: XC_LoadPackage.LoadPackageParam
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
