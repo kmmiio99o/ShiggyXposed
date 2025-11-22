@@ -13,16 +13,8 @@ object BlockCrashReportingModule : Module() {
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         val crashReportingClass = classLoader.safeLoadClass("com.discord.crash_reporting.CrashReporting")
         crashReportingClass?.apply {
-            // Hooking this will result in a crash after a few seconds, since Discord expects initialization to complete when setting a Sentry tag.
-            // So we also hook isDisabled to make sure those calls are no-ops.
-            hookMethod(
-                "init", Context::class.java, String::class.java
-            ) {
-                before {
-                    Log.i("Blocked CrashReporting initialization")
-                    result = null
-                }
-            }
+
+            // This only exists on 30720x and above
             runCatching {
                 hookMethod("isDisabled") {
                     before {
@@ -30,17 +22,29 @@ object BlockCrashReportingModule : Module() {
                         result = true
                     }
                 }
-            }
-
-            val sentryInitProviderClass = classLoader.safeLoadClass("io.sentry.android.core.SentryInitProvider")
-            sentryInitProviderClass?.hookMethod("onCreate") {
-                before {
-                    Log.i("Blocked SentryInitProvider initialization")
-                    result = true
+            }.onFailure {
+                // In older versions, this hook works fine.
+                // Hooking this on 30720x will result in a crash after a few seconds,
+                // since Discord asserts initialization when setting a Sentry tag.
+                hookMethod(
+                    "init", Context::class.java, String::class.java
+                ) {
+                    before {
+                        Log.i("Blocked CrashReporting initialization")
+                        result = null
+                    }
                 }
             }
-
-            return@with
         }
+
+        val sentryInitProviderClass = classLoader.safeLoadClass("io.sentry.android.core.SentryInitProvider")
+        sentryInitProviderClass?.hookMethod("onCreate") {
+            before {
+                Log.i("Blocked SentryInitProvider initialization")
+                result = true
+            }
+        }
+
+        return@with
     }
 }

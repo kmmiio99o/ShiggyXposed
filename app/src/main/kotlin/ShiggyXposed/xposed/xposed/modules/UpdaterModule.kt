@@ -142,6 +142,9 @@ object UpdaterModule : Module() {
 
     fun showErrorDialog(e: Throwable) {
         val activity = lastActivity?.get() ?: return
+
+        activity.runOnUiThread {
+        }
     }
 
     fun resetLoaderConfig(context: Context) {
