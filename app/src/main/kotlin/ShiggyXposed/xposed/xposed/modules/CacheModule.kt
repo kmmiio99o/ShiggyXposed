@@ -1,10 +1,10 @@
-package GoonXposed.xposed.modules
+package ShiggyXposed.xposed.modules
 
 import android.content.Context
 import android.util.AtomicFile
-import GoonXposed.xposed.Module
-import GoonXposed.xposed.Utils.Log
-import GoonXposed.xposed.modules.bridge.BridgeModule
+import ShiggyXposed.xposed.Module
+import ShiggyXposed.xposed.Utils.Log
+import ShiggyXposed.xposed.modules.bridge.BridgeModule
 import java.io.*
 
 /**

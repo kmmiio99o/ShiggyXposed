@@ -1,18 +1,22 @@
 name: Build Release
+
 on:
   workflow_dispatch:
     inputs:
       versionName:
         required: true
-        description: This releases version name
+        description: This release's version name
         default: "1.0.0"
       versionCode:
         required: true
-        description: This releases version code
+        description: This release's version code
         default: "1000"
 
 permissions:
   contents: write
+
+env:
+  JAVA_VERSION: 17
 
 jobs:
   build:
@@ -23,106 +27,79 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup JDK 17
-        uses: actions/setup-java@v3
+      - name: Setup JDK
+        uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: 17
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: gradle
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2.0.10
+        uses: android-actions/setup-android@v2
 
       - name: Set Version
         uses: chkfung/android-version-actions@v1.1
         with:
           gradlePath: app/build.gradle.kts
-          versionCode: ${{github.event.inputs.versionCode}}
-          versionName: ${{github.event.inputs.versionName}}
+          versionCode: ${{ github.event.inputs.versionCode }}
+          versionName: ${{ github.event.inputs.versionName }}
 
-      - name: Bump Version
-        continue-on-error: true
+      - name: Commit Version Bump (if changed)
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
           git add app/build.gradle.kts
-          if ! git diff --quiet app/build.gradle.kts; then
-              git commit -m "chore: Bump version to ${{github.event.inputs.versionName}} (${{github.event.inputs.versionCode}})"
-              git push
+          if git diff --cached --quiet; then
+            echo "No version change."
           else
-              echo "No changes to version file, skipping commit"
+            git commit -m "chore: bump version to ${{ github.event.inputs.versionName }} (${{ github.event.inputs.versionCode }})"
+            git push
           fi
 
-      - name: Build Signed APK
+      - name: Prepare Keystore
         run: |
-          # Ensure keystore secret is present
-          if [ -z "${{ secrets.keystore }}" ]; then
-            echo "Keystore secret missing, aborting"
-            exit 1
-          fi
+          echo "${{ secrets.KEYSTORE }}" | base64 -d > signing-key.jks
+          ls -l signing-key.jks
 
-          echo "${{ secrets.keystore }}" | base64 -d > $GITHUB_WORKSPACE/signing-key.jks
-          chmod +x ./gradlew
-
-          # Retry gradle up to 3 times to mitigate transient network/cache service issues
-          ATTEMPT=0
-          until [ $ATTEMPT -ge 3 ]
-          do
-            ./gradlew packageReleaseUniversalApk \
-              -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks \
-              -Pandroid.injected.signing.store.password=${{ secrets.keystore_password }} \
-              -Pandroid.injected.signing.key.alias=${{ secrets.key_alias }} \
-              -Pandroid.injected.signing.key.password=${{ secrets.key_password }} --no-daemon --stacktrace && break
-
-            ATTEMPT=$((ATTEMPT+1))
-            echo "Gradle build failed, retrying ($ATTEMPT/3)..."
-            sleep 5
-          done
-
-          if [ $ATTEMPT -ge 3 ]; then
-            echo "Gradle build failed after 3 attempts"
-            exit 1
-          fi
-
-      - name: Release
+      - name: Build Universal APKs
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          GRADLE_OPTS: -Dorg.gradle.daemon=false
         run: |
-          set -e
-          echo "Locating built APK(s) under app/build/outputs..."
-          # Find APK files produced by the build in common output locations
-          apk_paths=$(find app/build/outputs -type f -name "*.apk" 2>/dev/null || true)
-          if [ -z "$apk_paths" ]; then
-            echo "ERROR: No APK files found under app/build/outputs"
-            echo "Diagnostics: top-level listing of app/build/outputs:"
-            ls -la app/build/outputs || true
-            echo "Diagnostics: recursive listing (files only):"
-            find app/build/outputs -type f -maxdepth 6 -print || true
-            echo "Failing the job so you can inspect the build logs and diagnostics above."
-            exit 1
-          fi
-          # Prepare a directory to collect APKs for the release
-          mkdir -p release-apks
-          echo "Copying found APK(s) to release-apks/ for upload:"
-          for apk in $apk_paths; do
-            echo " - $apk"
-            cp "$apk" "release-apks/$(basename "$apk")"
-          done
-          # Keep backward compatibility: if exactly one APK found, copy it to the root as app-release.apk
-          apk_count=$(echo "$apk_paths" | wc -w)
-          if [ "$apk_count" -eq 1 ]; then
-            single_apk=$(echo "$apk_paths")
-            cp "$single_apk" ./app-release.apk
-            echo "Single APK copied to ./app-release.apk"
-          else
-            echo "Multiple APKs found ($apk_count). All copied to release-apks/"
-          fi
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
-          tag="${{ github.event.inputs.versionCode }}"
-          git tag "$tag"
-          git push origin "$tag"
-          # Create the GitHub release including all APK(s) we collected (debug + release)
-          gh release create "$tag" \
-            --title "${{ github.event.inputs.versionName }}" \
-            --generate-notes \
-            release-apks/*
+          ./gradlew packageDebugUniversalApk packageReleaseUniversalApk \
+            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+
+      - name: Collect APKs
+        run: |
+          mkdir dist
+          mv app/build/outputs/apk_from_bundle/debug/app-debug-universal.apk dist/app-debug.apk
+          mv app/build/outputs/apk_from_bundle/release/app-release-universal.apk dist/app-release.apk
+          ls -l dist
+
+      - name: Upload APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apks
+          path: dist/*.apk
+          if-no-files-found: error
+
+      - name: Create Tag and Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag=${{ github.event.inputs.versionCode }}
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Tag $tag already exists, skipping creation."
+          else
+            git tag "$tag"
+            git push origin "$tag"
+          fi
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" \
+            --title "${{ github.event.inputs.versionName }}" \
+            --generate-notes \
+            dist/app-debug.apk dist/app-release.apk

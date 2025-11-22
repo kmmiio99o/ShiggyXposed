@@ -1,65 +1,79 @@
 name: Build APK
-on: [push]
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: 17
 
 jobs:
   build:
-    name: Build and push
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: "17"
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
 
-      - name: "Grant execution permission"
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: "Build APKs"
+      - name: Optional Keystore (if provided)
+        env:
+          KEYSTORE: ${{ secrets.KEYSTORE }}
         run: |
-          # Retry the Gradle build up to 3 times to mitigate transient cache/service errors
-          ATTEMPT=0
-          until [ $ATTEMPT -ge 3 ]
-          do
-            ./gradlew build --no-daemon --stacktrace && break
-            ATTEMPT=$((ATTEMPT+1))
-            echo "Gradle build failed, retrying ($ATTEMPT/3)..."
-            sleep 5
-          done
-          if [ $ATTEMPT -ge 3 ]; then
-            echo "Gradle build failed after 3 attempts"
-            exit 1
+          if [ -n "$KEYSTORE" ]; then
+            echo "$KEYSTORE" | base64 -d > signing-key.jks
+            ls -l signing-key.jks
+          else
+            echo "No keystore provided, skipping..."
           fi
 
-      - name: "Setup directories"
+      - name: Assemble Debug and Release
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          GRADLE_OPTS: -Dorg.gradle.daemon=false
         run: |
-          mkdir -p /tmp/ShiggyXposedbuild/apks
-          mkdir -p /tmp/ShiggyXposedbuild/tools
+          if [ -f signing-key.jks ]; then
+            ./gradlew assembleDebug assembleRelease \
+              -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+          else
+            ./gradlew assembleDebug assembleRelease
+          fi
 
-      - name: "Move debug APK"
-        run: mv ./app/build/outputs/apk/debug/app-debug.apk /tmp/ShiggyXposedbuild/apks
+      - name: Collect APKs
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/*.apk dist/ || true
+          # Prefer signed release if produced
+            if ls app/build/outputs/apk/release/*-signed.apk >/dev/null 2>&1; then
+              cp app/build/outputs/apk/release/*-signed.apk dist/
+            else
+              cp app/build/outputs/apk/release/*.apk dist/
+            fi
+          ls -1 dist
 
-      - name: "Download uber-apk-signer"
-        run: wget -nv "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.2.1/uber-apk-signer-1.2.1.jar" -O /tmp/ShiggyXposedbuild/tools/uber-apk-signer.jar
-
-      - name: "Sign release APK"
-        run: java -jar /tmp/ShiggyXposedbuild/tools/uber-apk-signer.jar --apks ./app/build/outputs/apk/release/app-release-unsigned.apk --out /tmp/ShiggyXposedbuild/apks/
-
-      - name: "Rename release APK"
-        run: mv /tmp/ShiggyXposedbuild/apks/app-release-aligned-debugSigned.apk /tmp/ShiggyXposedbuild/apks/app-release.apk
-
-      - name: "Upload debug APK"
+      - name: Upload All APKs
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: /tmp/ShiggyXposedbuild/apks/app-debug.apk
-
-      - name: "Upload release APK"
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release
-          path: /tmp/ShiggyXposedbuild/apks/app-release.apk
+          name: apks
+          path: dist/*.apk
+          if-no-files-found: error

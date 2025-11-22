@@ -1,4 +1,4 @@
-package GoonXposed.xposed
+package ShiggyXposed.xposed
 
 class Constants {
     companion object {
@@ -9,10 +9,11 @@ class Constants {
         const val CACHE_DIR = "cache/pyoncord"
         const val MAIN_SCRIPT_FILE = "bundle.js"
 
-        const val LOG_TAG = "GoonXposed"
 
-        const val LOADER_NAME = "GoonXposed"
+        const val LOG_TAG = "Shiggy"
 
-        const val USER_AGENT = "GoonXposed"
+        const val LOADER_NAME = "ShiggyXposed"
+
+        const val USER_AGENT = "ShiggyXposed"
     }
 }

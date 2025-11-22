@@ -1,9 +1,9 @@
-package GoonXposed.xposed.modules.no_track
+package ShiggyXposed.xposed.modules.no_track
 
 import android.content.Context
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import GoonXposed.xposed.Module
-import GoonXposed.xposed.Utils.Log
+import ShiggyXposed.xposed.Module
+import ShiggyXposed.xposed.Utils.Log
 
 /**
  * Hooks Discord's deep links tracking to disable AppsFlyer initialization.
