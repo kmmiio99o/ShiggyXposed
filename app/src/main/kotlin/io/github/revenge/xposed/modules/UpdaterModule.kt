@@ -111,7 +111,7 @@ object UpdaterModule : Module() {
                         // This is a retry, so we show a dialog
                         if (activity != null) {
                             withContext(Dispatchers.Main) {
-                                AlertDialog.Builder(activity).setTitle("Revenge Update Successful")
+                                AlertDialog.Builder(activity).setTitle("Kettu Update Successful")
                                     .setMessage("A reload is required for changes to take effect.")
                                     .setPositiveButton("Reload") { dialog, _ ->
                                         reloadApp()
@@ -144,23 +144,6 @@ object UpdaterModule : Module() {
         val activity = lastActivity?.get() ?: return
 
         activity.runOnUiThread {
-            AlertDialog.Builder(activity).setTitle("Revenge Update Failed").setMessage(
-                """
-                Unable to download the latest version of Revenge.
-                This is usually caused by bad network connection.
-            
-                Error: ${e.message ?: e.stackTraceToString()}
-                """.trimIndent()
-            ).setNegativeButton("Dismiss") { dialog, _ ->
-                dialog.dismiss()
-            }.setPositiveButton("Retry Update") { dialog, _ ->
-                downloadScript(activity)
-                Toast.makeText(activity, "Retrying download in background...", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
-            }.setNeutralButton("Recovery") { dialog, _ ->
-                Utils.showRecoveryAlert(activity)
-                dialog.dismiss()
-            }.show()
         }
     }
 

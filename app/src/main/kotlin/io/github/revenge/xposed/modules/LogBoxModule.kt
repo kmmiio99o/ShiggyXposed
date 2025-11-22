@@ -93,7 +93,7 @@ object LogBoxModule : Module() {
         val options = arrayOf(
             if (isSafeModeEnabled(context)) "Disable Safe Mode" else "Enable Safe Mode",
             "Reset Bundle",
-            "Reload App (Full Relaunch)"
+            "Reload App"
         )
 
         AlertDialog.Builder(context)
