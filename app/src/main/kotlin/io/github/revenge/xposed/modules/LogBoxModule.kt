@@ -3,6 +3,8 @@ package io.github.revenge.xposed.modules
 import android.app.AlertDialog
 import android.content.Context
 import android.widget.Toast
+import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.revenge.xposed.Module
@@ -17,6 +19,7 @@ import java.net.URL
 object LogBoxModule : Module() {
     lateinit var packageParam: XC_LoadPackage.LoadPackageParam
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var contextForMenu: Context? = null
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         this@LogBoxModule.packageParam = packageParam
@@ -30,79 +33,199 @@ object LogBoxModule : Module() {
                     result = true
                 }
             }
+            Log.e("Successfully hooked DCDReactNativeHost")
         } catch (e: Exception) {
             Log.e("Failed to hook DCDReactNativeHost: ${e.message}")
-        }
-
-
-        listOf(
-            "com.facebook.react.devsupport.BridgeDevSupportManager",
-            "com.facebook.react.devsupport.BridgelessDevSupportManager"
-        ).mapNotNull { packageParam.classLoader.safeLoadClass(it) }.forEach {
-            hookDevSupportManager(it)
         }
 
         return@with
     }
 
     override fun onContext(context: Context) {
-    }
-
-    private fun hookDevSupportManager(clazz: Class<*>) {
         try {
-            val handleReloadJSMethod = clazz.methods.first { it.name == "handleReloadJS" }
-            handleReloadJSMethod.hook {
-                before {
-                    reloadApp()
-                    result = null
+            Log.e("onContext called with context: $context")
+            contextForMenu = context
+            
+            val possibleClasses = listOf(
+                "com.facebook.react.devsupport.BridgeDevSupportManager",
+                "com.facebook.react.devsupport.BridgelessDevSupportManager",
+                "com.facebook.react.devsupport.DevSupportManagerImpl",
+                "com.facebook.react.devsupport.DevSupportManagerBase",
+                "com.facebook.react.devsupport.DefaultDevSupportManager"
+            )
+            
+            var foundAny = false
+            possibleClasses.forEach { className ->
+                try {
+                    val clazz = packageParam.classLoader.loadClass(className)
+                    Log.e("Found class: $className")
+                    hookDevSupportManager(clazz, context)
+                    foundAny = true
+                } catch (e: Exception) {
+                    Log.e("Class not found: $className - ${e.message}")
                 }
             }
-
-            val showDevOptionsDialogMethod = clazz.methods.first { it.name == "showDevOptionsDialog" }
-            showDevOptionsDialogMethod.hook {
-                before {
-                    try {
-                        val context = getContextFromDevSupport(clazz, thisObject)
-                        if (context != null) {
-                            showRecoveryMenu(context)
-                        }
-                        result = null // Ignore the original dev menu
-                    } catch (e: Exception) {
-                        Log.e("Failed to show recovery menu: ${e.message}")
-                    }
-                }
+            
+            if (!foundAny) {
+                tryFindDevSupportClasses(context)
             }
         } catch (e: Exception) {
-            Log.e("Failed to hook DevSupportManager methods on class ${clazz.name}: ${e.message}")
+        }
+    }
+    
+    private fun tryFindDevSupportClasses(context: Context) {
+        try {
+            val dexFile = packageParam.classLoader.javaClass.getDeclaredField("pathList")
+            dexFile.isAccessible = true
+            Log.e("Searching for DevSupport classes in classloader...")
+        } catch (e: Exception) {
+            Log.e("Could not search for classes: ${e.message}")
+        }
+    }
+
+    private fun hookDevSupportManager(clazz: Class<*>, context: Context) {
+        Log.e("Attempting to hook ${clazz.name}")
+        
+        // List all methods to see what's available
+        Log.e("Available methods in ${clazz.simpleName}:")
+        clazz.methods.forEach { method ->
+            if (method.name.contains("Dev") || method.name.contains("Reload") || method.name.contains("Options")) {
+                Log.e("  - ${method.name}")
+            }
+        }
+        
+        try {
+            try {
+                val handleReloadJSMethod = clazz.methods.firstOrNull { it.name == "handleReloadJS" }
+                if (handleReloadJSMethod != null) {
+                    XposedBridge.hookMethod(handleReloadJSMethod, object : XC_MethodReplacement() {
+                        override fun replaceHookedMethod(param: MethodHookParam): Any? {
+                            Log.e("handleReloadJS called - reloading app")
+                            reloadApp()
+                            return null
+                        }
+                    })
+                } else {
+                }
+            } catch (e: Exception) {
+                Log.e("Failed to hook handleReloadJS: ${e.message}")
+            }
+
+            try {
+                val showDevOptionsDialogMethod = clazz.methods.firstOrNull { it.name == "showDevOptionsDialog" }
+                if (showDevOptionsDialogMethod != null) {
+                    XposedBridge.hookMethod(showDevOptionsDialogMethod, object : XC_MethodReplacement() {
+                        override fun replaceHookedMethod(param: MethodHookParam): Any? {
+                            try {
+                                var activityContext: Context? = null
+                                try {
+                                    activityContext = getContextFromDevSupport(clazz, param.thisObject)
+                                    if (activityContext != null) {
+                                        Log.e("Successfully got context from DevSupport")
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e("Failed to get context from DevSupport (non-fatal): ${e.message}")
+                                }
+                                
+                                val finalContext = activityContext ?: contextForMenu ?: context
+                                Log.e("Using context: $finalContext (type: ${finalContext.javaClass.name})")
+                                
+                                showRecoveryMenu(finalContext)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                            return null
+                        }
+                    })
+                } else {
+                }
+            } catch (e: Exception) {
+            }
+        } catch (e: Exception) {
         }
     }
 
     private fun getContextFromDevSupport(clazz: Class<*>, instance: Any?): Context? {
+        if (instance == null) {
+            Log.e("getContextFromDevSupport: instance is null")
+            return null
+        }
+        
         return try {
-            val mReactInstanceDevHelperField = XposedHelpers.findField(clazz, "mReactInstanceDevHelper")
-            val helper = mReactInstanceDevHelperField.get(instance)
-            val getCurrentActivityMethod = helper?.javaClass?.methods?.first { it.name == "getCurrentActivity" }
-            getCurrentActivityMethod?.invoke(helper) as? Context
+            
+            // what if we just did this and searched for literally everything
+            val helpers = listOf(
+                "mReactInstanceDevHelper",
+                "reactInstanceDevHelper",
+                "mReactInstanceManager",
+                "mApplicationContext"
+            )
+            
+            for (helperName in helpers) {
+                try {
+                    Log.e("Trying field: $helperName")
+                    val helperField = XposedHelpers.findFieldIfExists(clazz, helperName)
+                    if (helperField == null) {
+                        Log.e("Field $helperName not found, skipping")
+                        continue
+                    }
+                    
+                    val helper = helperField.get(instance)
+                    if (helper == null) {
+                        Log.e("Field $helperName is null, skipping")
+                        continue
+                    }
+                    
+                    if (helper is Context) {
+                        Log.e("Field $helperName is a Context, returning it")
+                        return helper
+                    }
+                    
+                    val getCurrentActivityMethod = helper.javaClass.methods.firstOrNull { 
+                        it.name == "getCurrentActivity" 
+                    }
+                    
+                    if (getCurrentActivityMethod != null) {
+                        val ctx = getCurrentActivityMethod.invoke(helper) as? Context
+                        if (ctx != null) {
+                            Log.e("Got context from $helperName.getCurrentActivity()")
+                            return ctx
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("Error trying $helperName: ${e.message}")
+                }
+            }
+            
+            Log.e("Could not get context from DevSupport object using any method")
+            null
         } catch (e: Exception) {
-            Log.e("Failed to get context: ${e.message}")
+            Log.e("Failed to get context (outer catch): ${e.message}")
             null
         }
     }
 
     private fun showRecoveryMenu(context: Context) {
-        val options = arrayOf(
-            if (isSafeModeEnabled(context)) "Disable Safe Mode" else "Enable Safe Mode",
-            "Reset Bundle",
-            "Reload App"
-        )
+        Log.e("showRecoveryMenu called with context: $context")
+        try {
+            val options = arrayOf(
+                if (isSafeModeEnabled(context)) "Disable Safe Mode" else "Enable Safe Mode",
+                "Reset Bundle",
+                "Reload App"
+            )
 
-        AlertDialog.Builder(context)
-            .setTitle("KettuXposed Recovery Menu")
-            .setItems(options) { _, which ->
-                handleMenuSelection(context, which)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+            AlertDialog.Builder(context)
+                .setTitle("KettuXposed Recovery Menu")
+                .setItems(options) { _, which ->
+                    handleMenuSelection(context, which)
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+            Log.e("Recovery menu shown successfully")
+        } catch (e: Exception) {
+            Log.e("Error showing recovery menu: ${e.message}", e)
+            throw e
+        }
     }
 
     private fun handleMenuSelection(context: Context, index: Int) {
