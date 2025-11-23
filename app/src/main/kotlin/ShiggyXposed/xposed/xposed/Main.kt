@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed
+package GoonXposed.xposed
 
 import android.app.Activity
 import android.content.Context
@@ -7,15 +7,15 @@ import android.os.Bundle
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import ShiggyXposed.xposed.Utils.Log
-import ShiggyXposed.xposed.modules.*
-import ShiggyXposed.xposed.modules.appearance.FontsModule
-import ShiggyXposed.xposed.modules.appearance.SysColorsModule
-import ShiggyXposed.xposed.modules.appearance.ThemesModule
-import ShiggyXposed.xposed.modules.bridge.AdditionalBridgeMethodsModule
-import ShiggyXposed.xposed.modules.bridge.BridgeModule
-import ShiggyXposed.xposed.modules.no_track.BlockCrashReportingModule
-import ShiggyXposed.xposed.modules.no_track.BlockDeepLinksTrackingModule
+import GoonXposed.xposed.Utils.Log
+import GoonXposed.xposed.modules.*
+import GoonXposed.xposed.modules.appearance.FontsModule
+import GoonXposed.xposed.modules.appearance.SysColorsModule
+import GoonXposed.xposed.modules.appearance.ThemesModule
+import GoonXposed.xposed.modules.bridge.AdditionalBridgeMethodsModule
+import GoonXposed.xposed.modules.bridge.BridgeModule
+import GoonXposed.xposed.modules.no_track.BlockCrashReportingModule
+import GoonXposed.xposed.modules.no_track.BlockDeepLinksTrackingModule
 import kotlinx.coroutines.CompletableDeferred
 
 object HookStateHolder {
