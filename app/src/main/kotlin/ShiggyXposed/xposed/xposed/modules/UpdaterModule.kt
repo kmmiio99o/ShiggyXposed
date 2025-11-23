@@ -55,7 +55,7 @@ object UpdaterModule : Module() {
     private const val CONFIG_FILE = "loader.json"
 
     private const val DEFAULT_BUNDLE_URL =
-        "https://github.com/OTKUSteyler/GoonCord/release/gooncord.js"
+        "https://github.com/OTKUSteyler/GoonCord/releases/download/1.1.11/gooncord.js"
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         cacheDir = File(appInfo.dataDir, Constants.CACHE_DIR).apply { mkdirs() }
