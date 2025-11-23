@@ -21,7 +21,7 @@ class Utils {
         }
 
         fun showRecoveryAlert(context: Context) {
-            AlertDialog.Builder(context).setTitle("ShiggyCord Recovery Options")
+            AlertDialog.Builder(context).setTitle("GoonCord Recovery Options")
                 .setItems(arrayOf("Reload", "Delete Script", "Reset Loader Config")) { _, which ->
                     when (which) {
                         0 -> {
