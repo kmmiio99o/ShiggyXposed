@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -7,12 +7,12 @@ import android.util.AtomicFile
 import android.widget.Toast
 import androidx.core.util.writeBytes
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import ShiggyXposed.xposed.Constants
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils
-import ShiggyXposed.xposed.Utils.Companion.JSON
-import ShiggyXposed.xposed.Utils.Companion.reloadApp
-import ShiggyXposed.xposed.Utils.Log
+import GoonXposed.xposed.Constants
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils
+import GoonXposed.xposed.Utils.Companion.JSON
+import GoonXposed.xposed.Utils.Companion.reloadApp
+import GoonXposed.xposed.Utils.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -55,7 +55,7 @@ object UpdaterModule : Module() {
     private const val CONFIG_FILE = "loader.json"
 
     private const val DEFAULT_BUNDLE_URL =
-        "https://github.com/kmmiio99o/ShiggyCord/releases/latest/download/shiggycord.js"
+        "https://github.com/OTKUSteyler/GoonCord/release/gooncord.js"
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         cacheDir = File(appInfo.dataDir, Constants.CACHE_DIR).apply { mkdirs() }
