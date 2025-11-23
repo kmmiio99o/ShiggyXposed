@@ -1,15 +1,15 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
 import android.content.res.AssetManager
 import android.content.res.XModuleResources
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import ShiggyXposed.xposed.Constants
-import ShiggyXposed.xposed.HookStateHolder
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils.Log
-import ShiggyXposed.xposed.modules.HookScriptLoaderModule.PRELOADS_DIR
+import GoonXposed.xposed.Constants
+import GoonXposed.xposed.HookStateHolder
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils.Log
+import GoonXposed.xposed.modules.HookScriptLoaderModule.PRELOADS_DIR
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
