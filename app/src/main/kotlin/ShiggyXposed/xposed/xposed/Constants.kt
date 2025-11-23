@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed
+package GoonXposed.xposed
 
 class Constants {
     companion object {
@@ -10,10 +10,10 @@ class Constants {
         const val MAIN_SCRIPT_FILE = "bundle.js"
 
 
-        const val LOG_TAG = "Shiggy"
+        const val LOG_TAG = "Goon"
 
-        const val LOADER_NAME = "ShiggyXposed"
+        const val LOADER_NAME = "GoonXposed"
 
-        const val USER_AGENT = "ShiggyXposed"
+        const val USER_AGENT = "GoonXposed"
     }
 }
