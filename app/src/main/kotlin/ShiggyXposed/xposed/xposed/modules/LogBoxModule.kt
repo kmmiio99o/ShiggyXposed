@@ -1,4 +1,4 @@
-package ShiggyXposed.xposed.modules
+package GoonXposed.xposed.modules
 
 import android.animation.AnimatorSet
 import android.animation.ArgbEvaluator
@@ -22,9 +22,9 @@ import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
-import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Utils.Companion.reloadApp
-import ShiggyXposed.xposed.Utils.Log
+import GoonXposed.xposed.Module
+import GoonXposed.xposed.Utils.Companion.reloadApp
+import GoonXposed.xposed.Utils.Log
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.File
