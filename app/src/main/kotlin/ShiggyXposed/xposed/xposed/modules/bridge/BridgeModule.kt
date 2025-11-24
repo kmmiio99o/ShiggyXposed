@@ -50,7 +50,7 @@ object BridgeModule : Module() {
     private lateinit var readableMapToHashMap: Method
     private lateinit var argumentsMakeNative: Method
 
-    private const val CALL_DATA_KEY = "Goon"
+    private const val CALL_DATA_KEY = "Shiggy"
     private const val METHOD_NAME_KEY = "method"
     private const val METHOD_ARGS_KEY = "args"
 
