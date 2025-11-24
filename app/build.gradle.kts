@@ -12,8 +12,8 @@ android {
         applicationId = "GoonXposed.xposed"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1220
-        versionName = "1.2.2"
+        versionCode = 1310
+        versionName = "1.3.1"
     }
 
     buildTypes {
