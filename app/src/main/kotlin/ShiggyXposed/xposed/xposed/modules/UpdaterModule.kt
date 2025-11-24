@@ -111,7 +111,7 @@ object UpdaterModule : Module() {
                         // This is a retry, so we show a dialog
                         if (activity != null) {
                             withContext(Dispatchers.Main) {
-                                AlertDialog.Builder(activity).setTitle("ShiggyCord Update Successful")
+                                AlertDialog.Builder(activity).setTitle("GoonCord Update Successful")
                                     .setMessage("A reload is required for changes to take effect.")
                                     .setPositiveButton("Reload") { dialog, _ ->
                                         reloadApp()
