@@ -37,7 +37,7 @@ jobs:
             exit 1
           fi
 
-       - name: Setup directories
+      - name: Setup directories
         run:  
           mkdir -p /tmp/ShiggyXposedbuild/apks
           mkdir -p /tmp/ShiggyXposedbuild/tools
