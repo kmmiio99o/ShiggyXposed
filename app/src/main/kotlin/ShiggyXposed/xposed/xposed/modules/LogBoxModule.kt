@@ -465,7 +465,9 @@ object LogBoxModule : Module() {
             textSize = 14f
             setTextColor(colors.onSurfaceVariant)
             setPadding(0, 0, 0, dpToPx(context, 24))
-            lineHeight = dpToPx(context, 20)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                lineHeight = dpToPx(context, 20)
+            }
         }
         container.addView(messageView)
 
