@@ -353,7 +353,7 @@ object LogBoxModule : Module() {
 
             // Title
             val titleView = TextView(context).apply {
-                text = "ShiggyXposed Recovery"
+                text = "GoonXposed Recovery"
                 textSize = 22f
                 setTextColor(colors.onSurface)
                 typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.BOLD)
@@ -613,7 +613,7 @@ object LogBoxModule : Module() {
                     val config = JSONObject(configFile.readText())
                     val customLoadUrl = config.optJSONObject("customLoadUrl") ?: JSONObject()
                     customLoadUrl.put("enabled", false)
-                    customLoadUrl.put("url", "http://localhost:4040/shiggycord.js")
+                    customLoadUrl.put("url", "http://localhost:4040/gooncord.js")
                     config.put("customLoadUrl", customLoadUrl)
                     configFile.writeText(config.toString())
                 }
@@ -703,7 +703,7 @@ object LogBoxModule : Module() {
         container.addView(toggleContainer)
 
         val urlInput = EditText(context).apply {
-            hint = "http://localhost:4040/shiggycord.js"
+            hint = "http://localhost:4040/gooncord.js"
             setTextColor(colors.onSurface)
             setHintTextColor(colors.onSurfaceVariant)
             background = createM3Background(context, colors.surfaceVariant, 12f)
@@ -788,7 +788,7 @@ object LogBoxModule : Module() {
                     setCustomBundleURL(context, url, true)
                     dialog.dismiss()
                 } else if (!enabled) {
-                    setCustomBundleURL(context, url.ifEmpty { "http://localhost:4040/shiggycord.js" }, false)
+                    setCustomBundleURL(context, url.ifEmpty { "http://localhost:4040/gooncord.js" }, false)
                     dialog.dismiss()
                 } else {
                     Toast.makeText(context, "Please enter a URL", Toast.LENGTH_SHORT).show()
