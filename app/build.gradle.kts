@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "GoonXposed.xposed"
-        minSdk = 16
+        minSdk = 36
         targetSdk = 36
         versionCode = 1310
         versionName = "1.3.1"
