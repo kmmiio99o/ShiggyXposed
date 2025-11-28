@@ -7,6 +7,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.os.Build
 import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.Gravity
@@ -1019,7 +1020,9 @@ object LogBoxModule : Module() {
             textSize = 14f
             setTextColor(colors.onSurfaceVariant)
             setPadding(0, 0, 0, dpToPx(context, 24))
-            lineHeight = dpToPx(context, 20)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                lineHeight = dpToPx(context, 20)
+            }
         }
         container.addView(messageView)
 
