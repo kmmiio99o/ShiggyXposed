@@ -13,7 +13,7 @@
         <meta-data android:name="xposedmodule" android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="Xposed module to inject ShiggyCord into discord"
+            android:value="Xposed module to inject GoonCord into discord"
         />
         <meta-data android:name="xposedminversion" android:value="82" />
         <meta-data android:name="xposedscope" android:value="com.discord" />
