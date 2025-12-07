@@ -34,5 +34,5 @@ This project was made possible thanks to the work of:
 
 · The LSPosed Team for the framework.
 · JingMatrix for their LSPosed fork.
-· [cocobo1](https://codeberg.org/cocobo1) for adjusting the Xposed module for Kettu client mod
+· [cocobo1](https://codeberg.org/cocobo1) for adjusting the Xposed module for Kettu client mod.
 · [Revenge Team](https://github.com/revenge-mod) for making a really good Xposed Module to base of
