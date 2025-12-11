@@ -24,19 +24,37 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import ShiggyXposed.xposed.Module
-import ShiggyXposed.xposed.Constants
 import ShiggyXposed.xposed.Utils.Companion.reloadApp
 import ShiggyXposed.xposed.Utils.Log
+import ShiggyXposed.xposed.Constants
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
+/**
+ * LogBoxModule: provides a recovery/dev menu inside Discord's dev dialog.
+ *
+ * This file implements:
+ * - Recovery menu
+ * - Options menu (opens Themes submenu)
+ * - Themes submenu with segmented appearance selector (System / Light / Dark),
+ *   flavor selection, and the relocated Clear Cache & Reset and Refetch Bundle buttons.
+ *
+ * Navigation:
+ * - Recovery -> Options -> Themes
+ * - Each submenu has a Back button to return to the previous menu.
+ *
+ * All visual changes in Themes affect only the LogBox menu UI (stored in files/logbox/...).
+ */
 object LogBoxModule : Module() {
     lateinit var packageParam: XC_LoadPackage.LoadPackageParam
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var contextForMenu: Context? = null
+
+    // Hold currently visible menu container so we can update colors in-place without closing dialogs
+    private var currentMenuContainer: LinearLayout? = null
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         this@LogBoxModule.packageParam = packageParam
@@ -231,8 +249,7 @@ object LogBoxModule : Module() {
     }
 
     private fun isDarkMode(context: Context): Boolean {
-        // Read LogBox-specific appearance override first (logbox/LOGBOX_SETTINGS).
-        // Supported values for appearanceMode: "system" | "light" | "dark"
+        // Check logbox-specific appearance override first
         try {
             val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
             if (settingsFile.exists()) {
@@ -240,10 +257,10 @@ object LogBoxModule : Module() {
                 val mode = json.optString("appearanceMode", "")
                 if (mode == "light") return false
                 if (mode == "dark") return true
-                // if mode == "system" or empty, fall back to system below
+                // if "system" or empty, fall through to system detection
             }
         } catch (e: Exception) {
-            Log.e("Error reading logbox appearance settings: ${e.message}")
+            Log.e("Error reading LogBox appearance settings: ${e.message}")
         }
 
         return (context.resources.configuration.uiMode and
@@ -251,9 +268,20 @@ object LogBoxModule : Module() {
                 android.content.res.Configuration.UI_MODE_NIGHT_YES
     }
 
+    private fun getAppearanceMode(context: Context): String {
+        return try {
+            val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
+            if (!settingsFile.exists()) return "system"
+            val json = JSONObject(settingsFile.readText())
+            json.optString("appearanceMode", "system")
+        } catch (e: Exception) {
+            Log.e("Error reading appearance mode: ${e.message}")
+            "system"
+        }
+    }
+
     private fun getM3Colors(context: Context): M3Colors {
         val isDark = isDarkMode(context)
-
         // Base palettes
         val base = if (isDark) {
             M3Colors(
@@ -292,7 +320,6 @@ object LogBoxModule : Module() {
             val themeFile = File(context.filesDir, "logbox/LOGBOX_THEMES")
             if (themeFile.exists()) {
                 val json = JSONObject(themeFile.readText())
-                // Support multiple keys that might be written by different UIs/tools:
                 val flavor = json.optString("menuFlavor", json.optString("flavor", json.optString("id", ""))).lowercase()
                 if (flavor.isNotEmpty()) {
                     val flavorMap = mapOf(
@@ -321,7 +348,7 @@ object LogBoxModule : Module() {
                 }
             }
         } catch (e: Exception) {
-            Log.e("Error applying logbox flavor: ${e.message}")
+            Log.e("Error applying LogBox flavor: ${e.message}")
         }
 
         return base
@@ -438,12 +465,6 @@ object LogBoxModule : Module() {
                 handleMenuSelection(context, 0)
             })
 
-            // Refetch Bundle Button
-            container.addView(createM3Button(context, "Refetch Bundle", colors) {
-                dialog.dismiss()
-                handleMenuSelection(context, 1)
-            })
-
             // Load Custom Bundle Button
             container.addView(createM3Button(context, "Load Custom Bundle", colors) {
                 dialog.dismiss()
@@ -462,11 +483,7 @@ object LogBoxModule : Module() {
                 handleMenuSelection(context, 3)
             })
 
-            // Clear Cache & Reset Button
-            container.addView(createM3Button(context, "Clear Cache & Reset", colors) {
-                dialog.dismiss()
-                handleMenuSelection(context, 4)
-            })
+
 
             dialog = AlertDialog.Builder(context)
                 .setView(container)
@@ -476,6 +493,7 @@ object LogBoxModule : Module() {
                 createM3Background(context, Color.TRANSPARENT, 28f)
             )
 
+            currentMenuContainer = container
             dialog.show()
             Log.e("Recovery menu shown successfully")
         } catch (e: Exception) {
@@ -589,10 +607,12 @@ object LogBoxModule : Module() {
             createM3Background(context, Color.TRANSPARENT, 28f)
         )
 
+        currentMenuContainer = container
+
         dialog.show()
     }
 
-    // Options Submenu: Theme mode, disable bundle injection, flavor selection
+    // Options menu -> entry point for Themes submenu & other options
     private fun showOptionsMenu(context: Context) {
         val colors = getM3Colors(context)
         lateinit var dialog: AlertDialog
@@ -600,12 +620,12 @@ object LogBoxModule : Module() {
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(
-                dpToPx(context, 24),
-                dpToPx(context, 24),
-                dpToPx(context, 24),
-                dpToPx(context, 24)
+                dpToPx(context, 20),
+                dpToPx(context, 20),
+                dpToPx(context, 20),
+                dpToPx(context, 20)
             )
-            background = createM3Background(context, colors.surface, 28f)
+            background = createM3Background(context, colors.surface, 24f)
         }
 
         val titleView = TextView(context).apply {
@@ -617,18 +637,10 @@ object LogBoxModule : Module() {
         }
         container.addView(titleView)
 
-        // Theme Mode selection (affects LogBox menu only)
-        container.addView(createM3Button(context, "Follow System Theme", colors) {
+        // Themes button -> opens Themes submenu
+        container.addView(createM3Button(context, "Themes", colors) {
             dialog.dismiss()
-            setAppearanceMode(context, "system")
-        })
-        container.addView(createM3Button(context, "Force Light Mode", colors) {
-            dialog.dismiss()
-            setAppearanceMode(context, "light")
-        })
-        container.addView(createM3Button(context, "Force Dark Mode", colors) {
-            dialog.dismiss()
-            setAppearanceMode(context, "dark")
+            showThemesMenu(context)
         })
 
         // Disable/Enable bundle injection
@@ -639,15 +651,23 @@ object LogBoxModule : Module() {
             toggleBundleInjection(context)
         })
 
-        // Flavor selection
-        container.addView(createM3Button(context, "Menu Color Flavor", colors) {
+        container.addView(createM3Button(context, "Refetch Bundle", colors) {
             dialog.dismiss()
-            showFlavorSelection(context)
+            showConfirmAction(context, "Refetch Bundle", "This will download the latest bundle from Github.") {
+                refetchBundle(context)
+            }
         })
 
-        // Back / Close button
-        container.addView(createM3Button(context, "Close", colors) {
+        container.addView(createM3Button(context, "Clear Cache & Reset", colors) {
             dialog.dismiss()
+            showConfirmAction(context, "Clear Cache & Reset", "This will clear all cached bundles and reset to default settings.") {
+                clearCacheAndReset(context)
+            }
+        })
+
+        container.addView(createM3Button(context, "Back", colors) {
+            dialog.dismiss()
+            showRecoveryMenu(context)
         })
 
         dialog = AlertDialog.Builder(context)
@@ -658,7 +678,136 @@ object LogBoxModule : Module() {
             createM3Background(context, Color.TRANSPARENT, 28f)
         )
 
+        currentMenuContainer = container
         dialog.show()
+    }
+
+    // Themes submenu: segmented selector for appearance + flavors + relocated buttons (Refetch/Reset)
+    private fun showThemesMenu(context: Context) {
+        val colors = getM3Colors(context)
+        lateinit var dialog: AlertDialog
+
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(
+                dpToPx(context, 20),
+                dpToPx(context, 20),
+                dpToPx(context, 20),
+                dpToPx(context, 20)
+            )
+            background = createM3Background(context, colors.surface, 24f)
+        }
+
+        val titleView = TextView(context).apply {
+            text = "Themes"
+            textSize = 20f
+            setTextColor(colors.onSurface)
+            typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, dpToPx(context, 12))
+        }
+        container.addView(titleView)
+
+        // Segmented appearance selector (Follow system / Force light / Force dark)
+        container.addView(createAppearanceSelector(context, colors))
+
+        // Flavor selection
+        container.addView(createM3Button(context, "Menu Color Flavor", colors) {
+            dialog.dismiss()
+            showFlavorSelection(context)
+        })
+
+
+
+
+
+        // Back button (return to Options)
+        container.addView(createM3Button(context, "Back", colors) {
+            dialog.dismiss()
+            showOptionsMenu(context)
+        })
+
+        dialog = AlertDialog.Builder(context)
+            .setView(container)
+            .create()
+
+        dialog.window?.setBackgroundDrawable(
+            createM3Background(context, Color.TRANSPARENT, 28f)
+        )
+
+        currentMenuContainer = container
+        dialog.show()
+    }
+
+    // Create a segmented selector (3 options) for appearance mode
+    private fun createAppearanceSelector(context: Context, colors: M3Colors): View {
+        val currentMode = getAppearanceMode(context)
+
+        val options = listOf("System", "Light", "Dark")
+        val keys = listOf("system", "light", "dark")
+
+        val wrapper = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            val params = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            layoutParams = params
+            setPadding(0, 0, 0, dpToPx(context, 8))
+        }
+
+        val label = TextView(context).apply {
+            text = "Appearance"
+            textSize = 14f
+            setTextColor(colors.onSurface)
+            setPadding(0, 0, 0, dpToPx(context, 8))
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+        }
+        wrapper.addView(label)
+
+        val row = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            val params = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dpToPx(context, 40)
+            )
+            layoutParams = params
+        }
+
+        // Build three segments
+        options.forEachIndexed { idx, title ->
+            val key = keys[idx]
+            val seg = TextView(context).apply {
+                text = title
+                gravity = Gravity.CENTER
+                textSize = 14f
+                typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+                val segParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+                if (idx > 0) segParams.setMargins(dpToPx(context, 8), 0, 0, 0)
+                layoutParams = segParams
+
+                // Appearance of selected/unselected
+                val isSelected = currentMode == key
+                background = createM3Background(context, if (isSelected) colors.primaryContainer else colors.surfaceVariant, 12f)
+                setTextColor(if (isSelected) colors.onPrimaryContainer else colors.onSurface)
+                setPadding(0, 0, 0, 0)
+                setOnClickListener {
+                    setAppearanceMode(context, key)
+
+                    // Update visuals for the segmented control immediately without closing dialogs.
+                    // Row is the container holding the segments; update each child to reflect selection.
+                    for (i in 0 until row.childCount) {
+                        val child = row.getChildAt(i) as TextView
+                        val sel = keys[i] == key
+                        child.background = createM3Background(context, if (sel) colors.primaryContainer else colors.surfaceVariant, 12f)
+                        child.setTextColor(if (sel) colors.onPrimaryContainer else colors.onSurface)
+                    }
+                }
+            }
+            row.addView(seg)
+        }
+
+        wrapper.addView(row)
+        return wrapper
     }
 
     private fun setAppearanceMode(context: Context, mode: String) {
@@ -669,17 +818,80 @@ object LogBoxModule : Module() {
             settings.put("appearanceMode", mode)
             settingsFile.writeText(settings.toString())
             showM3Toast(context, "Appearance set: ${mode.replaceFirstChar { it.uppercase() }}")
-            reloadApp()
+            applyMenuColors(context)
         } catch (e: Exception) {
-            Log.e("Error setting appearance mode: ${e.message}")
             showError(context, "Failed to set appearance", e.message)
+        }
+    }
+
+    private fun showFlavorSelection(context: Context) {
+        val colors = getM3Colors(context)
+        val flavors = listOf("blue", "green", "mocha", "vanilla", "purple", "amber", "teal")
+        lateinit var dialog: AlertDialog
+
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(
+                dpToPx(context, 20),
+                dpToPx(context, 20),
+                dpToPx(context, 20),
+                dpToPx(context, 20)
+            )
+            background = createM3Background(context, colors.surface, 20f)
+        }
+
+        val titleView = TextView(context).apply {
+            text = "Select Menu Flavor"
+            textSize = 18f
+            setTextColor(colors.onSurface)
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, dpToPx(context, 12))
+        }
+        container.addView(titleView)
+
+        flavors.forEach { flavor ->
+            container.addView(createM3Button(context, flavor.replaceFirstChar { it.uppercase() }, colors) {
+                try {
+                    dialog.dismiss()
+                } catch (_: Exception) {}
+                saveMenuFlavor(context, flavor)
+                showThemesMenu(context)
+            })
+        }
+
+        dialog = AlertDialog.Builder(context)
+            .setView(container)
+            .create()
+
+        dialog.window?.setBackgroundDrawable(
+            createM3Background(context, Color.TRANSPARENT, 28f)
+        )
+
+        currentMenuContainer = container
+        dialog.show()
+    }
+
+    private fun saveMenuFlavor(context: Context, flavor: String) {
+        try {
+            val themeFile = File(context.filesDir, "logbox/LOGBOX_THEMES")
+            themeFile.parentFile?.mkdirs()
+
+            val themeJson = JSONObject().apply {
+                put("menuFlavor", flavor)
+            }
+
+            themeFile.writeText(themeJson.toString())
+            showM3Toast(context, "Menu flavor set to ${flavor.replaceFirstChar { it.uppercase() }}")
+            applyMenuColors(context)
+        } catch (e: Exception) {
+            Log.e("Error saving menu flavor: ${e.message}")
+            showError(context, "Failed to save flavor", e.message)
         }
     }
 
     private fun isBundleInjectionDisabled(context: Context): Boolean {
         return try {
             // Prefer checking the cache location used by HookScriptLoader.
-            // If a disabled marker exists next to the bundle in the cache dir, treat injection as disabled.
             val cacheDir = File(context.dataDir, Constants.CACHE_DIR)
             val bundle = File(cacheDir, Constants.MAIN_SCRIPT_FILE)
             val disabled = File(cacheDir, "${Constants.MAIN_SCRIPT_FILE}.disabled")
@@ -730,69 +942,10 @@ object LogBoxModule : Module() {
                 settingsFile.writeText(settings.toString())
                 showM3Toast(context, "Bundle injection disabled (marker created)")
             }
-
-            reloadApp()
+            applyMenuColors(context)
         } catch (e: Exception) {
             Log.e("Error toggling bundle injection: ${e.message}")
             showError(context, "Failed to toggle bundle injection", e.message)
-        }
-    }
-
-    private fun showFlavorSelection(context: Context) {
-        val colors = getM3Colors(context)
-        val flavors = listOf("blue", "green", "mocha", "vanilla", "purple", "amber", "teal")
-        val container = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(
-                dpToPx(context, 24),
-                dpToPx(context, 24),
-                dpToPx(context, 24),
-                dpToPx(context, 24)
-            )
-            background = createM3Background(context, colors.surface, 28f)
-        }
-
-        val titleView = TextView(context).apply {
-            text = "Select Menu Flavor"
-            textSize = 18f
-            setTextColor(colors.onSurface)
-            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD)
-            setPadding(0, 0, 0, dpToPx(context, 12))
-        }
-        container.addView(titleView)
-
-        flavors.forEach { flavor ->
-            container.addView(createM3Button(context, flavor.replaceFirstChar { it.uppercase() }, colors) {
-                saveMenuFlavor(context, flavor)
-            })
-        }
-
-        val dialog = AlertDialog.Builder(context)
-            .setView(container)
-            .create()
-
-        dialog.window?.setBackgroundDrawable(
-            createM3Background(context, Color.TRANSPARENT, 28f)
-        )
-
-        dialog.show()
-    }
-
-    private fun saveMenuFlavor(context: Context, flavor: String) {
-        try {
-            val themeFile = File(context.filesDir, "logbox/LOGBOX_THEMES")
-            themeFile.parentFile?.mkdirs()
-
-            val themeJson = JSONObject().apply {
-                put("menuFlavor", flavor)
-            }
-
-            themeFile.writeText(themeJson.toString())
-            showM3Toast(context, "Menu flavor set to ${flavor.replaceFirstChar { it.uppercase() }}")
-            reloadApp()
-        } catch (e: Exception) {
-            Log.e("Error saving menu flavor: ${e.message}")
-            showError(context, "Failed to save flavor", e.message)
         }
     }
 
@@ -1064,10 +1217,12 @@ object LogBoxModule : Module() {
                     setCustomBundleURL(context, url.ifEmpty { "http://localhost:4040/shiggycord.js" }, false)
                     dialog.dismiss()
                 } else {
-                    Toast.makeText(context, "Please enter a URL", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Please enter a valid URL", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Failed to set custom bundle: ${e.message}", Toast.LENGTH_LONG).show()
+                // Build the error message separately to avoid problematic nested/escaped quotes in the string literal
+                val errMsg = e.message ?: "unknown error"
+                Toast.makeText(context, "Failed to set custom bundle: $errMsg", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -1079,6 +1234,7 @@ object LogBoxModule : Module() {
             createM3Background(context, Color.TRANSPARENT, 28f)
         )
 
+        currentMenuContainer = container
         dialog.show()
     }
 
@@ -1262,6 +1418,63 @@ object LogBoxModule : Module() {
         return dir
     }
 
+    /**
+     * Apply computed LogBox colors to any currently open menu dialogs in-place.
+     * This updates backgrounds and the simple button label color so changing the theme
+     * or flavor takes effect immediately without restarting Discord or closing the menu.
+     */
+    private fun applyMenuColors(context: Context) {
+        try {
+            val container = currentMenuContainer ?: return
+            val colors = getM3Colors(context)
+
+            // update container background
+            container.background = createM3Background(context, colors.surface, 28f)
+
+            // update title/subtitle/labels and buttons inside container
+            for (i in 0 until container.childCount) {
+                val child = container.getChildAt(i)
+                if (child is TextView) {
+                    // titles and labels use onSurface/onSurfaceVariant where appropriate
+                    child.setTextColor(colors.onSurface)
+                } else if (child is LinearLayout) {
+                    // update button rows and nested views
+                    for (j in 0 until child.childCount) {
+                        val inner = child.getChildAt(j)
+                        if (inner is TextView) {
+                            // update label colors to remain readable
+                            inner.setTextColor(colors.onSurface)
+                        } else if (inner is ViewGroup) {
+                            applyMenuColorsToGroup(inner, colors, context)
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Error applying menu colors: ${e.message}")
+        }
+    }
+
+    // Helper to update nested ViewGroups (buttons/rows)
+    private fun applyMenuColorsToGroup(group: ViewGroup, colors: M3Colors, context: Context) {
+        try {
+            for (k in 0 until group.childCount) {
+                val v = group.getChildAt(k)
+                when (v) {
+                    is TextView -> v.setTextColor(colors.onSurface)
+                    is ViewGroup -> applyMenuColorsToGroup(v, colors, context)
+                    else -> { /* ignore */ }
+                }
+            }
+            // If group appears to be a button container (clickable with text child), update its background
+            if (group.isClickable && group.childCount > 0 && group.getChildAt(0) is TextView) {
+                group.background = createM3Background(context, colors.primaryContainer, 20f)
+                (group.getChildAt(0) as TextView).setTextColor(colors.onPrimaryContainer)
+            }
+        } catch (_: Exception) {
+        }
+    }
+
     private fun showError(context: Context, title: String, message: String?) {
         val colors = getM3Colors(context)
 
@@ -1320,6 +1533,9 @@ object LogBoxModule : Module() {
         dialog.window?.setBackgroundDrawable(
             createM3Background(context, Color.TRANSPARENT, 28f)
         )
+
+        // Expose this container so applyMenuColors can update error dialog visuals immediately
+        currentMenuContainer = container
 
         dialog.show()
     }
