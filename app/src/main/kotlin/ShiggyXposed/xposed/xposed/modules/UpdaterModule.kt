@@ -48,6 +48,8 @@ object UpdaterModule : Module() {
     private lateinit var cacheDir: File
     private lateinit var bundle: File
     private lateinit var etag: File
+    // Path to the application's data directory so we can read LogBox settings
+    private lateinit var appDataDir: File
 
     private const val TIMEOUT_CACHED = 5000L
     private const val TIMEOUT = 10000L
@@ -58,6 +60,8 @@ object UpdaterModule : Module() {
         "https://github.com/kmmiio99o/ShiggyCord/releases/latest/download/shiggycord.js"
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
+        // store app data dir for later checks (LogBox settings live under files/logbox)
+        appDataDir = File(appInfo.dataDir)
         cacheDir = File(appInfo.dataDir, Constants.CACHE_DIR).apply { mkdirs() }
         val filesDir = File(appInfo.dataDir, Constants.FILES_DIR).apply { mkdirs() }
 
@@ -75,6 +79,23 @@ object UpdaterModule : Module() {
 
     fun downloadScript(activity: Activity? = null): Job = scope.launch {
         try {
+            // Respect LogBox setting to disable bundle injections.
+            // If the file "files/logbox/LOGBOX_SETTINGS" contains the flag bundleInjectionDisabled=true,
+            // skip attempting to download/update the bundle.
+            try {
+                val settingsFile = File(appDataDir, "files/logbox/LOGBOX_SETTINGS")
+                if (settingsFile.exists()) {
+                    val txt = settingsFile.readText()
+                    // look for a simple true marker; this avoids introducing a new JSON dependency here
+                    if (txt.contains("\"bundleInjectionDisabled\"") && txt.contains("true")) {
+                        Log.i("UpdaterModule: bundle injection disabled by LogBox settings — skipping download")
+                        return@launch
+                    }
+                }
+            } catch (ignore: Exception) {
+                // If anything goes wrong reading the setting, proceed with normal behaviour.
+            }
+
             HttpClient(CIO) {
                 expectSuccess = false
                 install(UserAgent) { agent = Constants.USER_AGENT }

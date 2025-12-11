@@ -100,19 +100,29 @@ object HookScriptLoaderModule : Module() {
         }
 
         try {
-            preloadsDir.walk().filter { it.isFile }.forEach(runScriptFile)
+            // If a disabled marker exists next to the cached bundle, treat this as a global
+            // disable for the entire script-loading step. In that case, we skip preloads,
+            // cached main script and the assets fallback so nothing is injected.
+            val disabledMarker = File(mainScript.parentFile, "${Constants.MAIN_SCRIPT_FILE}.disabled")
+            if (disabledMarker.exists()) {
+                Log.i("Script loading disabled by marker; skipping preloads, cached bundle and fallback")
+            } else {
+                // Normal behaviour: run preloads then cached main script or fallback to bundled asset
+                preloadsDir.walk().filter { it.isFile }.forEach(runScriptFile)
 
-            if (mainScript.exists()) runScriptFile(mainScript)
-            else {
-                Log.i("Main script does not exist, falling back")
+                if (mainScript.exists()) {
+                    runScriptFile(mainScript)
+                } else {
+                    Log.i("Main script does not exist, falling back")
 
-                if (!::resources.isInitialized) resources = XModuleResources.createInstance(modulePath, null)
+                    if (!::resources.isInitialized) resources = XModuleResources.createInstance(modulePath, null)
 
-                XposedBridge.invokeOriginalMethod(
-                    loadScriptFromAssets,
-                    thisObject,
-                    arrayOf(resources.assets, "assets://Shiggy.bundle", loadSynchronously)
-                )
+                    XposedBridge.invokeOriginalMethod(
+                        loadScriptFromAssets,
+                        thisObject,
+                        arrayOf(resources.assets, "assets://Shiggy.bundle", loadSynchronously)
+                    )
+                }
             }
         } catch (e: Throwable) {
             Log.e("Unable to run scripts:", e)

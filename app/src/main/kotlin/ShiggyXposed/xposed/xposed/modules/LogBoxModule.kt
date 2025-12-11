@@ -24,6 +24,7 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import ShiggyXposed.xposed.Module
+import ShiggyXposed.xposed.Constants
 import ShiggyXposed.xposed.Utils.Companion.reloadApp
 import ShiggyXposed.xposed.Utils.Log
 import kotlinx.coroutines.*
@@ -677,6 +678,15 @@ object LogBoxModule : Module() {
 
     private fun isBundleInjectionDisabled(context: Context): Boolean {
         return try {
+            // Prefer checking the cache location used by HookScriptLoader.
+            // If a disabled marker exists next to the bundle in the cache dir, treat injection as disabled.
+            val cacheDir = File(context.dataDir, Constants.CACHE_DIR)
+            val bundle = File(cacheDir, Constants.MAIN_SCRIPT_FILE)
+            val disabled = File(cacheDir, "${Constants.MAIN_SCRIPT_FILE}.disabled")
+            if (disabled.exists()) return true
+            if (bundle.exists()) return false
+
+            // Fallback to the persisted logbox setting if neither file exists
             val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
             if (!settingsFile.exists()) return false
             val json = JSONObject(settingsFile.readText())
@@ -689,32 +699,36 @@ object LogBoxModule : Module() {
 
     private fun toggleBundleInjection(context: Context) {
         try {
-            val pyonDir = getPyoncordDirectory(context)
-            val bundleFile = File(pyonDir, "bundle.js")
-            val disabledFile = File(pyonDir, "bundle.js.disabled")
+            // Operate on the cache directory so HookScriptLoader sees the change immediately.
+            val cacheDir = File(context.dataDir, Constants.CACHE_DIR)
+            cacheDir.mkdirs()
+            val bundle = File(cacheDir, Constants.MAIN_SCRIPT_FILE)
+            val disabled = File(cacheDir, "${Constants.MAIN_SCRIPT_FILE}.disabled")
 
+            // Persist user intention in logbox settings as well
             val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
             settingsFile.parentFile?.mkdirs()
             val settings = if (settingsFile.exists()) JSONObject(settingsFile.readText()) else JSONObject()
 
-            val currentlyDisabled = settings.optBoolean("bundleInjectionDisabled", false)
-
-            if (!currentlyDisabled) {
-                // disable: rename bundle if exists
-                if (bundleFile.exists()) {
-                    bundleFile.renameTo(disabledFile)
-                }
+            if (bundle.exists()) {
+                // disable injection by renaming the bundle out of the expected filename
+                if (disabled.exists()) disabled.delete()
+                val renamed = bundle.renameTo(disabled)
                 settings.put("bundleInjectionDisabled", true)
                 settingsFile.writeText(settings.toString())
-                showM3Toast(context, "Bundle injection disabled")
-            } else {
-                // enable: restore bundle if previously renamed
-                if (disabledFile.exists()) {
-                    disabledFile.renameTo(bundleFile)
-                }
+                showM3Toast(context, if (renamed) "Bundle injection disabled" else "Bundle injection disabled (marker set)")
+            } else if (disabled.exists()) {
+                // enable injection by restoring the bundle filename
+                val renamed = disabled.renameTo(bundle)
                 settings.put("bundleInjectionDisabled", false)
                 settingsFile.writeText(settings.toString())
-                showM3Toast(context, "Bundle injection enabled")
+                showM3Toast(context, if (renamed) "Bundle injection enabled" else "Bundle injection enabled (marker removed)")
+            } else {
+                // Neither exists — create a disabled marker so injection stays disabled until enabled
+                disabled.writeText("")
+                settings.put("bundleInjectionDisabled", true)
+                settingsFile.writeText(settings.toString())
+                showM3Toast(context, "Bundle injection disabled (marker created)")
             }
 
             reloadApp()
