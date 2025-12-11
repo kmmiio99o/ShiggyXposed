@@ -1454,8 +1454,11 @@ object LogBoxModule : Module() {
         // Limit dialog content width so Xposed dev menu doesn't become extremely wide.
         try {
             val maxW = (context.resources.displayMetrics.widthPixels * 0.9).toInt()
-            val lp = LinearLayout.LayoutParams(maxW, ViewGroup.LayoutParams.WRAP_CONTENT)
+            val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             container.layoutParams = lp
+            try {
+                container.minimumWidth = maxW
+            } catch (_: Exception) {}
         } catch (_: Exception) {
         }
     }
@@ -1466,11 +1469,29 @@ object LogBoxModule : Module() {
      */
     private fun setDialogWindowWidth(dialog: AlertDialog, context: Context) {
         try {
-            val metrics = context.resources.displayMetrics
-            val maxW = (metrics.widthPixels * 0.9).toInt()
-            val dp420 = dpToPx(context, 420)
-            val targetW = if (maxW < dp420) maxW else dp420
+            val screenW = context.resources.displayMetrics.widthPixels
+            val maxByPercent = (screenW * 0.9).toInt()
+            val maxByDp = dpToPx(context, 420)
+            val targetW = if (maxByPercent < maxByDp) maxByPercent else maxByDp
+
             dialog.window?.setLayout(targetW, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+            try {
+                currentMenuContainer?.let { container ->
+                    val lp = container.layoutParams ?: ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    lp.width = ViewGroup.LayoutParams.MATCH_PARENT
+                    container.layoutParams = lp
+                    try {
+                        container.minimumWidth = targetW
+                    } catch (_: Exception) {}
+                    container.post {
+                        try {
+                            container.requestLayout()
+                            container.invalidate()
+                        } catch (_: Exception) {}
+                    }
+                }
+            } catch (_: Exception) {}
         } catch (_: Exception) {
         }
     }
