@@ -230,6 +230,21 @@ object LogBoxModule : Module() {
     }
 
     private fun isDarkMode(context: Context): Boolean {
+        // Read LogBox-specific appearance override first (logbox/LOGBOX_SETTINGS).
+        // Supported values for appearanceMode: "system" | "light" | "dark"
+        try {
+            val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
+            if (settingsFile.exists()) {
+                val json = JSONObject(settingsFile.readText())
+                val mode = json.optString("appearanceMode", "")
+                if (mode == "light") return false
+                if (mode == "dark") return true
+                // if mode == "system" or empty, fall back to system below
+            }
+        } catch (e: Exception) {
+            Log.e("Error reading logbox appearance settings: ${e.message}")
+        }
+
         return (context.resources.configuration.uiMode and
                 android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
                 android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -237,7 +252,9 @@ object LogBoxModule : Module() {
 
     private fun getM3Colors(context: Context): M3Colors {
         val isDark = isDarkMode(context)
-        return if (isDark) {
+
+        // Base palettes
+        val base = if (isDark) {
             M3Colors(
                 surface = Color.parseColor("#1C1B1F"),
                 surfaceVariant = Color.parseColor("#49454F"),
@@ -268,6 +285,45 @@ object LogBoxModule : Module() {
                 onError = Color.parseColor("#FFFFFF")
             )
         }
+
+        // Apply LogBox menu flavor override if present (logbox/LOGBOX_THEMES)
+        try {
+            val themeFile = File(context.filesDir, "logbox/LOGBOX_THEMES")
+            if (themeFile.exists()) {
+                val json = JSONObject(themeFile.readText())
+                // Support multiple keys that might be written by different UIs/tools:
+                val flavor = json.optString("menuFlavor", json.optString("flavor", json.optString("id", ""))).lowercase()
+                if (flavor.isNotEmpty()) {
+                    val flavorMap = mapOf(
+                        "blue" to Pair("#0D47A1", "#82B1FF"),
+                        "green" to Pair("#1B5E20", "#A5D6A7"),
+                        "mocha" to Pair("#3E2723", "#BCAAA4"),
+                        "vanilla" to Pair("#F9A825", "#FFF59D"),
+                        "purple" to Pair("#6A1B9A", "#E1BEE7"),
+                        "amber" to Pair("#FF6F00", "#FFE0B2"),
+                        "teal" to Pair("#004D40", "#80CBC4")
+                    )
+                    val pair = flavorMap[flavor]
+                    if (pair != null) {
+                        val primary = Color.parseColor(pair.first)
+                        val primaryContainer = Color.parseColor(pair.second)
+                        // Keep contrast choices simple: white on primary for most flavors
+                        val onPrimary = if (isDark) Color.WHITE else Color.WHITE
+                        val onPrimaryContainer = if (isDark) Color.BLACK else Color.BLACK
+                        return base.copy(
+                            primary = primary,
+                            primaryContainer = primaryContainer,
+                            onPrimary = onPrimary,
+                            onPrimaryContainer = onPrimaryContainer
+                        )
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Error applying logbox flavor: ${e.message}")
+        }
+
+        return base
     }
 
     private data class M3Colors(
@@ -393,6 +449,12 @@ object LogBoxModule : Module() {
                 handleMenuSelection(context, 2)
             })
 
+            // Options Button (opens submenu for theme, injection, flavor)
+            container.addView(createM3Button(context, "Options", colors) {
+                dialog.dismiss()
+                handleMenuSelection(context, 5)
+            })
+
             // Reload App Button
             container.addView(createM3Button(context, "Reload App", colors) {
                 dialog.dismiss()
@@ -435,6 +497,9 @@ object LogBoxModule : Module() {
                 context, "Clear Cache & Reset",
                 "This will clear all cached bundles and reset to default settings."
             ) { clearCacheAndReset(context) }
+
+            // Options submenu
+            5 -> showOptionsMenu(context)
         }
     }
 
@@ -526,6 +591,197 @@ object LogBoxModule : Module() {
         dialog.show()
     }
 
+    // Options Submenu: Theme mode, disable bundle injection, flavor selection
+    private fun showOptionsMenu(context: Context) {
+        val colors = getM3Colors(context)
+        lateinit var dialog: AlertDialog
+
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(
+                dpToPx(context, 24),
+                dpToPx(context, 24),
+                dpToPx(context, 24),
+                dpToPx(context, 24)
+            )
+            background = createM3Background(context, colors.surface, 28f)
+        }
+
+        val titleView = TextView(context).apply {
+            text = "Options"
+            textSize = 20f
+            setTextColor(colors.onSurface)
+            typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, dpToPx(context, 12))
+        }
+        container.addView(titleView)
+
+        // Theme Mode selection (affects LogBox menu only)
+        container.addView(createM3Button(context, "Follow System Theme", colors) {
+            dialog.dismiss()
+            setAppearanceMode(context, "system")
+        })
+        container.addView(createM3Button(context, "Force Light Mode", colors) {
+            dialog.dismiss()
+            setAppearanceMode(context, "light")
+        })
+        container.addView(createM3Button(context, "Force Dark Mode", colors) {
+            dialog.dismiss()
+            setAppearanceMode(context, "dark")
+        })
+
+        // Disable/Enable bundle injection
+        val injectionDisabled = isBundleInjectionDisabled(context)
+        val injectionText = if (injectionDisabled) "Enable Bundle Injection" else "Disable Bundle Injection"
+        container.addView(createM3Button(context, injectionText, colors) {
+            dialog.dismiss()
+            toggleBundleInjection(context)
+        })
+
+        // Flavor selection
+        container.addView(createM3Button(context, "Menu Color Flavor", colors) {
+            dialog.dismiss()
+            showFlavorSelection(context)
+        })
+
+        // Back / Close button
+        container.addView(createM3Button(context, "Close", colors) {
+            dialog.dismiss()
+        })
+
+        dialog = AlertDialog.Builder(context)
+            .setView(container)
+            .create()
+
+        dialog.window?.setBackgroundDrawable(
+            createM3Background(context, Color.TRANSPARENT, 28f)
+        )
+
+        dialog.show()
+    }
+
+    private fun setAppearanceMode(context: Context, mode: String) {
+        try {
+            val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
+            settingsFile.parentFile?.mkdirs()
+            val settings = if (settingsFile.exists()) JSONObject(settingsFile.readText()) else JSONObject()
+            settings.put("appearanceMode", mode)
+            settingsFile.writeText(settings.toString())
+            showM3Toast(context, "Appearance set: ${mode.replaceFirstChar { it.uppercase() }}")
+            reloadApp()
+        } catch (e: Exception) {
+            Log.e("Error setting appearance mode: ${e.message}")
+            showError(context, "Failed to set appearance", e.message)
+        }
+    }
+
+    private fun isBundleInjectionDisabled(context: Context): Boolean {
+        return try {
+            val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
+            if (!settingsFile.exists()) return false
+            val json = JSONObject(settingsFile.readText())
+            json.optBoolean("bundleInjectionDisabled", false)
+        } catch (e: Exception) {
+            Log.e("Error reading injection setting: ${e.message}")
+            false
+        }
+    }
+
+    private fun toggleBundleInjection(context: Context) {
+        try {
+            val pyonDir = getPyoncordDirectory(context)
+            val bundleFile = File(pyonDir, "bundle.js")
+            val disabledFile = File(pyonDir, "bundle.js.disabled")
+
+            val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
+            settingsFile.parentFile?.mkdirs()
+            val settings = if (settingsFile.exists()) JSONObject(settingsFile.readText()) else JSONObject()
+
+            val currentlyDisabled = settings.optBoolean("bundleInjectionDisabled", false)
+
+            if (!currentlyDisabled) {
+                // disable: rename bundle if exists
+                if (bundleFile.exists()) {
+                    bundleFile.renameTo(disabledFile)
+                }
+                settings.put("bundleInjectionDisabled", true)
+                settingsFile.writeText(settings.toString())
+                showM3Toast(context, "Bundle injection disabled")
+            } else {
+                // enable: restore bundle if previously renamed
+                if (disabledFile.exists()) {
+                    disabledFile.renameTo(bundleFile)
+                }
+                settings.put("bundleInjectionDisabled", false)
+                settingsFile.writeText(settings.toString())
+                showM3Toast(context, "Bundle injection enabled")
+            }
+
+            reloadApp()
+        } catch (e: Exception) {
+            Log.e("Error toggling bundle injection: ${e.message}")
+            showError(context, "Failed to toggle bundle injection", e.message)
+        }
+    }
+
+    private fun showFlavorSelection(context: Context) {
+        val colors = getM3Colors(context)
+        val flavors = listOf("blue", "green", "mocha", "vanilla", "purple", "amber", "teal")
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(
+                dpToPx(context, 24),
+                dpToPx(context, 24),
+                dpToPx(context, 24),
+                dpToPx(context, 24)
+            )
+            background = createM3Background(context, colors.surface, 28f)
+        }
+
+        val titleView = TextView(context).apply {
+            text = "Select Menu Flavor"
+            textSize = 18f
+            setTextColor(colors.onSurface)
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, dpToPx(context, 12))
+        }
+        container.addView(titleView)
+
+        flavors.forEach { flavor ->
+            container.addView(createM3Button(context, flavor.replaceFirstChar { it.uppercase() }, colors) {
+                saveMenuFlavor(context, flavor)
+            })
+        }
+
+        val dialog = AlertDialog.Builder(context)
+            .setView(container)
+            .create()
+
+        dialog.window?.setBackgroundDrawable(
+            createM3Background(context, Color.TRANSPARENT, 28f)
+        )
+
+        dialog.show()
+    }
+
+    private fun saveMenuFlavor(context: Context, flavor: String) {
+        try {
+            val themeFile = File(context.filesDir, "logbox/LOGBOX_THEMES")
+            themeFile.parentFile?.mkdirs()
+
+            val themeJson = JSONObject().apply {
+                put("menuFlavor", flavor)
+            }
+
+            themeFile.writeText(themeJson.toString())
+            showM3Toast(context, "Menu flavor set to ${flavor.replaceFirstChar { it.uppercase() }}")
+            reloadApp()
+        } catch (e: Exception) {
+            Log.e("Error saving menu flavor: ${e.message}")
+            showError(context, "Failed to save flavor", e.message)
+        }
+    }
+
     private fun isSafeModeEnabled(context: Context): Boolean {
         return try {
             val settingsFile = File(context.filesDir, "vd_mmkv/VENDETTA_SETTINGS")
@@ -541,8 +797,8 @@ object LogBoxModule : Module() {
 
     private fun toggleSafeMode(context: Context) {
         try {
-            val settingsFile = File(context.filesDir, "vd_mmkv/VENDETTA_SETTINGS")
-            val themeFile = File(context.filesDir, "vd_mmkv/VENDETTA_THEMES")
+            val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
+            val themeFile = File(context.filesDir, "logbox/LOGBOX_THEMES")
 
             settingsFile.parentFile?.mkdirs()
 
