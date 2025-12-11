@@ -315,36 +315,40 @@ object LogBoxModule : Module() {
             )
         }
 
+        var flavor = "mocha"
+
         // Apply LogBox menu flavor override if present (logbox/LOGBOX_THEMES)
         try {
             val themeFile = File(context.filesDir, "logbox/LOGBOX_THEMES")
             if (themeFile.exists()) {
                 val json = JSONObject(themeFile.readText())
-                val flavor = json.optString("menuFlavor", json.optString("flavor", json.optString("id", ""))).lowercase()
-                if (flavor.isNotEmpty()) {
-                    val flavorMap = mapOf(
-                        "blue" to Pair("#0D47A1", "#82B1FF"),
-                        "green" to Pair("#1B5E20", "#A5D6A7"),
-                        "mocha" to Pair("#3E2723", "#BCAAA4"),
-                        "vanilla" to Pair("#F9A825", "#FFF59D"),
-                        "purple" to Pair("#6A1B9A", "#E1BEE7"),
-                        "amber" to Pair("#FF6F00", "#FFE0B2"),
-                        "teal" to Pair("#004D40", "#80CBC4")
+                val f = json.optString("menuFlavor", json.optString("flavor", json.optString("id", ""))).lowercase()
+                if (f.isNotEmpty()) flavor = f
+            }
+
+            if (flavor.isNotEmpty()) {
+                val flavorMap = mapOf(
+                    "blue" to Pair("#0D47A1", "#82B1FF"),
+                    "green" to Pair("#1B5E20", "#A5D6A7"),
+                    "mocha" to Pair("#3E2723", "#BCAAA4"),
+                    "vanilla" to Pair("#F9A825", "#FFF59D"),
+                    "purple" to Pair("#6A1B9A", "#E1BEE7"),
+                    "amber" to Pair("#FF6F00", "#FFE0B2"),
+                    "teal" to Pair("#004D40", "#80CBC4")
+                )
+                val pair = flavorMap[flavor]
+                if (pair != null) {
+                    val primary = Color.parseColor(pair.first)
+                    val primaryContainer = Color.parseColor(pair.second)
+                    // Keep contrast choices simple: white on primary for most flavors
+                    val onPrimary = if (isDark) Color.WHITE else Color.WHITE
+                    val onPrimaryContainer = if (isDark) Color.BLACK else Color.BLACK
+                    return base.copy(
+                        primary = primary,
+                        primaryContainer = primaryContainer,
+                        onPrimary = onPrimary,
+                        onPrimaryContainer = onPrimaryContainer
                     )
-                    val pair = flavorMap[flavor]
-                    if (pair != null) {
-                        val primary = Color.parseColor(pair.first)
-                        val primaryContainer = Color.parseColor(pair.second)
-                        // Keep contrast choices simple: white on primary for most flavors
-                        val onPrimary = if (isDark) Color.WHITE else Color.WHITE
-                        val onPrimaryContainer = if (isDark) Color.BLACK else Color.BLACK
-                        return base.copy(
-                            primary = primary,
-                            primaryContainer = primaryContainer,
-                            onPrimary = onPrimary,
-                            onPrimaryContainer = onPrimaryContainer
-                        )
-                    }
                 }
             }
         } catch (e: Exception) {
@@ -471,11 +475,7 @@ object LogBoxModule : Module() {
                 handleMenuSelection(context, 2)
             })
 
-            // Options Button (opens submenu for theme, injection, flavor)
-            container.addView(createM3Button(context, "Options", colors) {
-                dialog.dismiss()
-                handleMenuSelection(context, 5)
-            })
+
 
             // Reload App Button
             container.addView(createM3Button(context, "Reload App", colors) {
@@ -483,7 +483,17 @@ object LogBoxModule : Module() {
                 handleMenuSelection(context, 3)
             })
 
-
+            // Options Button (moved last with extra top spacing)
+            val optionsBtn = createM3Button(context, "Options", colors) {
+                dialog.dismiss()
+                handleMenuSelection(context, 5)
+            }
+            // increase top margin for visual gap
+            (optionsBtn.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                lp.setMargins(lp.leftMargin, dpToPx(context, 16), lp.rightMargin, lp.bottomMargin)
+                optionsBtn.layoutParams = lp
+            }
+            container.addView(optionsBtn)
 
             dialog = AlertDialog.Builder(context)
                 .setView(container)
@@ -493,8 +503,11 @@ object LogBoxModule : Module() {
                 createM3Background(context, Color.TRANSPARENT, 28f)
             )
 
+            // Constrain dialog/content width so the menu doesn't span the full screen
+            constrainContainerWidth(context, container)
             currentMenuContainer = container
             dialog.show()
+            setDialogWindowWidth(dialog, context)
             Log.e("Recovery menu shown successfully")
         } catch (e: Exception) {
             Log.e("Error showing recovery menu: ${e.message}", e)
@@ -607,9 +620,12 @@ object LogBoxModule : Module() {
             createM3Background(context, Color.TRANSPARENT, 28f)
         )
 
+        // Constrain to sane width before showing
+        constrainContainerWidth(context, container)
         currentMenuContainer = container
 
         dialog.show()
+        setDialogWindowWidth(dialog, context)
     }
 
     // Options menu -> entry point for Themes submenu & other options
@@ -634,6 +650,7 @@ object LogBoxModule : Module() {
             setTextColor(colors.onSurface)
             typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.BOLD)
             setPadding(0, 0, 0, dpToPx(context, 12))
+            gravity = Gravity.CENTER
         }
         container.addView(titleView)
 
@@ -678,6 +695,8 @@ object LogBoxModule : Module() {
             createM3Background(context, Color.TRANSPARENT, 28f)
         )
 
+        // Constrain to sane width before showing
+        constrainContainerWidth(context, container)
         currentMenuContainer = container
         dialog.show()
     }
@@ -704,6 +723,7 @@ object LogBoxModule : Module() {
             setTextColor(colors.onSurface)
             typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.BOLD)
             setPadding(0, 0, 0, dpToPx(context, 12))
+            gravity = Gravity.CENTER
         }
         container.addView(titleView)
 
@@ -715,10 +735,6 @@ object LogBoxModule : Module() {
             dialog.dismiss()
             showFlavorSelection(context)
         })
-
-
-
-
 
         // Back button (return to Options)
         container.addView(createM3Button(context, "Back", colors) {
@@ -736,6 +752,8 @@ object LogBoxModule : Module() {
 
         currentMenuContainer = container
         dialog.show()
+        setDialogWindowWidth(dialog, context)
+        setDialogWindowWidth(dialog, context)
     }
 
     // Create a segmented selector (3 options) for appearance mode
@@ -801,6 +819,9 @@ object LogBoxModule : Module() {
                         child.background = createM3Background(context, if (sel) colors.primaryContainer else colors.surfaceVariant, 12f)
                         child.setTextColor(if (sel) colors.onPrimaryContainer else colors.onSurface)
                     }
+
+                    // Force a repaint of the containing menu so changes are visible immediately
+                    applyMenuColors(context)
                 }
             }
             row.addView(seg)
@@ -817,7 +838,6 @@ object LogBoxModule : Module() {
             val settings = if (settingsFile.exists()) JSONObject(settingsFile.readText()) else JSONObject()
             settings.put("appearanceMode", mode)
             settingsFile.writeText(settings.toString())
-            showM3Toast(context, "Appearance set: ${mode.replaceFirstChar { it.uppercase() }}")
             applyMenuColors(context)
         } catch (e: Exception) {
             showError(context, "Failed to set appearance", e.message)
@@ -846,6 +866,7 @@ object LogBoxModule : Module() {
             setTextColor(colors.onSurface)
             typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD)
             setPadding(0, 0, 0, dpToPx(context, 12))
+            gravity = Gravity.CENTER
         }
         container.addView(titleView)
 
@@ -867,6 +888,8 @@ object LogBoxModule : Module() {
             createM3Background(context, Color.TRANSPARENT, 28f)
         )
 
+        // Constrain to sane width before showing
+        constrainContainerWidth(context, container)
         currentMenuContainer = container
         dialog.show()
     }
@@ -881,7 +904,6 @@ object LogBoxModule : Module() {
             }
 
             themeFile.writeText(themeJson.toString())
-            showM3Toast(context, "Menu flavor set to ${flavor.replaceFirstChar { it.uppercase() }}")
             applyMenuColors(context)
         } catch (e: Exception) {
             Log.e("Error saving menu flavor: ${e.message}")
@@ -1220,9 +1242,8 @@ object LogBoxModule : Module() {
                     Toast.makeText(context, "Please enter a valid URL", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                // Build the error message separately to avoid problematic nested/escaped quotes in the string literal
-                val errMsg = e.message ?: "unknown error"
-                Toast.makeText(context, "Failed to set custom bundle: $errMsg", Toast.LENGTH_LONG).show()
+                val err = e.message ?: "unknown error"
+                Toast.makeText(context, "Failed to set custom bundle: $err", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -1234,8 +1255,12 @@ object LogBoxModule : Module() {
             createM3Background(context, Color.TRANSPARENT, 28f)
         )
 
+        // Constrain to sane width before showing
+        constrainContainerWidth(context, container)
         currentMenuContainer = container
         dialog.show()
+        setDialogWindowWidth(dialog, context)
+        setDialogWindowWidth(dialog, context)
     }
 
     private fun createM3Switch(context: Context, colors: M3Colors, isChecked: Boolean): View {
@@ -1422,34 +1447,97 @@ object LogBoxModule : Module() {
      * Apply computed LogBox colors to any currently open menu dialogs in-place.
      * This updates backgrounds and the simple button label color so changing the theme
      * or flavor takes effect immediately without restarting Discord or closing the menu.
+     *
+     * Force a layout/invalidate pass so views repaint with new colors.
      */
+    private fun constrainContainerWidth(context: Context, container: LinearLayout) {
+        // Limit dialog content width so Xposed dev menu doesn't become extremely wide.
+        try {
+            val maxW = (context.resources.displayMetrics.widthPixels * 0.9).toInt()
+            val lp = LinearLayout.LayoutParams(maxW, ViewGroup.LayoutParams.WRAP_CONTENT)
+            container.layoutParams = lp
+        } catch (_: Exception) {
+        }
+    }
+
+    /**
+     * After showing the dialog, also constrain the window width to a sane maximum
+     * (min(90% of screen width, 420dp)) so dialogs don't expand too wide on tablets.
+     */
+    private fun setDialogWindowWidth(dialog: AlertDialog, context: Context) {
+        try {
+            val metrics = context.resources.displayMetrics
+            val maxW = (metrics.widthPixels * 0.9).toInt()
+            val dp420 = dpToPx(context, 420)
+            val targetW = if (maxW < dp420) maxW else dp420
+            dialog.window?.setLayout(targetW, ViewGroup.LayoutParams.WRAP_CONTENT)
+        } catch (_: Exception) {
+        }
+    }
+
     private fun applyMenuColors(context: Context) {
         try {
             val container = currentMenuContainer ?: return
             val colors = getM3Colors(context)
 
-            // update container background
-            container.background = createM3Background(context, colors.surface, 28f)
-
-            // update title/subtitle/labels and buttons inside container
-            for (i in 0 until container.childCount) {
-                val child = container.getChildAt(i)
-                if (child is TextView) {
-                    // titles and labels use onSurface/onSurfaceVariant where appropriate
-                    child.setTextColor(colors.onSurface)
-                } else if (child is LinearLayout) {
-                    // update button rows and nested views
-                    for (j in 0 until child.childCount) {
-                        val inner = child.getChildAt(j)
-                        if (inner is TextView) {
-                            // update label colors to remain readable
-                            inner.setTextColor(colors.onSurface)
-                        } else if (inner is ViewGroup) {
-                            applyMenuColorsToGroup(inner, colors, context)
+            // update container background and all nested children recursively
+            fun applyToGroup(group: ViewGroup) {
+                try {
+                    group.background = createM3Background(context, colors.surface, 28f)
+                } catch (_: Exception) {}
+                for (i in 0 until group.childCount) {
+                    val child = group.getChildAt(i)
+                    try {
+                        when (child) {
+                            is EditText -> {
+                                // EditText is a TextView subclass - ensure both text and hint colors update
+                                child.setTextColor(colors.onSurface)
+                                child.setHintTextColor(colors.onSurfaceVariant)
+                                try {
+                                    child.background = createM3Background(context, colors.surfaceVariant, 12f)
+                                } catch (_: Exception) {}
+                            }
+                            is TextView -> {
+                                child.setTextColor(colors.onSurface)
+                            }
+                            is ViewGroup -> {
+                                // If it's a clickable button-like group, style it as a button
+                                if (child.isClickable && child.childCount > 0 && child.getChildAt(0) is TextView) {
+                                    try {
+                                        child.background = createM3Background(context, colors.primaryContainer, 20f)
+                                        (child.getChildAt(0) as TextView).setTextColor(colors.onPrimaryContainer)
+                                    } catch (_: Exception) {}
+                                }
+                                applyToGroup(child)
+                            }
+                            else -> {
+                                // nothing special
+                            }
                         }
+                    } catch (_: Exception) {
                     }
+
+                    // Force redraw on the child
+                    try {
+                        child.invalidate()
+                        child.requestLayout()
+                    } catch (_: Exception) {}
                 }
             }
+
+            applyToGroup(container)
+
+            // also ensure container invalidates/repaints on main thread and nudge visibility to force redraw
+            try {
+                container.post {
+                    container.invalidate()
+                    container.requestLayout()
+                    val prev = container.visibility
+                    container.visibility = View.GONE
+                    container.visibility = prev
+                }
+            } catch (_: Exception) {}
+
         } catch (e: Exception) {
             Log.e("Error applying menu colors: ${e.message}")
         }
@@ -1535,8 +1623,10 @@ object LogBoxModule : Module() {
         )
 
         // Expose this container so applyMenuColors can update error dialog visuals immediately
+        constrainContainerWidth(context, container)
         currentMenuContainer = container
 
         dialog.show()
+        setDialogWindowWidth(dialog, context)
     }
 }
