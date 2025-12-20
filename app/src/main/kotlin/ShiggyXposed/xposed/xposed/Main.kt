@@ -46,6 +46,7 @@ class Main : Module(), IXposedHookLoadPackage, IXposedHookZygoteInit {
         BlockCrashReportingModule,
         LogBoxModule,
         CacheModule,
+        PerfPatchesModule,
         FontsModule,
         ThemesModule,
         SysColorsModule
