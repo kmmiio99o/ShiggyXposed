@@ -155,6 +155,128 @@ object PerfPatchesModule : Module() {
                       } catch (e) {}
                     });
 
+                    // Make console methods async to avoid blocking hot-paths during startup
+                    (function(){
+                      try {
+                        if (typeof console !== 'undefined') {
+                          ['log','info','warn','error','debug','trace'].forEach(function(m){
+                            try {
+                              if (typeof console[m] === 'function') {
+                                var orig = console[m];
+                                console[m] = function() {
+                                  var args = Array.prototype.slice.call(arguments);
+                                  setTimeout(function(){ try { orig.apply(console, args); } catch(_){} }, 0);
+                                };
+                              }
+                            } catch(e){}
+                          });
+                        }
+                      } catch(e){}
+                    })();
+
+                    // Deduplicate and slightly delay repeated kv calls to reduce IO contention on startup
+                    (function(){
+                      try {
+                        var pending = new Map();
+                        // Lightweight stats for dedupe wrapper to help telemetry/debugging in-case we need to tune delays.
+                        try {
+                          globalThis.__SHIGGY_PERF_DEDUPE_STATS__ = globalThis.__SHIGGY_PERF_DEDUPE_STATS__ || {
+                            methods: {},
+                            totalRequests: 0,
+                            totalHits: 0,
+                            totalMisses: 0,
+                            pending: 0,
+                            lastUpdated: Date.now()
+                          };
+                        } catch(e) {}
+
+                        function _incStats(name, key) {
+                          try {
+                            var s = globalThis.__SHIGGY_PERF_DEDUPE_STATS__;
+                            if (!s) return;
+                            s.lastUpdated = Date.now();
+                            var m = s.methods[name] || (s.methods[name] = { requests: 0, hits: 0, misses: 0, pending: 0 });
+                            if (key === 'requests') { m.requests++; s.totalRequests++; }
+                            else if (key === 'hits') { m.hits++; s.totalHits++; }
+                            else if (key === 'misses') { m.misses++; s.totalMisses++; }
+                            else if (key === 'pending_inc') { m.pending++; s.pending++; }
+                            else if (key === 'pending_dec') { m.pending = Math.max(0, m.pending - 1); s.pending = Math.max(0, s.pending - 1); }
+                          } catch(e) {}
+                        }
+
+                        function wrapAsyncDedupe(kvObj, methodName, delayMs){
+                          try {
+                            var orig = kvObj[methodName];
+                            if (typeof orig !== 'function') return;
+                            kvObj[methodName] = function() {
+                              var argsArr = Array.prototype.slice.call(arguments);
+                              var key;
+                              try { key = JSON.stringify([methodName, argsArr]); } catch(e){ key = methodName + ':' + String(argsArr[0]); }
+                              _incStats(methodName, 'requests');
+                              if (pending.has(key)) { _incStats(methodName, 'hits'); return pending.get(key); }
+                              _incStats(methodName, 'misses');
+                              var self = this;
+                              var p = new Promise(function(resolve, reject){
+                                setTimeout(function(){
+                                  try {
+                                    var res = orig.apply(self, argsArr);
+                                    if (res && typeof res.then === 'function') res.then(resolve, reject);
+                                    else resolve(res);
+                                  } catch (e) { reject(e); }
+                                }, Number(delayMs) || 20);
+                              });
+                              pending.set(key, p);
+                              _incStats(methodName, 'pending_inc');
+                              var cleanup = function(){ pending.delete(key); _incStats(methodName, 'pending_dec'); };
+                              p.then(cleanup, cleanup);
+                              return p;
+                            };
+                          } catch(e){}
+                        }
+                        if (globalThis.kv) {
+                          if (globalThis.kv.get_many) wrapAsyncDedupe(globalThis.kv, 'get_many', 20);
+                          if (globalThis.kv.get_kv_entries) wrapAsyncDedupe(globalThis.kv, 'get_kv_entries', 20);
+                        }
+                      } catch(e){}
+                    })();
+
+                    // Defer heavy filesystem/storage calls slightly to prioritize UI rendering
+                    (function(){
+                      try {
+                        function makeDeferredIfAsync(obj, name, delayMs) {
+                          try {
+                            var orig = obj[name];
+                            if (typeof orig !== 'function') return;
+                            var isAsync = orig.constructor && orig.constructor.name === 'AsyncFunction';
+                            var src = String(orig);
+                            if (!isAsync && src.indexOf('return new Promise') === -1 && src.indexOf('.then(') === -1) {
+                              // Likely synchronous - skip deferral to avoid changing semantics
+                              return;
+                            }
+                            obj[name] = function() {
+                              var args = Array.prototype.slice.call(arguments);
+                              var self = this;
+                              return new Promise(function(resolve, reject){
+                                setTimeout(function(){
+                                  try {
+                                    var res = orig.apply(self, args);
+                                    if (res && typeof res.then === 'function') res.then(resolve, reject);
+                                    else resolve(res);
+                                  } catch (e) { reject(e); }
+                                }, Number(delayMs) || 100);
+                              });
+                            };
+                          } catch(e){}
+                        }
+                        if (globalThis.db && typeof globalThis.db.fs_info === 'function') {
+                          makeDeferredIfAsync(globalThis.db, 'fs_info', 100);
+                        }
+                        if (globalThis.Storage && typeof globalThis.Storage.refresh === 'function') {
+                          makeDeferredIfAsync(globalThis.Storage, 'refresh', 50);
+                        }
+                      } catch(e){}
+                    })();
+
                     // Expose lightweight API
                     try {
                       if (!globalThis.__SHIGGY_PERF_API__) {
