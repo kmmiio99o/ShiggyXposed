@@ -12,8 +12,8 @@ android {
         applicationId = "ShiggyXposed.xposed"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1240
-        versionName = "1.2.4"
+        versionCode = 1250
+        versionName = "1.2.5"
     }
 
     buildTypes {
@@ -37,6 +37,10 @@ android {
     buildFeatures {
         buildConfig = true
     }
+}
+
+tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:-options")
 }
 
 dependencies {

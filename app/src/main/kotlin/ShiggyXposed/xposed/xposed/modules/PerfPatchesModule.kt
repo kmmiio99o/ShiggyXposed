@@ -310,6 +310,7 @@ object PerfPatchesModule : Module() {
         }
     }
 
+    @Deprecated("Overrides deprecated Module.buildPayload")
     override fun buildPayload(builder: JsonObjectBuilder) {
         builder.put("perfPatches", true)
     }
