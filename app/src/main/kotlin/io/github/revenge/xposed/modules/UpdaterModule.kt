@@ -32,7 +32,8 @@ data class CustomLoadUrl(
 
 @Serializable
 data class LoaderConfig(
-    val customLoadUrl: CustomLoadUrl = CustomLoadUrl()
+    val customLoadUrl: CustomLoadUrl = CustomLoadUrl(),
+    val disableInjection: Boolean = false
 )
 
 /**
@@ -151,5 +152,51 @@ object UpdaterModule : Module() {
         val filesDir = File(context.dataDir, Constants.FILES_DIR)
         val config = File(filesDir, CONFIG_FILE)
         if (config.exists()) config.delete()
+    }
+
+    fun setDisableInjection(context: Context, disabled: Boolean) {
+        try {
+            val filesDir = File(context.dataDir, Constants.FILES_DIR)
+            filesDir.mkdirs()
+            val configFile = File(filesDir, CONFIG_FILE)
+
+            val current = runCatching {
+                if (configFile.exists()) JSON.decodeFromString<LoaderConfig>(configFile.readText()) else LoaderConfig()
+            }.getOrDefault(LoaderConfig())
+
+            val newCfg = current.copy(disableInjection = disabled)
+            configFile.writeText(JSON.encodeToString(newCfg))
+            Toast.makeText(context, "Bundle injection ${if (disabled) "disabled" else "enabled"}", Toast.LENGTH_SHORT)
+                .show()
+        } catch (e: Exception) {
+            Log.e("Failed to update loader config: ${e.message}", e)
+            Toast.makeText(context, "Failed to update loader config", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Convenience to check whether injection is disabled (reads current in-memory config first,
+     * falls back to disk if needed).
+     */
+    fun isInjectionDisabled(context: Context? = null): Boolean {
+        // Prefer in-memory config if loaded
+        try {
+            if (::config.isInitialized) {
+                return config.disableInjection
+            }
+
+            // If a Context is provided, attempt to read on-disk config
+            if (context != null) {
+                val filesDir = File(context.dataDir, Constants.FILES_DIR)
+                val configFile = File(filesDir, CONFIG_FILE)
+                if (configFile.exists()) {
+                    val disk = JSON.decodeFromString<LoaderConfig>(configFile.readText())
+                    return disk.disableInjection
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Error checking disableInjection flag: ${e.message}", e)
+        }
+        return false
     }
 }

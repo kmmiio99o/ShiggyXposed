@@ -2,6 +2,7 @@ package io.github.revenge.xposed.modules
 
 import android.content.res.AssetManager
 import android.content.res.XModuleResources
+import android.content.Context
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage
@@ -28,6 +29,9 @@ object HookScriptLoaderModule : Module() {
     private lateinit var preloadsDir: File
     private lateinit var mainScript: File
 
+    // Directory to read loader config from when checking disable flag
+    private var moduleFilesDir: File? = null
+
     private lateinit var modulePath: String
     private lateinit var resources: XModuleResources
 
@@ -35,6 +39,16 @@ object HookScriptLoaderModule : Module() {
 
     override fun onInit(startupParam: IXposedHookZygoteInit.StartupParam) {
         this@HookScriptLoaderModule.modulePath = startupParam.modulePath
+    }
+
+    override fun onContext(context: android.content.Context) {
+        // Keep a reference to the module's files directory so we can check the loader config
+        try {
+            val dir = File(context.dataDir, Constants.FILES_DIR).apply { asDir() }
+            moduleFilesDir = dir
+        } catch (_: Exception) {
+            // best-effort only
+        }
     }
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
@@ -102,17 +116,32 @@ object HookScriptLoaderModule : Module() {
         try {
             preloadsDir.walk().filter { it.isFile }.forEach(runScriptFile)
 
-            if (mainScript.exists()) runScriptFile(mainScript)
-            else {
-                Log.i("Main script does not exist, falling back")
+            // Check whether bundle injection execution is disabled via loader config.
+            // UpdaterModule.isInjectionDisabled reads the in-memory config (loaded in its onLoad),
+            // and falls back to disk if necessary. We call it without a Context because by the time
+            // this runs the UpdaterModule config should already be available.
+            val injectionDisabled = try {
+                io.github.revenge.xposed.modules.UpdaterModule.isInjectionDisabled()
+            } catch (e: Throwable) {
+                Log.e("Failed to check injection disabled flag: ${e.message}")
+                false
+            }
 
-                if (!::resources.isInitialized) resources = XModuleResources.createInstance(modulePath, null)
+            if (injectionDisabled) {
+                Log.i("Bundle injection disabled by loader config - skipping main bundle execution")
+            } else {
+                if (mainScript.exists()) runScriptFile(mainScript)
+                else {
+                    Log.i("Main script does not exist, falling back")
 
-                XposedBridge.invokeOriginalMethod(
-                    loadScriptFromAssets,
-                    thisObject,
-                    arrayOf(resources.assets, "assets://revenge.bundle", loadSynchronously)
-                )
+                    if (!::resources.isInitialized) resources = XModuleResources.createInstance(modulePath, null)
+
+                    XposedBridge.invokeOriginalMethod(
+                        loadScriptFromAssets,
+                        thisObject,
+                        arrayOf(resources.assets, "assets://revenge.bundle", loadSynchronously)
+                    )
+                }
             }
         } catch (e: Throwable) {
             Log.e("Unable to run scripts:", e)
