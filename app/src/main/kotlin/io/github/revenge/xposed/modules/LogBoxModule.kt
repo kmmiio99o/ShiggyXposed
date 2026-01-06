@@ -44,7 +44,8 @@ object LogBoxModule : Module() {
 
         try {
             val dcdReactNativeHostClass = classLoader.loadClass("com.discord.bridge.DCDReactNativeHost")
-            val getUseDeveloperSupportMethod = dcdReactNativeHostClass.methods.first { it.name == "getUseDeveloperSupport" }
+            val getUseDeveloperSupportMethod =
+                dcdReactNativeHostClass.methods.first { it.name == "getUseDeveloperSupport" }
 
             getUseDeveloperSupportMethod.hook {
                 before {
@@ -354,6 +355,25 @@ object LogBoxModule : Module() {
                 ) { refetchBundle(context) }
             })
 
+            // toggle bundle injection
+            val bundleInjectionText = if (io.github.revenge.xposed.modules.UpdaterModule.isInjectionDisabled(context)) {
+                "Enable Bundle Injection"
+            } else {
+                "Disable Bundle Injection"
+            }
+            container.addView(createButton(context, bundleInjectionText, colors) {
+                dialog.dismiss()
+                showConfirmAction(
+                    context,
+                    if (io.github.revenge.xposed.modules.UpdaterModule.isInjectionDisabled(context)) "Enable Bundle Injection" else "Disable Bundle Injection",
+                    "This will ${if (io.github.revenge.xposed.modules.UpdaterModule.isInjectionDisabled(context)) "enable" else "disable"} executing the cached/downloaded bundle. The app will reload to apply the change."
+                ) {
+                    val currentlyDisabled = io.github.revenge.xposed.modules.UpdaterModule.isInjectionDisabled(context)
+                    io.github.revenge.xposed.modules.UpdaterModule.setDisableInjection(context, !currentlyDisabled)
+                    reloadApp()
+                }
+            })
+
             // reload App Button
             container.addView(createButton(context, "Reload App", colors) {
                 dialog.dismiss()
@@ -552,7 +572,11 @@ object LogBoxModule : Module() {
         val thumbCornerRadius = thumbSize / 2f
 
         val switchThumb = View(context).apply {
-            background = createM3Background(context, if (isEnabled) colors.onPrimary else colors.onSurfaceVariant, thumbCornerRadius)
+            background = createM3Background(
+                context,
+                if (isEnabled) colors.onPrimary else colors.onSurfaceVariant,
+                thumbCornerRadius
+            )
             val params = FrameLayout.LayoutParams(thumbSize, thumbSize)
 
             val thumbLeft = if (isEnabled) {
@@ -848,11 +872,15 @@ object LogBoxModule : Module() {
     private fun constrainContainerWidth(context: Context, container: LinearLayout) {
         try {
             val maxW = (context.resources.displayMetrics.widthPixels * 0.88).toInt()
-            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
             container.layoutParams = lp
             try {
                 container.minimumWidth = maxW
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         } catch (_: Exception) {
         }
     }
