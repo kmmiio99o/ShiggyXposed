@@ -5,8 +5,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.util.AtomicFile
 import android.widget.Toast
-import androidx.core.util.writeBytes
 import de.robv.android.xposed.callbacks.XC_LoadPackage
+import dev.rushii.libunbound.LibUnbound
 import io.github.revenge.xposed.Constants
 import io.github.revenge.xposed.Module
 import io.github.revenge.xposed.Utils
@@ -22,25 +22,19 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import java.io.File
 import java.lang.ref.WeakReference
 
 @Serializable
-data class CustomLoadUrl(
-    val enabled: Boolean = false, val url: String = ""
-)
+data class CustomLoadUrl(val enabled: Boolean = false, val url: String = "")
 
 @Serializable
-data class LoaderConfig(
-    val customLoadUrl: CustomLoadUrl = CustomLoadUrl(),
-    val disableInjection: Boolean = false
-)
+data class LoaderConfig(val customLoadUrl: CustomLoadUrl = CustomLoadUrl(), val disableInjection: Boolean = false)
 
-/**
- * Module that updates the JS bundle by downloading it from a remote URL.
- *
- * Shows dialogs when failed allowing retry.
- */
+@Serializable
+data class EndpointInfo(val paths: ArrayList<String>, val hash: String? = null, val version: String)
+
 object UpdaterModule : Module() {
     private lateinit var config: LoaderConfig
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -50,13 +44,13 @@ object UpdaterModule : Module() {
     private lateinit var bundle: File
     private lateinit var etag: File
 
-    private const val TIMEOUT_CACHED = 5000L
-    private const val TIMEOUT = 10000L
+    private const val TIMEOUT_STRICT = 15000L
+    private const val MIN_BYTECODE_SIZE = 512
     private const val ETAG_FILE = "etag.txt"
     private const val CONFIG_FILE = "loader.json"
 
-    private const val DEFAULT_BUNDLE_URL =
-        "https://codeberg.org/cocobo1/Kettu/raw/branch/dist/kettu.min.js"
+    private const val DEFAULT_BASE_URL = "https://codeberg.org/cocobo1/Kettu/raw/branch/dist/"
+    private const val DEFAULT_BUNDLE_NAME = "kettu.min.js"
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         cacheDir = File(appInfo.dataDir, Constants.CACHE_DIR).apply { mkdirs() }
@@ -66,11 +60,8 @@ object UpdaterModule : Module() {
         etag = File(cacheDir, ETAG_FILE)
 
         val configFile = File(filesDir, CONFIG_FILE)
-
         config = runCatching {
-            if (configFile.exists()) {
-                JSON.decodeFromString<LoaderConfig>(configFile.readText())
-            } else LoaderConfig()
+            if (configFile.exists()) JSON.decodeFromString<LoaderConfig>(configFile.readText()) else LoaderConfig()
         }.getOrDefault(LoaderConfig())
     }
 
@@ -78,23 +69,21 @@ object UpdaterModule : Module() {
         try {
             HttpClient(CIO) {
                 expectSuccess = false
+                install(HttpTimeout) {
+                    requestTimeoutMillis = TIMEOUT_STRICT
+                    connectTimeoutMillis = 5000L
+                    socketTimeoutMillis = TIMEOUT_STRICT
+                }
                 install(UserAgent) { agent = Constants.USER_AGENT }
-                install(HttpRedirect) {}
+                install(HttpRedirect) { checkHttpMethod = false }
             }.use { client ->
-                val url = config.customLoadUrl.takeIf { it.enabled }?.url ?: DEFAULT_BUNDLE_URL
-                Log.i("Fetching JS bundle from: $url")
+                val targetUrl = resolveTargetUrl(client)
+                Log.i("Fetching bundle: $targetUrl")
 
-                val response: HttpResponse = client.get(url) {
+                val response: HttpResponse = client.get(targetUrl) {
                     headers {
                         if (etag.exists() && bundle.exists()) {
                             append(HttpHeaders.IfNoneMatch, etag.readText())
-                        }
-                    }
-
-                    // Retries don't need timeout
-                    if (activity == null) {
-                        timeout {
-                            requestTimeoutMillis = if (!bundle.exists()) TIMEOUT else TIMEOUT_CACHED
                         }
                     }
                 }
@@ -102,38 +91,70 @@ object UpdaterModule : Module() {
                 when (response.status) {
                     HttpStatusCode.OK -> {
                         val bytes: ByteArray = response.body()
-                        AtomicFile(bundle).writeBytes(bytes)
+                        
+                        if (bytes.size < MIN_BYTECODE_SIZE) {
+                            throw Exception("Payload too small (${bytes.size} bytes). Possible corrupt build.")
+                        }
 
-                        val newTag = response.headers[HttpHeaders.ETag]
-                        if (!newTag.isNullOrEmpty()) etag.writeText(newTag) else etag.delete()
+                        AtomicFile(bundle).apply {
+                            val stream = startWrite()
+                            try {
+                                stream.write(bytes)
+                                finishWrite(stream)
+                            } catch (e: Exception) {
+                                failWrite(stream)
+                                throw e
+                            }
+                        }
 
-                        Log.i("Bundle updated (${bytes.size} bytes)")
+                        response.headers[HttpHeaders.ETag]?.let { etag.writeText(it) } ?: etag.delete()
+                        Log.i("Bundle updated: ${bytes.size} bytes")
 
-                        // This is a retry, so we show a dialog
                         if (activity != null) {
                             withContext(Dispatchers.Main) {
-                                AlertDialog.Builder(activity).setTitle("Kettu Update Successful")
-                                    .setMessage("A reload is required for changes to take effect.")
-                                    .setPositiveButton("Reload") { dialog, _ ->
-                                        reloadApp()
-                                        dialog.dismiss()
-                                    }.setCancelable(false).show()
+                                AlertDialog.Builder(activity)
+                                    .setTitle("Update Successful")
+                                    .setMessage("Reload required.")
+                                    .setPositiveButton("Reload") { _, _ -> reloadApp() }
+                                    .setCancelable(false)
+                                    .show()
                             }
                         }
                     }
-
-                    HttpStatusCode.NotModified -> {
-                        Log.i("Server responded with 304, no changes")
-                    }
-
-                    else -> {
-                        throw ResponseException(response, "Received status: ${response.status}")
-                    }
+                    HttpStatusCode.NotModified -> Log.i("Bundle is up to date (304)")
+                    else -> throw ResponseException(response, "HTTP ${response.status}")
                 }
             }
         } catch (e: Throwable) {
-            Log.e("Failed to download script", e)
-            showErrorDialog(e)
+            Log.e("Updater Error", e)
+            if (activity != null) withContext(Dispatchers.Main) {
+                Toast.makeText(activity, "Update failed: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private suspend fun resolveTargetUrl(client: HttpClient): String {
+        if (config.customLoadUrl.enabled && config.customLoadUrl.url.isNotEmpty()) {
+            return config.customLoadUrl.url
+        }
+
+        return try {
+            val infoResponse = client.get("${DEFAULT_BASE_URL}info.json")
+            if (infoResponse.status == HttpStatusCode.OK) {
+                val info = JSON.decodeFromString<EndpointInfo>(infoResponse.bodyAsText())
+                val hermesVersion = withTimeoutOrNull(2000L) {
+                    runCatching { LibUnbound.getHermesRuntimeBytecodeVersion() }.getOrNull()
+                } ?: 96
+                
+                val hbcName = "kettu.$hermesVersion.hbc"
+                when {
+                    info.paths.contains(hbcName) -> DEFAULT_BASE_URL + hbcName
+                    info.paths.contains("kettu.min.js") -> DEFAULT_BASE_URL + "kettu.min.js"
+                    else -> DEFAULT_BASE_URL + DEFAULT_BUNDLE_NAME
+                }
+            } else DEFAULT_BASE_URL + DEFAULT_BUNDLE_NAME
+        } catch (e: Exception) {
+            DEFAULT_BASE_URL + DEFAULT_BUNDLE_NAME
         }
     }
 
@@ -141,62 +162,16 @@ object UpdaterModule : Module() {
         lastActivity = WeakReference(activity)
     }
 
-    fun showErrorDialog(e: Throwable) {
-        val activity = lastActivity?.get() ?: return
-
-        activity.runOnUiThread {
-        }
-    }
-
-    fun resetLoaderConfig(context: Context) {
-        val filesDir = File(context.dataDir, Constants.FILES_DIR)
-        val config = File(filesDir, CONFIG_FILE)
-        if (config.exists()) config.delete()
-    }
-
     fun setDisableInjection(context: Context, disabled: Boolean) {
-        try {
-            val filesDir = File(context.dataDir, Constants.FILES_DIR)
-            filesDir.mkdirs()
-            val configFile = File(filesDir, CONFIG_FILE)
-
-            val current = runCatching {
-                if (configFile.exists()) JSON.decodeFromString<LoaderConfig>(configFile.readText()) else LoaderConfig()
-            }.getOrDefault(LoaderConfig())
-
-            val newCfg = current.copy(disableInjection = disabled)
-            configFile.writeText(JSON.encodeToString(newCfg))
-            Toast.makeText(context, "Bundle injection ${if (disabled) "disabled" else "enabled"}", Toast.LENGTH_SHORT)
-                .show()
-        } catch (e: Exception) {
-            Log.e("Failed to update loader config: ${e.message}", e)
-            Toast.makeText(context, "Failed to update loader config", Toast.LENGTH_SHORT).show()
-        }
+        val filesDir = File(context.dataDir, Constants.FILES_DIR).apply { mkdirs() }
+        val configFile = File(filesDir, CONFIG_FILE)
+        val newCfg = config.copy(disableInjection = disabled)
+        configFile.writeText(JSON.encodeToString(newCfg))
+        config = newCfg
+        Toast.makeText(context, "Injection ${if (disabled) "disabled" else "enabled"}", Toast.LENGTH_SHORT).show()
     }
 
-    /**
-     * Convenience to check whether injection is disabled (reads current in-memory config first,
-     * falls back to disk if needed).
-     */
     fun isInjectionDisabled(context: Context? = null): Boolean {
-        // Prefer in-memory config if loaded
-        try {
-            if (::config.isInitialized) {
-                return config.disableInjection
-            }
-
-            // If a Context is provided, attempt to read on-disk config
-            if (context != null) {
-                val filesDir = File(context.dataDir, Constants.FILES_DIR)
-                val configFile = File(filesDir, CONFIG_FILE)
-                if (configFile.exists()) {
-                    val disk = JSON.decodeFromString<LoaderConfig>(configFile.readText())
-                    return disk.disableInjection
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("Error checking disableInjection flag: ${e.message}", e)
-        }
-        return false
+        return if (::config.isInitialized) config.disableInjection else false
     }
 }
