@@ -52,4 +52,5 @@ dependencies {
     implementation("io.ktor:ktor-client-core:3.3.1")
     implementation("io.ktor:ktor-client-cio:3.3.1")
     implementation("com.google.android.material:material:1.12.0")
+    implementation("dev.rushii:libunbound:1.0.0")
 }

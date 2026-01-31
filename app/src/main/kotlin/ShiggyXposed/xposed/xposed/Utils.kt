@@ -37,11 +37,6 @@ class Utils {
 
                             reloadApp()
                         }
-
-                        2 -> {
-                            UpdaterModule.resetLoaderConfig(context)
-                            reloadApp()
-                        }
                     }
                 }.show()
         }
