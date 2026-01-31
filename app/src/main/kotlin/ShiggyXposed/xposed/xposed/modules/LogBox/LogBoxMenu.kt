@@ -15,6 +15,7 @@ import android.view.animation.DecelerateInterpolator
 import org.json.JSONObject
 import java.io.File
 import ShiggyXposed.xposed.Utils.Log
+import ShiggyXposed.xposed.Utils
 
 object LogBoxMenu {
 
@@ -95,6 +96,7 @@ object LogBoxMenu {
         container.addView(createM3Button(context, injectionText, colors) {
             dialog.dismiss()
             LogBoxActions.toggleBundleInjection(context)
+            Utils.reloadApp()
         })
 
         container.addView(createM3Button(context, "Refetch Bundle", colors) {
