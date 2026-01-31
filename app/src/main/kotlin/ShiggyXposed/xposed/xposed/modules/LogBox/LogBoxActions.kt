@@ -63,31 +63,38 @@ object LogBoxActions {
             settingsFile.parentFile?.mkdirs()
             val settings = if (settingsFile.exists()) JSONObject(settingsFile.readText()) else JSONObject()
 
-            if (bundle.exists()) {
-                if (disabled.exists()) disabled.delete()
-                val renamed = bundle.renameTo(disabled)
-                settings.put("bundleInjectionDisabled", true)
-                settingsFile.writeText(settings.toString())
-                Toast.makeText(
-                    context,
-                    if (renamed) "Bundle injection disabled" else "Bundle injection disabled (marker set)",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else if (disabled.exists()) {
-                val renamed = disabled.renameTo(bundle)
-                settings.put("bundleInjectionDisabled", false)
-                settingsFile.writeText(settings.toString())
-                Toast.makeText(
-                    context,
-                    if (renamed) "Bundle injection enabled" else "Bundle injection enabled (marker removed)",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                disabled.writeText("")
-                settings.put("bundleInjectionDisabled", true)
-                settingsFile.writeText(settings.toString())
-                Toast.makeText(context, "Bundle injection disabled (marker created)", Toast.LENGTH_SHORT).show()
+            val currentlyDisabled = LogBoxUtils.isBundleInjectionDisabled(context)
+            val newState = !currentlyDisabled
+
+            if (bundle.exists() && disabled.exists()) {
+                bundle.delete()
             }
+
+            if (newState) {
+                // Disable injection
+                if (disabled.exists()) {
+                    disabled.delete()
+                }
+                if (bundle.exists()) {
+                    bundle.renameTo(disabled)
+                } else {
+                    disabled.writeText("")
+                }
+                settings.put("bundleInjectionDisabled", true)
+                Toast.makeText(context, "Bundle injection disabled", Toast.LENGTH_SHORT).show()
+            } else {
+                // Enable injection
+                if (disabled.exists()) {
+                    disabled.renameTo(bundle)
+                } else if (!bundle.exists()) {
+                    bundle.writeText("")
+                }
+                settings.put("bundleInjectionDisabled", false)
+                Toast.makeText(context, "Bundle injection enabled", Toast.LENGTH_SHORT).show()
+            }
+
+            settingsFile.writeText(settings.toString())
+
         } catch (e: Exception) {
             Log.e("Error toggling bundle injection: ${e.message}")
             showError(context, "Failed to toggle bundle injection", e.message)

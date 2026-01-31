@@ -86,9 +86,16 @@ object LogBoxUtils {
             val cacheDir = File(context.dataDir, Constants.CACHE_DIR)
             val bundle = File(cacheDir, Constants.MAIN_SCRIPT_FILE)
             val disabled = File(cacheDir, "${Constants.MAIN_SCRIPT_FILE}.disabled")
-            if (disabled.exists()) return true
+
+            if (disabled.exists()) {
+                if (bundle.exists()) {
+                    bundle.delete()
+                }
+                return true
+            }
             if (bundle.exists()) return false
 
+            // If neither file exists, check settings
             val settingsFile = File(context.filesDir, "logbox/LOGBOX_SETTINGS")
             if (!settingsFile.exists()) return false
             val json = JSONObject(settingsFile.readText())
