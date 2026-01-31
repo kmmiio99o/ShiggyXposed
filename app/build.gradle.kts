@@ -12,8 +12,8 @@ android {
         applicationId = "ShiggyXposed.xposed"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1250
-        versionName = "1.2.5"
+        versionCode = 1300
+        versionName = "1.3.0"
     }
 
     buildTypes {
