@@ -16,6 +16,7 @@ import ShiggyXposed.xposed.modules.bridge.AdditionalBridgeMethodsModule
 import ShiggyXposed.xposed.modules.bridge.BridgeModule
 import ShiggyXposed.xposed.modules.no_track.BlockCrashReportingModule
 import ShiggyXposed.xposed.modules.no_track.BlockDeepLinksTrackingModule
+import ShiggyXposed.xposed.modules.LogBox.*
 import kotlinx.coroutines.CompletableDeferred
 
 object HookStateHolder {
