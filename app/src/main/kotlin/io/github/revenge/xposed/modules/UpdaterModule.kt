@@ -13,6 +13,7 @@ import io.github.revenge.xposed.Utils
 import io.github.revenge.xposed.Utils.Companion.JSON
 import io.github.revenge.xposed.Utils.Companion.reloadApp
 import io.github.revenge.xposed.Utils.Log
+import io.github.revenge.xposed.modules.bridge.BridgeModule
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -37,6 +38,8 @@ data class EndpointInfo(val paths: ArrayList<String>, val hash: String? = null, 
 
 object UpdaterModule : Module() {
     private lateinit var config: LoaderConfig
+    val isCustomUrlEnabled: Boolean
+        get() = config.customLoadUrl.enabled
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var lastActivity: WeakReference<Activity>? = null
 
@@ -63,9 +66,15 @@ object UpdaterModule : Module() {
         config = runCatching {
             if (configFile.exists()) JSON.decodeFromString<LoaderConfig>(configFile.readText()) else LoaderConfig()
         }.getOrDefault(LoaderConfig())
+
+        BridgeModule.registerMethod("revenge.updater.clear") {
+            if (bundle.exists()) bundle.delete()
+            if (etag.exists()) etag.delete()
+            null
+        }
     }
 
-    fun downloadScript(activity: Activity? = null): Job = scope.launch {
+    fun downloadScript(activity: Activity? = null, showUpdateDialog: Boolean = true): Job = scope.launch {
         try {
             HttpClient(CIO) {
                 expectSuccess = false
