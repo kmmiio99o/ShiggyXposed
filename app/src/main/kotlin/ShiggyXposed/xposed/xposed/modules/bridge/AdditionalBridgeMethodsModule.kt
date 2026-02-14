@@ -9,6 +9,7 @@ import android.os.Build
 import android.widget.Toast
 import ShiggyXposed.xposed.Module
 import ShiggyXposed.xposed.Utils
+import ShiggyXposed.xposed.Utils.Companion.reloadApp
 import java.io.File
 
 object AdditionalBridgeMethodsModule : Module() {
@@ -46,6 +47,11 @@ object AdditionalBridgeMethodsModule : Module() {
             val file = File(path as String).apply { openFileGuarded() }
 
             file.writeText(contents as String)
+        }
+
+        BridgeModule.registerMethod("Shiggy.app.reload") {
+            reloadApp()
+            null
         }
     }
 
