@@ -117,6 +117,17 @@ object LogBoxMenu {
             }
         })
 
+        container.addView(createM3Button(context, "Delete Devtools", colors) {
+            dialog.dismiss()
+            showConfirmAction(
+                context,
+                "Delete Devtools",
+                "This will delete the reactDevtools.js preload file if it exists."
+            ) {
+                LogBoxActions.deleteDevtools(context)
+            }
+        })
+
         container.addView(createM3Button(context, "Back", colors) {
             dialog.dismiss()
             showRecoveryMenu(context)

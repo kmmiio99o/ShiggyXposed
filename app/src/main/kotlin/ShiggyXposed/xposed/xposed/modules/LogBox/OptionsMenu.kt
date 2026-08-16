@@ -55,23 +55,6 @@ object OptionsMenu {
             )
         })
 
-        container.addView(LogBoxComponents.createM3Button(context, "Delete Devtools", colors) {
-            dialog.dismiss()
-            RecoveryMenu::class.java.getDeclaredMethod(
-                "showConfirmAction",
-                Context::class.java,
-                String::class.java,
-                String::class.java,
-                Runnable::class.java
-            ).apply { isAccessible = true }.invoke(
-                null,
-                context,
-                "Delete Devtools",
-                "This will delete the reactDevtools.js preload file if it exists.",
-                Runnable { LogBoxActions.deleteDevtools(context) }
-            )
-        })
-
         container.addView(LogBoxComponents.createM3Button(context, "Back", colors) {
             dialog.dismiss()
             RecoveryMenu.showRecoveryMenu(context)
