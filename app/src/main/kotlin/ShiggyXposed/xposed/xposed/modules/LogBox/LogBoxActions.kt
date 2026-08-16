@@ -187,6 +187,24 @@ object LogBoxActions {
         }
     }
 
+    fun deleteDevtools(context: Context) {
+        try {
+            val devtoolsFile = File(LogBoxUtils.getPyoncordDirectory(context), "preloads/reactDevtools.js")
+            if (devtoolsFile.exists()) {
+                if (devtoolsFile.delete()) {
+                    Toast.makeText(context, "Devtools deleted", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Failed to delete Devtools", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(context, "Devtools not found", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e("Error deleting Devtools: ${e.message}")
+            showError(context, "Failed to delete Devtools", e.message)
+        }
+    }
+
     fun showError(context: Context, title: String, message: String?) {
         LogBoxMenu.showErrorDialog(context, title, message)
     }
