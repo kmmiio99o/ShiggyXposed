@@ -12,8 +12,8 @@ android {
         applicationId = "ShiggyXposed.xposed"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1340
-        versionName = "1.3.4"
+        versionCode = 1350
+        versionName = "1.3.5"
     }
 
     signingConfigs {
@@ -33,7 +33,7 @@ android {
         }
         release {
             isDebuggable = false
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             signingConfig = signingConfigs.getByName("release")
         }
     }
