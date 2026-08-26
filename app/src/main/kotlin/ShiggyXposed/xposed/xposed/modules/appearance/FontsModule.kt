@@ -51,45 +51,21 @@ object FontsModule : Module() {
     }
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
-        val hookCallback = object : XC_MethodReplacement() {
-            override fun replaceHookedMethod(param: MethodHookParam): Typeface? {
-                val fontFamilyName: String = param.args[0].toString()
-                val style: Int = param.args[1] as Int
-                val assetManager: AssetManager = param.args[2] as AssetManager
-                return createAssetTypeface(fontFamilyName, style, assetManager)
-            }
-        }
-
-        val hooked = try {
-            XposedHelpers.findAndHookMethod(
-                "com.facebook.react.common.assets.ReactFontManager\$Companion",
-                classLoader,
-                "createAssetTypeface",
-                String::class.java,
-                Int::class.java,
-                "android.content.res.AssetManager",
-                hookCallback
-            )
-            true
-        } catch (_: Throwable) {
-            false
-        }
-
-        if (!hooked) {
-            try {
-                XposedHelpers.findAndHookMethod(
-                    "com.facebook.react.views.text.ReactFontManager\$Companion",
-                    classLoader,
-                    "createAssetTypeface",
-                    String::class.java,
-                    Int::class.java,
-                    "android.content.res.AssetManager",
-                    hookCallback
-                )
-            } catch (e: Throwable) {
-                Log.e("Failed to hook createAssetTypeface in either class", e)
-            }
-        }
+        XposedHelpers.findAndHookMethod(
+            "com.facebook.react.common.assets.ReactFontManager\$Companion",
+            classLoader,
+            "createAssetTypeface",
+            String::class.java,
+            Int::class.java,
+            "android.content.res.AssetManager",
+            object : XC_MethodReplacement() {
+                override fun replaceHookedMethod(param: MethodHookParam): Typeface? {
+                    val fontFamilyName: String = param.args[0].toString()
+                    val style: Int = param.args[1] as Int
+                    val assetManager: AssetManager = param.args[2] as AssetManager
+                    return createAssetTypeface(fontFamilyName, style, assetManager)
+                }
+            })
 
         val fontDefFile = File(appInfo.dataDir, "${Constants.FILES_DIR}/fonts.json").apply { asFile() }
         if (!fontDefFile.exists()) return@with
