@@ -8,6 +8,7 @@ import ShiggyXposed.xposed.BuildConfig
 import ShiggyXposed.xposed.Constants
 import ShiggyXposed.xposed.Module
 import ShiggyXposed.xposed.Utils.Companion.JSON
+import ShiggyXposed.xposed.Utils.Log
 import ShiggyXposed.xposed.modules.HookScriptLoaderModule.PRELOADS_DIR
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -23,7 +24,11 @@ class PayloadGlobalModule(private val modules: List<Module>) : Module() {
         buildJsonObject {
             put("loaderName", Constants.LOADER_NAME)
             put("loaderVersion", BuildConfig.VERSION_NAME)
-            @Suppress("DEPRECATION") for (module in modules) module.buildPayload(this)
+            @Suppress("DEPRECATION") for (module in modules) runCatching {
+                module.buildPayload(this)
+            }.onFailure {
+                Log.e("Module ${module.javaClass.simpleName} failed while building payload", it)
+            }
         })
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
