@@ -13,19 +13,15 @@ import ShiggyXposed.xposed.Utils.Companion.JSON
 
 import ShiggyXposed.xposed.Utils.Log
 import ShiggyXposed.xposed.modules.bridge.BridgeModule
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.encodeToString
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
+import java.io.IOException
 import java.lang.ref.WeakReference
+import java.util.concurrent.TimeUnit
 
 @Serializable
 data class CustomLoadUrl(val enabled: Boolean = false, val url: String = "")
@@ -53,8 +49,18 @@ object UpdaterModule : Module() {
     private const val CONFIG_FILE = "loader.json"
 
     private const val DEFAULT_BASE_URL = "https://github.com/kmmiio99o/ShiggyCord/releases/latest/download/"
-    private const val FALLBACK_BASE_URL = "https://bundle.shiggycord.dev/"
     private const val DEFAULT_BUNDLE_NAME = "shiggycord.min.js"
+
+    private val client: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(TIMEOUT_STRICT, TimeUnit.MILLISECONDS)
+            .writeTimeout(TIMEOUT_STRICT, TimeUnit.MILLISECONDS)
+            .callTimeout(TIMEOUT_STRICT, TimeUnit.MILLISECONDS)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build()
+    }
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         cacheDir = File(appInfo.dataDir, Constants.CACHE_DIR).apply { mkdirs() }
@@ -77,33 +83,24 @@ object UpdaterModule : Module() {
 
     fun downloadScript(activity: Activity? = null, showUpdateDialog: Boolean = true): Job = scope.launch {
         try {
-            HttpClient(CIO) {
-                expectSuccess = false
-                install(HttpTimeout) {
-                    requestTimeoutMillis = TIMEOUT_STRICT
-                    connectTimeoutMillis = 5000L
-                    socketTimeoutMillis = TIMEOUT_STRICT
-                }
-                install(UserAgent) { agent = Constants.USER_AGENT }
-                install(HttpRedirect) { checkHttpMethod = false }
-            }.use { client ->
-                val targetUrl = resolveTargetUrl(client)
-                Log.i("Fetching bundle: $targetUrl")
+            val targetUrl = resolveTargetUrl()
+            Log.i("Fetching bundle: $targetUrl")
 
-                val response: HttpResponse = client.get(targetUrl) {
-                    headers {
-                        if (etag.exists() && bundle.exists()) {
-                            append(HttpHeaders.IfNoneMatch, etag.readText())
-                        }
-                    }
-                }
+            val builder = Request.Builder().url(targetUrl)
+                .header("User-Agent", Constants.USER_AGENT)
 
-                when (response.status) {
-                    HttpStatusCode.OK -> {
-                        val bytes: ByteArray = response.body()
+            if (etag.exists() && bundle.exists()) {
+                builder.header("If-None-Match", etag.readText())
+            }
+
+            client.newCall(builder.build()).execute().use { response ->
+                when (response.code) {
+                    200 -> {
+                        val bytes = response.body?.bytes()
+                            ?: throw IOException("Empty response body")
 
                         if (bytes.size < MIN_BYTECODE_SIZE) {
-                            throw Exception("Payload too small (${bytes.size} bytes). Possible corrupt build.")
+                            throw IOException("Payload too small (${bytes.size} bytes). Possible corrupt build.")
                         }
 
                         AtomicFile(bundle).apply {
@@ -117,12 +114,12 @@ object UpdaterModule : Module() {
                             }
                         }
 
-                        response.headers[HttpHeaders.ETag]?.let { etag.writeText(it) } ?: etag.delete()
+                        response.header("ETag")?.let { etag.writeText(it) } ?: etag.delete()
                         Log.i("Bundle updated: ${bytes.size} bytes")
                     }
 
-                    HttpStatusCode.NotModified -> Log.i("Bundle is up to date (304)")
-                    else -> throw ResponseException(response, "HTTP ${response.status}")
+                    304 -> Log.i("Bundle is up to date (304)")
+                    else -> throw IOException("HTTP ${response.code}")
                 }
             }
         } catch (e: Throwable) {
@@ -130,32 +127,36 @@ object UpdaterModule : Module() {
         }
     }
 
-    private suspend fun resolveTargetUrl(client: HttpClient): String {
+    private suspend fun resolveTargetUrl(): String {
         if (config.customLoadUrl.enabled && config.customLoadUrl.url.isNotEmpty()) {
             return config.customLoadUrl.url
         }
 
-        return tryResolveUrl(client, DEFAULT_BASE_URL)
-            ?: tryResolveUrl(client, FALLBACK_BASE_URL)
+        return tryResolveUrl(DEFAULT_BASE_URL)
             ?: DEFAULT_BASE_URL + DEFAULT_BUNDLE_NAME
     }
 
-    private suspend fun tryResolveUrl(client: HttpClient, baseUrl: String): String? {
+    private suspend fun tryResolveUrl(baseUrl: String): String? {
         return try {
-            val infoResponse = client.get("${baseUrl}info.json")
-            if (infoResponse.status == HttpStatusCode.OK) {
-                val info = JSON.decodeFromString<EndpointInfo>(infoResponse.bodyAsText())
-                val hermesVersion = withTimeoutOrNull(2000L) {
-                    runCatching { LibUnbound.getHermesRuntimeBytecodeVersion() }.getOrNull()
-                } ?: 96
+            val request = Request.Builder().url("${baseUrl}info.json")
+                .header("User-Agent", Constants.USER_AGENT)
+                .build()
 
-                val hbcName = "shiggycord.$hermesVersion.hbc"
-                when {
-                    info.paths.contains(hbcName) -> baseUrl + hbcName
-                    info.paths.contains("shiggycord.min.js") -> baseUrl + "shiggycord.min.js"
-                    else -> baseUrl + DEFAULT_BUNDLE_NAME
-                }
-            } else null
+            val info = client.newCall(request).execute().use { response ->
+                if (response.code != 200) return@use null
+                JSON.decodeFromString<EndpointInfo>(response.body?.string() ?: return@use null)
+            } ?: return null
+
+            val hermesVersion = withTimeoutOrNull(2000L) {
+                runCatching { LibUnbound.getHermesRuntimeBytecodeVersion() }.getOrNull()
+            } ?: 96
+
+            val hbcName = "shiggycord.$hermesVersion.hbc"
+            when {
+                info.paths.contains(hbcName) -> baseUrl + hbcName
+                info.paths.contains("shiggycord.min.js") -> baseUrl + "shiggycord.min.js"
+                else -> baseUrl + DEFAULT_BUNDLE_NAME
+            }
         } catch (e: Exception) {
             null
         }
