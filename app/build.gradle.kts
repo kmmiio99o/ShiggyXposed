@@ -18,10 +18,10 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("../release.keystore")
-            storePassword = "shiggyxposed"
-            keyAlias = "shiggyxposed"
-            keyPassword = "shiggyxposed"
+            storeFile = file("../debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
     }
 
