@@ -12,16 +12,17 @@ android {
         applicationId = "ShiggyXposed.xposed"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1370
-        versionName = "1.3.7"
+        versionCode = 1371
+        versionName = "1.3.8"
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file("../release.keystore")
-            storePassword = "shiggyxposed"
-            keyAlias = "shiggyxposed"
-            keyPassword = "shiggyxposed"
+            val keystorePath = System.getenv("KEYSTORE_FILE")!!
+            storeFile = file(keystorePath)
+            storePassword = System.getenv("KEYSTORE_PASSWORD")!!
+            keyAlias = System.getenv("KEYSTORE_ALIAS")!!
+            keyPassword = System.getenv("KEYSTORE_PASSWORD")!!
         }
     }
 

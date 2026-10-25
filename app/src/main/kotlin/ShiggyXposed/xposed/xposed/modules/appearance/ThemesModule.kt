@@ -84,11 +84,11 @@ object ThemesModule : Module() {
     fun hookTheme() {
         val theme = this.theme ?: return
 
-        val themeManager = param.classLoader.safeLoadClass("com.discord.theme.utils.ColorUtilsKt")
-        val darkTheme = param.classLoader.safeLoadClass("com.discord.theme.DarkerTheme")
-        val lightTheme = param.classLoader.safeLoadClass("com.discord.theme.LightTheme")
+        val themeModule = param.classLoader.safeLoadClass("com.discord.theme.ThemeModule")
+        val darkTheme = param.classLoader.safeLoadClass("com.discord.theme.ThemeModule\$Dark")
+        val lightTheme = param.classLoader.safeLoadClass("com.discord.theme.ThemeModule\$Light")
 
-        if (themeManager == null || darkTheme == null || lightTheme == null) {
+        if (themeModule == null || darkTheme == null || lightTheme == null) {
             Log.e("Failed to load Discord theme classes, skipping theme hooks")
             return
         }
@@ -126,7 +126,7 @@ object ThemesModule : Module() {
 
             listOf(
                 runCatching {
-                    themeManager.getDeclaredMethod(
+                    themeModule.getDeclaredMethod(
                         "getColorCompat",
                         Resources::class.java,
                         Int::class.javaPrimitiveType,
@@ -134,7 +134,7 @@ object ThemesModule : Module() {
                     )
                 }.getOrNull(),
                 runCatching {
-                    themeManager.getDeclaredMethod(
+                    themeModule.getDeclaredMethod(
                         "getColorCompat", Context::class.java, Int::class.javaPrimitiveType
                     )
                 }.getOrNull()
