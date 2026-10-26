@@ -16,3 +16,5 @@ local.properties
 app/release/release/
 release
 release.keystore
+
+.kotlin

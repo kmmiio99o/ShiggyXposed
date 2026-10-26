@@ -4,6 +4,15 @@ plugins {
     kotlin("plugin.serialization") version "2.1.10"
 }
 
+val releaseKeystorePath = System.getenv("KEYSTORE_FILE")
+val releaseKeystorePassword = System.getenv("KEYSTORE_PASSWORD")
+val releaseKeystoreAlias = System.getenv("KEYSTORE_ALIAS")
+val releaseKeyPassword = System.getenv("KEY_PASSWORD") ?: releaseKeystorePassword
+val releaseKeystoreFile = releaseKeystorePath?.let { rootProject.file(it) }
+val canSignRelease = releaseKeystoreFile?.isFile == true &&
+    !releaseKeystorePassword.isNullOrBlank() &&
+    !releaseKeystoreAlias.isNullOrBlank()
+
 android {
     namespace = "ShiggyXposed.xposed"
     compileSdk = 36
@@ -12,16 +21,18 @@ android {
         applicationId = "ShiggyXposed.xposed"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1370
-        versionName = "1.3.7"
+        versionCode = 1371
+        versionName = "1.3.8"
     }
 
     signingConfigs {
-        create("release") {
-            storeFile = file("../release.keystore")
-            storePassword = "shiggyxposed"
-            keyAlias = "shiggyxposed"
-            keyPassword = "shiggyxposed"
+        if (canSignRelease) {
+            create("release") {
+                storeFile = releaseKeystoreFile!!
+                storePassword = releaseKeystorePassword!!
+                keyAlias = releaseKeystoreAlias!!
+                keyPassword = releaseKeyPassword!!
+            }
         }
     }
 
@@ -34,7 +45,7 @@ android {
         release {
             isDebuggable = false
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
     compileOptions {
