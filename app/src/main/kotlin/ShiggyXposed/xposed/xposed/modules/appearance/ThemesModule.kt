@@ -2,6 +2,7 @@ package ShiggyXposed.xposed.modules.appearance
 
 import android.content.Context
 import android.content.res.Resources
+import android.view.View
 import androidx.core.graphics.toColorInt
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import ShiggyXposed.xposed.Constants
@@ -84,18 +85,26 @@ object ThemesModule : Module() {
     fun hookTheme() {
         val theme = this.theme ?: return
 
-        val themeManager = param.classLoader.safeLoadClass("com.discord.theme.utils.ColorUtilsKt")
-        val darkTheme = param.classLoader.safeLoadClass("com.discord.theme.DarkerTheme")
-        val lightTheme = param.classLoader.safeLoadClass("com.discord.theme.LightTheme")
-
-        if (themeManager == null || darkTheme == null || lightTheme == null) {
-            Log.e("Failed to load Discord theme classes, skipping theme hooks")
-            return
-        }
-
         // Apply rawColors
         theme.data.rawColors?.forEach { (key, value) ->
             rawColorMap[key.lowercase()] = hexStringToColorInt(value)
+        }
+
+        // Discord 352+ moved the theme palette into ThemeModule, while older builds used
+        // DarkerTheme/DarkTheme and LightTheme. Keep every known target so an obfuscated
+        // or missing class only disables the semantic hook for that version.
+        val darkThemes = listOf(
+            "com.discord.theme.ThemeModule\$Dark",
+            "com.discord.theme.DarkerTheme",
+            "com.discord.theme.DarkTheme",
+        ).mapNotNull { param.classLoader.safeLoadClass(it) }
+        val lightThemes = listOf(
+            "com.discord.theme.ThemeModule\$Light",
+            "com.discord.theme.LightTheme",
+        ).mapNotNull { param.classLoader.safeLoadClass(it) }
+
+        if (darkThemes.isEmpty() || lightThemes.isEmpty()) {
+            Log.w("Discord theme palette classes not found, skipping semantic color hooks")
         }
 
         // Apply semanticColors
@@ -103,27 +112,45 @@ object ThemesModule : Module() {
             // TEXT_NORMAL -> getTextNormal
             val methodName = "get${key.fromScreamingSnakeToCamelCase()}"
             value.forEachIndexed { index, v ->
-                when (index) {
-                    0 -> hookThemeMethod(darkTheme, methodName, hexStringToColorInt(v))
-                    1 -> hookThemeMethod(lightTheme, methodName, hexStringToColorInt(v))
+                val targets = when (index) {
+                    0 -> darkThemes
+                    1 -> lightThemes
+                    else -> emptyList()
                 }
+                targets.forEach { hookThemeMethod(it, methodName, hexStringToColorInt(v)) }
             }
         }
 
         // If there's any rawColors value, hook the color getter
-        if (!theme.data.rawColors.isNullOrEmpty()) {
-            val patch = MethodHookBuilder().run {
-                before {
-                    val arg1 = args[0]
-                    val resources = if (arg1 is Context) arg1.resources else (arg1 as Resources)
-                    val name = resources.getResourceEntryName(args[1] as Int)
+        if (theme.data.rawColors.isNullOrEmpty()) return
 
-                    if (rawColorMap[name] != null) result = rawColorMap[name]
+        val patch = MethodHookBuilder().run {
+            before {
+                val resources = when {
+                    args[0] is Context -> (args[0] as Context).resources
+                    args[0] is Resources -> args[0] as Resources
+                    args.size > 1 && args[1] is Resources -> args[1] as Resources
+                    args.size > 2 && args[2] is Resources -> args[2] as Resources
+                    args.size > 1 && args[1] is View -> (args[1] as View).context.resources
+                    else -> null
+                }
+                val colorId = when {
+                    args[0] is Int -> args[0] as Int
+                    args.size > 1 && args[1] is Int -> args[1] as Int
+                    else -> null
                 }
 
-                build()
+                if (resources != null && colorId != null) {
+                    val name = runCatching { resources.getResourceEntryName(colorId) }.getOrNull()
+                    if (name != null) rawColorMap[name]?.let { result = it }
+                }
             }
 
+            build()
+        }
+
+        // Legacy color resolver (through Discord 351).
+        param.classLoader.safeLoadClass("com.discord.theme.utils.ColorUtilsKt")?.let { themeManager ->
             listOf(
                 runCatching {
                     themeManager.getDeclaredMethod(
@@ -138,6 +165,31 @@ object ThemesModule : Module() {
                         "getColorCompat", Context::class.java, Int::class.javaPrimitiveType
                     )
                 }.getOrNull()
+            ).filterNotNull().forEach { it.hook(patch) }
+        }
+
+        // Discord 352+ color resolver. vh.c.c(int, Theme, Resources) and vh.c.e(Context, int)
+        // are the new getColorCompat equivalents; vh.c.d(int, View) is also widely used.
+        param.classLoader.safeLoadClass("vh.c")?.let { colorUtils ->
+            listOf(
+                runCatching {
+                    colorUtils.getDeclaredMethod(
+                        "c",
+                        Int::class.javaPrimitiveType,
+                        Resources.Theme::class.java,
+                        Resources::class.java,
+                    )
+                }.getOrNull(),
+                runCatching {
+                    colorUtils.getDeclaredMethod(
+                        "e", Context::class.java, Int::class.javaPrimitiveType
+                    )
+                }.getOrNull(),
+                runCatching {
+                    colorUtils.getDeclaredMethod(
+                        "d", Int::class.javaPrimitiveType, View::class.java
+                    )
+                }.getOrNull(),
             ).filterNotNull().forEach { it.hook(patch) }
         }
     }

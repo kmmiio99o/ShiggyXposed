@@ -114,6 +114,20 @@ If you want to build the project locally:
     adb install -r app/build/outputs/apk/debug/app-debug.apk
     ```
 
+- Release signing is configured from environment variables, never from a checked-in keystore:
+  - `KEYSTORE_FILE`: absolute path to the keystore
+  - `KEYSTORE_PASSWORD`: keystore password
+  - `KEYSTORE_ALIAS`: key alias
+  - `KEY_PASSWORD` (optional): key password, defaults to `KEYSTORE_PASSWORD`
+
+  The CI workflow restores the keystore from the `KEYSTORE_BASE64` secret (it also accepts a
+  base64 payload in `KEYSTORE_FILE`). Without signing secrets the release APK is debug-signed so
+  the workflow still succeeds.
+
+- Pushes to `master` build only the release variant (`:app:assembleRelease`), sign it, and publish
+  a GitHub Release tagged with the `versionName` from `app/build.gradle.kts`. Pushing the same
+  version again replaces that release's APK.
+
 - Run and test on a rooted device/emulator with Xposed/LSPosed installed and Discord in scope.
 
 Notes:

@@ -1,12 +1,24 @@
-name: Build APK
+name: Build Release APK
 
-on: [push]
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    name: Build and push
+    name: Build and release
     runs-on: ubuntu-latest
-    
+    env:
+      # Prefer KEYSTORE_BASE64; KEYSTORE_FILE may also contain a base64 payload or a path.
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_FILE_SECRET: ${{ secrets.KEYSTORE_FILE }}
+      KEYSTORE_PASSWORD_SECRET: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEYSTORE_ALIAS_SECRET: ${{ secrets.KEYSTORE_ALIAS }}
+      KEY_PASSWORD_SECRET: ${{ secrets.KEY_PASSWORD }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,13 +33,40 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: Build APKs
+      - name: Prepare signing keystore
+        run: |
+          set -e
+          KEYSTORE_PATH="$PWD/release.keystore"
+
+          if [ -n "${KEYSTORE_BASE64}" ]; then
+            printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "$KEYSTORE_PATH"
+          elif [ -n "${KEYSTORE_FILE_SECRET}" ]; then
+            if [ -f "${KEYSTORE_FILE_SECRET}" ]; then
+              cp "${KEYSTORE_FILE_SECRET}" "$KEYSTORE_PATH"
+            else
+              printf '%s' "${KEYSTORE_FILE_SECRET}" | base64 -d > "$KEYSTORE_PATH"
+            fi
+          fi
+
+          if [ -f "$KEYSTORE_PATH" ]; then
+            echo "KEYSTORE_FILE=$KEYSTORE_PATH" >> "$GITHUB_ENV"
+            echo "KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD_SECRET}" >> "$GITHUB_ENV"
+            echo "KEYSTORE_ALIAS=${KEYSTORE_ALIAS_SECRET}" >> "$GITHUB_ENV"
+            if [ -n "${KEY_PASSWORD_SECRET}" ]; then
+              echo "KEY_PASSWORD=${KEY_PASSWORD_SECRET}" >> "$GITHUB_ENV"
+            fi
+            echo "Release APK will be signed with the configured keystore."
+          else
+            echo "No signing secrets configured; the release APK will be debug-signed."
+          fi
+
+      - name: Build release APK
         run: |
           # Retry the Gradle build up to 3 times to mitigate transient cache/service errors
           ATTEMPT=0
           until [ $ATTEMPT -ge 3 ]
           do
-            ./gradlew build --no-daemon --stacktrace && break
+            ./gradlew :app:assembleRelease --no-daemon --stacktrace && break
             ATTEMPT=$((ATTEMPT+1))
             echo "Gradle build failed, retrying ($ATTEMPT/3)..."
             sleep 5
@@ -38,30 +77,78 @@ jobs:
           fi
 
       - name: Setup directories
-        run:  
-          mkdir -p /tmp/ShiggyXposedbuild/apks
+        run: |
+          mkdir -p /tmp/ShiggyXposedbuild/release-input
+          mkdir -p /tmp/ShiggyXposedbuild/signed
           mkdir -p /tmp/ShiggyXposedbuild/tools
-
-      - name: Move debug APK
-        run: mv ./app/build/outputs/apk/debug/app-debug.apk /tmp/ShiggyXposedbuild/apks
 
       - name: Download uber-apk-signer
         run: wget -nv "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.2.1/uber-apk-signer-1.2.1.jar" -O /tmp/ShiggyXposedbuild/tools/uber-apk-signer.jar
 
+      - name: Prepare release APK
+        run: |
+          set -e
+          RELEASE_APK="$(find ./app/build/outputs/apk/release -maxdepth 1 -type f -name 'app-release*.apk' ! -name '*unsigned*' | head -n 1)"
+          if [ -z "$RELEASE_APK" ]; then
+            RELEASE_APK="$(find ./app/build/outputs/apk/release -maxdepth 1 -type f -name 'app-release-unsigned.apk' | head -n 1)"
+          fi
+          if [ -z "$RELEASE_APK" ]; then
+            echo "No release APK was produced"
+            exit 1
+          fi
+          cp "$RELEASE_APK" /tmp/ShiggyXposedbuild/release-input/app-release-unsigned.apk
+
       - name: Sign release APK
-        run: java -jar /tmp/ShiggyXposedbuild/tools/uber-apk-signer.jar --apks ./app/build/outputs/apk/release/app-release-unsigned.apk --out /tmp/ShiggyXposedbuild/apks/
+        run: |
+          set -e
+          ARGS=(--apks /tmp/ShiggyXposedbuild/release-input --out /tmp/ShiggyXposedbuild/signed --allowResign)
+          if [ -n "${KEYSTORE_FILE:-}" ] && [ -f "${KEYSTORE_FILE}" ] &&
+             [ -n "${KEYSTORE_PASSWORD:-}" ] && [ -n "${KEYSTORE_ALIAS:-}" ]; then
+            ARGS+=(--ks "$KEYSTORE_FILE" --ksPass "$KEYSTORE_PASSWORD" --ksAlias "$KEYSTORE_ALIAS" --ksKeyPass "${KEY_PASSWORD:-$KEYSTORE_PASSWORD}")
+          fi
+          java -jar /tmp/ShiggyXposedbuild/tools/uber-apk-signer.jar "${ARGS[@]}"
 
-      - name: Rename release APK
-        run: mv /tmp/ShiggyXposedbuild/apks/app-release-aligned-debugSigned.apk /tmp/ShiggyXposedbuild/apks/app-release.apk
+          SIGNED_APK="$(find /tmp/ShiggyXposedbuild/signed -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          if [ -z "$SIGNED_APK" ]; then
+            echo "uber-apk-signer did not produce a signed APK"
+            exit 1
+          fi
+          cp "$SIGNED_APK" /tmp/ShiggyXposedbuild/app-release.apk
 
-      - name: Upload debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: /tmp/ShiggyXposedbuild/apks/app-debug.apk
+      - name: Read version
+        id: version
+        run: |
+          VERSION_NAME="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)"
+          VERSION_CODE="$(sed -n 's/.*versionCode = \([0-9]*\).*/\1/p' app/build.gradle.kts | head -n 1)"
+          if [ -z "$VERSION_NAME" ] || [ -z "$VERSION_CODE" ]; then
+            echo "Could not read version from app/build.gradle.kts"
+            exit 1
+          fi
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION_NAME ($VERSION_CODE)"
 
-      - name: Upload All APKs
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          TAG="${{ steps.version.outputs.name }}"
+          APK=/tmp/ShiggyXposedbuild/app-release.apk
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK#app-release.apk" --clobber --repo "$GITHUB_REPOSITORY"
+            gh release edit "$TAG" --title "$TAG" --notes "ShiggyXposed $TAG (versionCode ${{ steps.version.outputs.code }})" --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" "$APK#app-release.apk" \
+              --target "$GITHUB_SHA" \
+              --title "$TAG" \
+              --notes "ShiggyXposed $TAG (versionCode ${{ steps.version.outputs.code }})" \
+              --repo "$GITHUB_REPOSITORY"
+          fi
+          echo "Published release $TAG"
+
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: /tmp/ShiggyXposedbuild/apks/app-release.apk
+          path: /tmp/ShiggyXposedbuild/app-release.apk
