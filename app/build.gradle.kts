@@ -21,8 +21,8 @@ android {
         applicationId = "ShiggyXposed.xposed"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1371
-        versionName = "1.3.8"
+        versionCode = 1372
+        versionName = "1.3.9"
     }
 
     signingConfigs {
