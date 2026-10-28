@@ -46,9 +46,7 @@ object HookScriptLoaderModule : Module() {
 
         listOf(
             "com.facebook.react.runtime.ReactInstance\$loadJSBundle$1",
-            "com.facebook.react.runtime.ReactInstance$1",
-            // TODO: Remove once Discord fully switches to Bridgeless
-            "com.facebook.react.bridge.CatalystInstanceImpl"
+            "com.facebook.react.runtime.ReactInstance$1"
         ).mapNotNull { classLoader.safeLoadClass(it) }.forEach { hook(it) }
     }
 

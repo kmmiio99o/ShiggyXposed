@@ -248,86 +248,60 @@
     }
   });
 
-  // node_modules/spitroast/dist/index.js
-  var require_dist = __commonJS({
-    "node_modules/spitroast/dist/index.js"(exports, module) {
+  // node_modules/spitroast/dist/index.mjs
+  var dist_exports = {};
+  __export(dist_exports, {
+    after: () => after,
+    before: () => before,
+    instead: () => instead,
+    unpatchAll: () => resetPatches
+  });
+  function hook_default(patchedFunc, origFunc, funcArgs, ctxt) {
+    var patch = patchedFunctions.get(patchedFunc);
+    if (!patch) return origFunc(...funcArgs);
+    for (var hook of patch.b.values()) {
+      var maybefuncArgs = hook.call(ctxt, funcArgs);
+      if (Array.isArray(maybefuncArgs)) funcArgs = maybefuncArgs;
+    }
+    var workingRetVal = [
+      ...patch.i.values()
+    ].reduce((prev, current) => (...args) => current.call(ctxt, args, prev), origFunc)(...funcArgs);
+    for (var hook1 of patch.a.values()) workingRetVal = hook1.call(ctxt, funcArgs, workingRetVal) ?? workingRetVal;
+    for (var cleanup of patch.c) cleanup();
+    patch.c = [];
+    return workingRetVal;
+  }
+  function unpatch(patchRef, hookId, type) {
+    var patch = patchRef.deref();
+    if (!patch || !patch[type].delete(hookId)) return false;
+    var funcParent = patch.p.deref();
+    if (funcParent && patchTypes.every((t) => patch[t].size === 0)) {
+      var funcName = patch.n;
+      patchedFunctions.delete(funcParent[funcName]);
+      if (!Reflect.defineProperty(funcParent, funcName, {
+        value: patch.o,
+        writable: true,
+        configurable: true
+      })) funcParent[funcName] = patch.o;
+    }
+    return true;
+  }
+  var patchTypes, patchedFunctions, resetPatches, getPatchFunc_default, before, instead, after;
+  var init_dist = __esm({
+    "node_modules/spitroast/dist/index.mjs"() {
       init_asyncIteratorSymbol();
       init_promiseAllSettled();
       init_weakref();
-      var __defProp2 = Object.defineProperty;
-      var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
-      var __getOwnPropNames2 = Object.getOwnPropertyNames;
-      var __hasOwnProp2 = Object.prototype.hasOwnProperty;
-      var __export2 = (target, all) => {
-        for (var name in all) __defProp2(target, name, {
-          get: all[name],
-          enumerable: true
-        });
-      };
-      var __copyProps2 = (to, from, except, desc) => {
-        if (from && typeof from === "object" || typeof from === "function") {
-          var _loop2 = function(key3) {
-            if (!__hasOwnProp2.call(to, key3) && key3 !== except) __defProp2(to, key3, {
-              get: () => from[key3],
-              enumerable: !(desc = __getOwnPropDesc2(from, key3)) || desc.enumerable
-            });
-          };
-          for (var key2 of __getOwnPropNames2(from)) _loop2(key2);
-        }
-        return to;
-      };
-      var __toCommonJS2 = (mod) => __copyProps2(__defProp2({}, "__esModule", {
-        value: true
-      }), mod);
-      var src_exports = {};
-      __export2(src_exports, {
-        after: () => after2,
-        before: () => before3,
-        instead: () => instead4,
-        unpatchAll: () => resetPatches
-      });
-      module.exports = __toCommonJS2(src_exports);
-      var patchTypes = [
+      patchTypes = [
         "a",
         "b",
         "i"
       ];
-      var patchedFunctions;
-      var resetPatches = () => patchedFunctions = /* @__PURE__ */ new WeakMap();
+      resetPatches = () => patchedFunctions = /* @__PURE__ */ new WeakMap();
       resetPatches();
-      function hook_default(patchedFunc, origFunc, funcArgs, ctxt) {
-        var patch = patchedFunctions.get(patchedFunc);
-        if (!patch) return origFunc(...funcArgs);
-        for (var hook of patch.b.values()) {
-          var maybefuncArgs = hook.call(ctxt, funcArgs);
-          if (Array.isArray(maybefuncArgs)) funcArgs = maybefuncArgs;
-        }
-        var workingRetVal = [
-          ...patch.i.values()
-        ].reduce((prev, current) => (...args) => current.call(ctxt, args, prev), origFunc)(...funcArgs);
-        for (var hook1 of patch.a.values()) workingRetVal = hook1.call(ctxt, funcArgs, workingRetVal) ?? workingRetVal;
-        for (var cleanup of patch.c) cleanup();
-        patch.c = [];
-        return workingRetVal;
-      }
-      function unpatch2(patchRef, hookId, type) {
-        var patch = patchRef.deref();
-        if (!patch || !patch[type].delete(hookId)) return false;
-        var funcParent = patch.p.deref();
-        if (funcParent && patchTypes.every((t) => patch[t].size === 0)) {
-          var funcName = patch.n;
-          patchedFunctions.delete(funcParent[funcName]);
-          if (!Reflect.defineProperty(funcParent, funcName, {
-            value: patch.o,
-            writable: true,
-            configurable: true
-          })) funcParent[funcName] = patch.o;
-        }
-        return true;
-      }
-      var getPatchFunc_default = (patchType) => (funcName, funcParent, callback, oneTime = false) => {
+      getPatchFunc_default = (patchType) => (funcName, funcParent, callback, oneTime = false) => {
         var origFunc = funcParent[funcName];
-        if (typeof origFunc !== "function") throw new Error(`${String(funcName)} is not a function in ${funcParent.constructor.name}`);
+        if (typeof origFunc !== "function") throw new Error(`${funcName} is not a function in ${funcParent.constructor.name}`);
         var funcPatch = patchedFunctions.get(origFunc);
         if (!funcPatch) {
           funcPatch = {
@@ -343,7 +317,7 @@
             apply: (_2, ctxt, args) => runHook(ctxt, args, false),
             construct: (_2, args) => runHook(origFunc, args, true),
             // @ts-expect-error this is manual minification. if you don't like it, kick rocks.
-            get: (target, prop2, receiver, resolvedProp) => (resolvedProp = Reflect.get(target, prop2, receiver), resolvedProp == unpatch2.toString ? resolvedProp.bind(origFunc) : resolvedProp)
+            get: (target, prop2, receiver, resolvedProp) => (resolvedProp = Reflect.get(target, prop2, receiver), (typeof resolvedProp)[0] == "f") ? resolvedProp.bind(origFunc) : resolvedProp
           });
           var runHook = (ctxt, args, construct) => hook_default(replaceProxy, (...args2) => construct ? Reflect.construct(origFunc, args2, ctxt) : origFunc.apply(ctxt, args2), args, ctxt);
           patchedFunctions.set(replaceProxy, funcPatch);
@@ -355,14 +329,14 @@
         }
         var hookId = /* @__PURE__ */ Symbol();
         var funcPatchRef = new WeakRefImpl(funcPatch);
-        var unpatchThisPatch = () => unpatch2(funcPatchRef, hookId, patchType);
+        var unpatchThisPatch = () => unpatch(funcPatchRef, hookId, patchType);
         if (oneTime) funcPatch.c.push(unpatchThisPatch);
         funcPatch[patchType].set(hookId, callback);
         return unpatchThisPatch;
       };
-      var before3 = getPatchFunc_default("b");
-      var instead4 = getPatchFunc_default("i");
-      var after2 = getPatchFunc_default("a");
+      before = getPatchFunc_default("b");
+      instead = getPatchFunc_default("i");
+      after = getPatchFunc_default("a");
     }
   });
 
@@ -475,109 +449,6 @@
       init_weakref();
       init_async_to_generator();
       init_modules();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_apply_descriptor_get.js
-  function _class_apply_descriptor_get(receiver, descriptor) {
-    if (descriptor.get) return descriptor.get.call(receiver);
-    return descriptor.value;
-  }
-  var init_class_apply_descriptor_get = __esm({
-    "node_modules/@swc/helpers/esm/_class_apply_descriptor_get.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_extract_field_descriptor.js
-  function _class_extract_field_descriptor(receiver, privateMap, action) {
-    if (!privateMap.has(receiver)) throw new TypeError("attempted to " + action + " private field on non-instance");
-    return privateMap.get(receiver);
-  }
-  var init_class_extract_field_descriptor = __esm({
-    "node_modules/@swc/helpers/esm/_class_extract_field_descriptor.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_private_field_get.js
-  function _class_private_field_get(receiver, privateMap) {
-    var descriptor = _class_extract_field_descriptor(receiver, privateMap, "get");
-    return _class_apply_descriptor_get(receiver, descriptor);
-  }
-  var init_class_private_field_get = __esm({
-    "node_modules/@swc/helpers/esm/_class_private_field_get.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-      init_class_apply_descriptor_get();
-      init_class_extract_field_descriptor();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_check_private_redeclaration.js
-  function _check_private_redeclaration(obj, privateCollection) {
-    if (privateCollection.has(obj)) {
-      throw new TypeError("Cannot initialize the same private elements twice on an object");
-    }
-  }
-  var init_check_private_redeclaration = __esm({
-    "node_modules/@swc/helpers/esm/_check_private_redeclaration.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_private_field_init.js
-  function _class_private_field_init(obj, privateMap, value) {
-    _check_private_redeclaration(obj, privateMap);
-    privateMap.set(obj, value);
-  }
-  var init_class_private_field_init = __esm({
-    "node_modules/@swc/helpers/esm/_class_private_field_init.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-      init_check_private_redeclaration();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_apply_descriptor_set.js
-  function _class_apply_descriptor_set(receiver, descriptor, value) {
-    if (descriptor.set) descriptor.set.call(receiver, value);
-    else {
-      if (!descriptor.writable) {
-        throw new TypeError("attempted to set read only private field");
-      }
-      descriptor.value = value;
-    }
-  }
-  var init_class_apply_descriptor_set = __esm({
-    "node_modules/@swc/helpers/esm/_class_apply_descriptor_set.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_private_field_set.js
-  function _class_private_field_set(receiver, privateMap, value) {
-    var descriptor = _class_extract_field_descriptor(receiver, privateMap, "set");
-    _class_apply_descriptor_set(receiver, descriptor, value);
-    return value;
-  }
-  var init_class_private_field_set = __esm({
-    "node_modules/@swc/helpers/esm/_class_private_field_set.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-      init_class_apply_descriptor_set();
-      init_class_extract_field_descriptor();
     }
   });
 
@@ -847,7 +718,7 @@
       invoke();
     };
     var debounced = function debounced2(...args) {
-      if (signal === null || signal === void 0 ? void 0 : signal.aborted) return;
+      if (signal?.aborted) return;
       pendingThis = this;
       pendingArgs = args;
       var isFirstCall = timeoutId == null;
@@ -857,7 +728,7 @@
     debounced.schedule = schedule;
     debounced.cancel = cancel;
     debounced.flush = flush;
-    signal === null || signal === void 0 || signal.addEventListener("abort", cancel, {
+    signal?.addEventListener("abort", cancel, {
       once: true
     });
     return debounced;
@@ -902,7 +773,7 @@
   });
 
   // node_modules/es-toolkit/dist/index.mjs
-  var init_dist = __esm({
+  var init_dist2 = __esm({
     "node_modules/es-toolkit/dist/index.mjs"() {
       init_asyncIteratorSymbol();
       init_promiseAllSettled();
@@ -939,23 +810,23 @@
   var patcher_exports = {};
   __export(patcher_exports, {
     _patcherDelaySymbol: () => _patcherDelaySymbol,
-    after: () => after,
-    before: () => before,
+    after: () => after2,
+    before: () => before2,
     default: () => patcher_default,
-    instead: () => instead
+    instead: () => instead2
   });
   function create(fn) {
     function patchFn(...args) {
       if (typeof args[1][_patcherDelaySymbol] === "function") {
         var delayCallback = args[1][_patcherDelaySymbol];
         var cancel = false;
-        var unpatch2 = () => cancel = true;
+        var unpatch3 = () => cancel = true;
         delayCallback((target) => {
           if (cancel) return;
           args[1] = target;
-          unpatch2 = fn.apply(this, args);
+          unpatch3 = fn.apply(this, args);
         });
-        return () => unpatch2();
+        return () => unpatch3();
       }
       return fn.apply(this, args);
     }
@@ -963,34 +834,34 @@
       var thenable = args[1];
       if (!thenable || !("then" in thenable)) throw new Error("target is not a then-able object");
       var cancel = false;
-      var unpatch2 = () => cancel = true;
+      var unpatch3 = () => cancel = true;
       thenable.then((target) => {
         if (cancel) return;
         args[1] = target;
-        unpatch2 = patchFn.apply(this, args);
+        unpatch3 = patchFn.apply(this, args);
       });
-      return () => unpatch2();
+      return () => unpatch3();
     }
     return Object.assign(patchFn, {
       await: promisePatchFn
     });
   }
-  var _after, _before, _instead, _patcherDelaySymbol, after, before, instead, patcher_default;
+  var _after, _before, _instead, _patcherDelaySymbol, after2, before2, instead2, patcher_default;
   var init_patcher = __esm({
     "src/lib/api/patcher.ts"() {
       "use strict";
       init_asyncIteratorSymbol();
       init_promiseAllSettled();
       init_weakref();
-      ({ after: _after, before: _before, instead: _instead } = require_dist());
+      ({ after: _after, before: _before, instead: _instead } = (init_dist(), __toCommonJS(dist_exports)));
       _patcherDelaySymbol = /* @__PURE__ */ Symbol.for("bunny.api.patcher.delay");
-      after = create(_after);
-      before = create(_before);
-      instead = create(_instead);
+      after2 = create(_after);
+      before2 = create(_before);
+      instead2 = create(_instead);
       patcher_default = {
-        after,
-        before,
-        instead
+        after: after2,
+        before: before2,
+        instead: instead2
       };
     }
   });
@@ -1004,11 +875,11 @@
   function patchAssets(module) {
     if (assetsModule) return;
     assetsModule = module;
-    var unpatch2 = after("registerAsset", assetsModule, () => {
+    var unpatch3 = after2("registerAsset", assetsModule, () => {
       var moduleId = getImportingModuleId();
       if (moduleId !== -1) indexAssetModuleFlag(moduleId);
     });
-    return unpatch2;
+    return unpatch3;
   }
   var assetsModule;
   var init_patches = __esm({
@@ -1734,6 +1605,109 @@
           })()
         };
       };
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_apply_descriptor_get.js
+  function _class_apply_descriptor_get(receiver, descriptor) {
+    if (descriptor.get) return descriptor.get.call(receiver);
+    return descriptor.value;
+  }
+  var init_class_apply_descriptor_get = __esm({
+    "node_modules/@swc/helpers/esm/_class_apply_descriptor_get.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_extract_field_descriptor.js
+  function _class_extract_field_descriptor(receiver, privateMap, action) {
+    if (!privateMap.has(receiver)) throw new TypeError("attempted to " + action + " private field on non-instance");
+    return privateMap.get(receiver);
+  }
+  var init_class_extract_field_descriptor = __esm({
+    "node_modules/@swc/helpers/esm/_class_extract_field_descriptor.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_private_field_get.js
+  function _class_private_field_get(receiver, privateMap) {
+    var descriptor = _class_extract_field_descriptor(receiver, privateMap, "get");
+    return _class_apply_descriptor_get(receiver, descriptor);
+  }
+  var init_class_private_field_get = __esm({
+    "node_modules/@swc/helpers/esm/_class_private_field_get.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+      init_class_apply_descriptor_get();
+      init_class_extract_field_descriptor();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_check_private_redeclaration.js
+  function _check_private_redeclaration(obj, privateCollection) {
+    if (privateCollection.has(obj)) {
+      throw new TypeError("Cannot initialize the same private elements twice on an object");
+    }
+  }
+  var init_check_private_redeclaration = __esm({
+    "node_modules/@swc/helpers/esm/_check_private_redeclaration.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_private_field_init.js
+  function _class_private_field_init(obj, privateMap, value) {
+    _check_private_redeclaration(obj, privateMap);
+    privateMap.set(obj, value);
+  }
+  var init_class_private_field_init = __esm({
+    "node_modules/@swc/helpers/esm/_class_private_field_init.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+      init_check_private_redeclaration();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_apply_descriptor_set.js
+  function _class_apply_descriptor_set(receiver, descriptor, value) {
+    if (descriptor.set) descriptor.set.call(receiver, value);
+    else {
+      if (!descriptor.writable) {
+        throw new TypeError("attempted to set read only private field");
+      }
+      descriptor.value = value;
+    }
+  }
+  var init_class_apply_descriptor_set = __esm({
+    "node_modules/@swc/helpers/esm/_class_apply_descriptor_set.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_private_field_set.js
+  function _class_private_field_set(receiver, privateMap, value) {
+    var descriptor = _class_extract_field_descriptor(receiver, privateMap, "set");
+    _class_apply_descriptor_set(receiver, descriptor, value);
+    return value;
+  }
+  var init_class_private_field_set = __esm({
+    "node_modules/@swc/helpers/esm/_class_private_field_set.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+      init_class_apply_descriptor_set();
+      init_class_extract_field_descriptor();
     }
   });
 
@@ -2706,7 +2680,7 @@
       init_async_to_generator();
       init_Emitter();
       init_fs();
-      init_dist();
+      init_dist2();
       _ObservableRuntime = null;
       storageInitErrorSymbol = /* @__PURE__ */ Symbol.for("bunny.storage.initError");
       storagePromiseSymbol = /* @__PURE__ */ Symbol.for("bunny.storage.promise");
@@ -3674,7 +3648,7 @@
       init_promiseAllSettled();
       init_weakref();
       init_metro();
-      init_dist();
+      init_dist2();
       import_react_native3 = __toESM(require_react_native());
       init_preferences();
       getChroma = () => require_chroma_js();
@@ -3773,7 +3747,7 @@
         });
       };
       var patches3 = [
-        typeof MessagesModule.default === "function" ? after("default", MessagesModule, patch) : after("render", MessagesModule.default, patch)
+        typeof MessagesModule.default === "function" ? after2("default", MessagesModule, patch) : after2("render", MessagesModule.default, patch)
       ];
       return () => patches3.forEach((x2) => x2());
     } catch (e) {
@@ -3830,8 +3804,8 @@
       });
     });
     var unpatches2 = [
-      before("updateTheme", NativeThemeModule, callback),
-      instead("resolveSemanticColor", tokenReference.default.meta ?? tokenReference.default.internal, (args, orig) => {
+      before2("updateTheme", NativeThemeModule, callback),
+      instead2("resolveSemanticColor", tokenReference.default.meta ?? tokenReference.default.internal, (args, orig) => {
         if (!_colorRef.current) return orig(...args);
         if (args[0] !== _colorRef.key) return orig(...args);
         args[0] = _colorRef.current.reference;
@@ -3918,12 +3892,12 @@
       "SelectivelySyncedUserSettingsStore"
     ]);
     var patches3 = [
-      after("get", mmkvStorage, ([key2], ret) => {
+      after2("get", mmkvStorage, ([key2], ret) => {
         if (!_colorRef.current || !patchedKeys.has(key2)) return;
         var state = findInTree(ret._state, (s) => typeof s.theme === "string");
         if (state) state.theme = _colorRef.key;
       }),
-      before("set", mmkvStorage, ([key2, value]) => {
+      before2("set", mmkvStorage, ([key2, value]) => {
         if (!patchedKeys.has(key2)) return;
         var json = JSON.stringify(value);
         var lastSetDiscordTheme = _colorRef.lastSetDiscordTheme ?? "darker";
@@ -4578,7 +4552,7 @@
       "register",
       "get"
     ].every((x2) => moduleExports2[x2])) {
-      instead2("register", moduleExports2, ([name, cb], origFunc) => {
+      instead3("register", moduleExports2, ([name, cb], origFunc) => {
         try {
           return origFunc(name, cb);
         } catch (unused) {
@@ -4599,7 +4573,7 @@
       });
     }
     if (!patchedImportTracker && moduleExports2.fileFinishedImporting) {
-      before2("fileFinishedImporting", moduleExports2, ([filePath]) => {
+      before3("fileFinishedImporting", moduleExports2, ([filePath]) => {
         if (_importingModuleId === -1 || !filePath) return;
         metroModules[_importingModuleId].__filePath = filePath;
       });
@@ -4618,7 +4592,7 @@
       }
     }
     if (moduleExports2.isMoment) {
-      instead2("defineLocale", moduleExports2, (args, orig) => {
+      instead3("defineLocale", moduleExports2, (args, orig) => {
         var origLocale = moduleExports2.locale();
         orig(...args);
         moduleExports2.locale(origLocale);
@@ -4705,7 +4679,7 @@
       }
     }
   }
-  var _loop, before2, instead2, metroModules, metroRequire, moduleSubscriptions, blacklistedIds, noopHandler, functionToString, patchedInspectSource, patchedImportTracker, patchedNativeComponentRegistry, _importingModuleId, key;
+  var _loop, before3, instead3, metroModules, metroRequire, moduleSubscriptions, blacklistedIds, noopHandler, functionToString, patchedInspectSource, patchedImportTracker, patchedNativeComponentRegistry, _importingModuleId, key;
   var init_modules2 = __esm({
     "src/metro/internals/modules.ts"() {
       "use strict";
@@ -4723,7 +4697,7 @@
           return "continue";
         }
         if (metroModule.factory) {
-          instead2("factory", metroModule, (args, origFunc) => {
+          instead3("factory", metroModule, (args, origFunc) => {
             var originalImportingId = _importingModuleId;
             _importingModuleId = id2;
             var { 1: metroRequire2, 4: moduleObject } = args;
@@ -4755,7 +4729,7 @@
           });
         }
       };
-      ({ before: before2, instead: instead2 } = require_dist());
+      ({ before: before3, instead: instead3 } = (init_dist(), __toCommonJS(dist_exports)));
       metroModules = globalThis.modules;
       metroRequire = (id2) => globalThis.__r(+id2);
       moduleSubscriptions = /* @__PURE__ */ new Map();
@@ -4876,7 +4850,7 @@
       init_async_to_generator();
       init_fs();
       init_modules();
-      init_dist();
+      init_dist2();
       init_enums();
       CACHE_VERSION = 102;
       BUNNY_METRO_CACHE_PATH = "caches/metro_modules.json";
@@ -5530,7 +5504,7 @@
     return connected;
   }
   function patchLogHook() {
-    var unpatch2 = after("nativeLoggingHook", globalThis, (args) => {
+    var unpatch3 = after2("nativeLoggingHook", globalThis, (args) => {
       if (socket2?.readyState === WebSocket.OPEN) {
         sendLog2(args[1] === "error" ? "error" : args[1] === "warn" ? "warn" : "default", args[0]);
       }
@@ -5538,7 +5512,7 @@
     });
     return () => {
       socket2 && socket2.close();
-      unpatch2();
+      unpatch3();
     };
   }
   function getDebugInfo() {
@@ -5647,7 +5621,7 @@
       rdtClient = null;
       rdtConnected = false;
       changeHooks = /* @__PURE__ */ new Set();
-      versionHash = "1.4.1.9";
+      versionHash = "1.4.1.11";
     }
   });
 
@@ -6664,7 +6638,7 @@
       }
       return null;
     });
-    var unpatch2 = after.await("render", ctxPromise, function() {
+    var unpatch3 = after2.await("render", ctxPromise, function() {
       try {
         if (!this || !this.state || !this.state.error) return;
         try {
@@ -6739,7 +6713,7 @@
       }
     } catch (unused) {
     }
-    return unpatch2;
+    return unpatch3;
   }
   var import_react4, ErrorBoundaryMount;
   var init_patchErrorBoundary = __esm({
@@ -6920,7 +6894,7 @@
       });
     });
     try {
-      unpatches2.push(after("createList", createListModule, function(args, ret) {
+      unpatches2.push(after2("createList", createListModule, function(args, ret) {
         var [config] = args;
         if (config?.sections && Array.isArray(config.sections)) {
           var sections = config.sections;
@@ -6942,7 +6916,7 @@
         return ret;
       }));
     } catch (unused) {
-      unpatches2.push(after("default", SettingsOverviewScreen, (_2, ret) => {
+      unpatches2.push(after2("default", SettingsOverviewScreen, (_2, ret) => {
         if (useIsFirstRender()) return;
         var { sections } = findInReactTree(ret, (i) => i.props?.sections).props;
         var index = -~sections.findIndex((i) => i.settings.includes("ACCOUNT")) || 1;
@@ -8565,7 +8539,7 @@
       init_common();
       init_components();
       init_components2();
-      init_dist();
+      init_dist2();
       import_react6 = __toESM(require_react());
       import_react_native20 = __toESM(require_react_native());
       ({ showSimpleActionSheet, hideActionSheet } = lazyDestructure(() => findByProps("showSimpleActionSheet")));
@@ -9080,7 +9054,7 @@
           }
         }
       };
-      installButtonPatch = () => after("MostCommonForumPostReaction", forumReactions, ([{ thread, firstMessage }], res) => {
+      installButtonPatch = () => after2("MostCommonForumPostReaction", forumReactions, ([{ thread, firstMessage }], res) => {
         var [shouldReturn, _2, installed, loading, installOrRemove] = useInstaller(thread, firstMessage, true);
         if (shouldReturn) return;
         return /* @__PURE__ */ jsxs(Fragment, {
@@ -9240,7 +9214,7 @@
       ({ getChannel } = lazyDestructure(() => findByProps("getChannel")));
       url_default = (() => {
         var patches3 = new Array();
-        patches3.push(after("showSimpleActionSheet", showSimpleActionSheet2, (args) => {
+        patches3.push(after2("showSimpleActionSheet", showSimpleActionSheet2, (args) => {
           if (args[0].key !== "LongPressUrl") return;
           var { header: { title: url2 }, options } = args[0];
           var urlType = typeFromUrl(url2);
@@ -9250,7 +9224,7 @@
             onPress: () => installWithToast(urlType, url2)
           });
         }));
-        patches3.push(instead("handleClick", handleClick, function(args, orig) {
+        patches3.push(instead2("handleClick", handleClick, function(args, orig) {
           return _async_to_generator(function* () {
             var { href: url2 } = args[0];
             var urlType = typeFromUrl(url2);
@@ -9353,10 +9327,10 @@
       }
     };
     var patches3 = [
-      after("jsx", jsxRuntime2, callback),
-      after("jsxs", jsxRuntime2, callback)
+      after2("jsx", jsxRuntime2, callback),
+      after2("jsxs", jsxRuntime2, callback)
     ];
-    return () => patches3.forEach((unpatch2) => unpatch2());
+    return () => patches3.forEach((unpatch3) => unpatch3());
   }
   var callbacks, jsxRuntime2;
   var init_jsx = __esm({
@@ -9486,7 +9460,7 @@
               pendingRequests.delete(userId);
             }
           })();
-          after("default", useBadgesModule, ([user], result) => {
+          after2("default", useBadgesModule, ([user], result) => {
             if (!user) return;
             var userId = user.userId;
             var cached = badgesCache.get(userId);
@@ -9518,13 +9492,13 @@
   function patchNetwork() {
     var analyticsTest = /client-analytics\.braintreegateway\.com|discord\.com\/api\/v9\/(science|track)|app\.adjust\..*|.*\.ingest\.sentry\.io/;
     try {
-      var unpatch2 = instead("send", XMLHttpRequest.prototype, function(args, orig) {
+      var unpatch3 = instead2("send", XMLHttpRequest.prototype, function(args, orig) {
         if (this.__sentry_xhr__?.url && analyticsTest.test(this.__sentry_xhr__.url)) {
           return void 0;
         }
         return orig.apply(this, args);
       });
-      return unpatch2;
+      return unpatch3;
     } catch (e) {
       return () => false;
     }
@@ -9628,7 +9602,7 @@
       };
       noop = (prop2, parent) => {
         try {
-          return instead(prop2, parent, () => void 0);
+          return instead2(prop2, parent, () => void 0);
         } catch (e) {
           return () => false;
         }
@@ -9690,7 +9664,7 @@
     }
     return result;
   }
-  var TableRowGroup2, TableRow2, TableSwitchRow2, Stack2, ScrollView4, Text3, MessageActions, unpatch, fixembed_default;
+  var TableRowGroup2, TableRow2, TableSwitchRow2, Stack2, ScrollView4, Text3, MessageActions, unpatch2, fixembed_default;
   var init_fixembed = __esm({
     "src/core/plugins/fixembed/index.ts"() {
       "use strict";
@@ -9706,7 +9680,7 @@
       ({ TableRowGroup: TableRowGroup2, TableRow: TableRow2, TableSwitchRow: TableSwitchRow2, Stack: Stack2 } = findByProps("TableRowGroup", "TableRow", "TableSwitchRow", "Stack"));
       ({ ScrollView: ScrollView4, Text: Text3 } = require_react_native());
       MessageActions = findByProps("sendMessage");
-      unpatch = null;
+      unpatch2 = null;
       fixembed_default = defineCorePlugin({
         manifest: {
           id: "bunny.fixembed",
@@ -9801,8 +9775,8 @@
             tiktok: true,
             reddit: true
           };
-          if (!unpatch) {
-            unpatch = after("sendMessage", MessageActions, (args) => {
+          if (!unpatch2) {
+            unpatch2 = after2("sendMessage", MessageActions, (args) => {
               var config = settings.fixembed;
               if (args[1]?.content) {
                 args[1].content = transformLinks(args[1].content, config);
@@ -9814,9 +9788,9 @@
         },
         stop() {
           logger.log("FixEmbed: Stopping plugin");
-          if (unpatch) {
-            unpatch();
-            unpatch = null;
+          if (unpatch2) {
+            unpatch2();
+            unpatch2 = null;
           }
           logger.log("FixEmbed: Unpatched outgoing messages");
         }
@@ -10187,7 +10161,7 @@
     registerCommand: () => registerCommand
   });
   function patchCommands() {
-    var unpatch2 = after("getBuiltInCommands", commands, ([type], res) => {
+    var unpatch3 = after2("getBuiltInCommands", commands, ([type], res) => {
       return [
         ...res,
         ...commands2.filter((c2) => (type instanceof Array ? type.includes(c2.type) : type === c2.type) && c2.__bunny?.shouldHide?.() !== false)
@@ -10201,7 +10175,7 @@
     ].forEach((r) => registerCommand(r.default()));
     return () => {
       commands2 = [];
-      unpatch2();
+      unpatch3();
     };
   }
   function registerCommand(command) {
@@ -10228,7 +10202,7 @@
       opt.displayName ??= opt.name;
       opt.displayDescription ??= opt.description;
     }
-    instead("execute", command, (args, orig) => {
+    instead2("execute", command, (args, orig) => {
       Promise.resolve(orig.apply(command, args)).then((ret) => {
         if (ret && typeof ret === "object") {
           messageUtil.sendMessage(args[1].channel.id, ret);
@@ -14765,7 +14739,7 @@ Type: ${asset.type}`,
             uri: shiggy_default
           },
           render: () => Promise.resolve().then(() => (init_General(), General_exports)),
-          useTrailing: () => `(${"1.4.1.9"})`
+          useTrailing: () => `(${"1.4.1.11"})`
         },
         {
           key: "BUNNY_PLUGINS",
@@ -14875,7 +14849,7 @@ Type: ${asset.type}`,
       init_components2();
       init_styles();
       init_toasts();
-      init_dist();
+      init_dist2();
       import_react16 = __toESM(require_react());
       import_react_native35 = __toESM(require_react_native());
       init_plugins();
@@ -15488,7 +15462,7 @@ Type: ${asset.type}`,
   init_promiseAllSettled();
   init_weakref();
   init_async_to_generator();
-  var { instead: instead3 } = require_dist();
+  var { instead: instead4 } = (init_dist(), __toCommonJS(dist_exports));
   globalThis.window = globalThis;
   function initializeShiggyCord() {
     return _async_to_generator(function* () {
@@ -15502,7 +15476,7 @@ Type: ${asset.type}`,
         alert([
           "Failed to load ShiggyCord!\n",
           `Build Number: ${ClientInfoManager.getConstants().Build}`,
-          `ShiggyCord: ${"1.4.1.9"}`,
+          `ShiggyCord: ${"1.4.1.11"}`,
           stack || e?.toString?.()
         ].join("\n"));
       }
@@ -15512,7 +15486,7 @@ Type: ${asset.type}`,
     deferredCalls = [];
     unpatches = [];
     deferMethodExecution = (object, method, condition, resume, returnWith) => {
-      var restore = instead3(method, object, function(args, original) {
+      var restore = instead4(method, object, function(args, original) {
         if (!condition || condition(...args)) {
           var queue = {
             object,
@@ -15560,7 +15534,7 @@ Type: ${asset.type}`,
       }
       var startDiscord = () => _async_to_generator(function* () {
         yield initializeShiggyCord();
-        for (var unpatch2 of unpatches) unpatch2();
+        for (var unpatch3 of unpatches) unpatch3();
         unpatches.length = 0;
         originalRequire(0);
         resumeDeferred();
