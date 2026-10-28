@@ -45,6 +45,7 @@ object ThemesModule : Module() {
     private const val THEME_FILE = "current-theme.json"
 
 
+    @Deprecated("This will be removed in future versions. Payloads can be replaced via synchronous bridge methods.")
     @ExperimentalSerializationApi
     override fun buildPayload(builder: JsonObjectBuilder) {
         builder.apply {
