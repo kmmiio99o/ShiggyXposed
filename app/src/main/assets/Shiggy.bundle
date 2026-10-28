@@ -21,14 +21,14 @@
       throw mod = 0, e;
     }
   };
-  var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+  var __export = (target, all2) => {
+    for (var name in all2)
+      __defProp(target, name, { get: all2[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
     if (from && typeof from === "object" || typeof from === "function")
-      for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key2; i < n; i++) {
-        key2 = keys[i];
+      for (var keys = __getOwnPropNames(from), i2 = 0, n = keys.length, key2; i2 < n; i2++) {
+        key2 = keys[i2];
         if (!__hasOwnProp.call(to, key2) && key2 !== except)
           __defProp(to, key2, { get: ((k2) => from[k2]).bind(null, key2), enumerable: !(desc = __getOwnPropDesc(from, key2)) || desc.enumerable });
       }
@@ -85,8 +85,8 @@
 
   // node_modules/@swc/helpers/esm/_create_class.js
   function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
+    for (var i2 = 0; i2 < props.length; i2++) {
+      var descriptor = props[i2];
       descriptor.enumerable = descriptor.enumerable || false;
       descriptor.configurable = true;
       if ("value" in descriptor) descriptor.writable = true;
@@ -248,60 +248,86 @@
     }
   });
 
-  // node_modules/spitroast/dist/index.mjs
-  var dist_exports = {};
-  __export(dist_exports, {
-    after: () => after,
-    before: () => before,
-    instead: () => instead,
-    unpatchAll: () => resetPatches
-  });
-  function hook_default(patchedFunc, origFunc, funcArgs, ctxt) {
-    var patch = patchedFunctions.get(patchedFunc);
-    if (!patch) return origFunc(...funcArgs);
-    for (var hook of patch.b.values()) {
-      var maybefuncArgs = hook.call(ctxt, funcArgs);
-      if (Array.isArray(maybefuncArgs)) funcArgs = maybefuncArgs;
-    }
-    var workingRetVal = [
-      ...patch.i.values()
-    ].reduce((prev, current) => (...args) => current.call(ctxt, args, prev), origFunc)(...funcArgs);
-    for (var hook1 of patch.a.values()) workingRetVal = hook1.call(ctxt, funcArgs, workingRetVal) ?? workingRetVal;
-    for (var cleanup of patch.c) cleanup();
-    patch.c = [];
-    return workingRetVal;
-  }
-  function unpatch(patchRef, hookId, type) {
-    var patch = patchRef.deref();
-    if (!patch || !patch[type].delete(hookId)) return false;
-    var funcParent = patch.p.deref();
-    if (funcParent && patchTypes.every((t) => patch[t].size === 0)) {
-      var funcName = patch.n;
-      patchedFunctions.delete(funcParent[funcName]);
-      if (!Reflect.defineProperty(funcParent, funcName, {
-        value: patch.o,
-        writable: true,
-        configurable: true
-      })) funcParent[funcName] = patch.o;
-    }
-    return true;
-  }
-  var patchTypes, patchedFunctions, resetPatches, getPatchFunc_default, before, instead, after;
-  var init_dist = __esm({
-    "node_modules/spitroast/dist/index.mjs"() {
+  // node_modules/spitroast/dist/index.js
+  var require_dist = __commonJS({
+    "node_modules/spitroast/dist/index.js"(exports, module) {
       init_asyncIteratorSymbol();
       init_promiseAllSettled();
       init_weakref();
-      patchTypes = [
+      var __defProp2 = Object.defineProperty;
+      var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
+      var __getOwnPropNames2 = Object.getOwnPropertyNames;
+      var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+      var __export2 = (target, all2) => {
+        for (var name in all2) __defProp2(target, name, {
+          get: all2[name],
+          enumerable: true
+        });
+      };
+      var __copyProps2 = (to, from, except, desc) => {
+        if (from && typeof from === "object" || typeof from === "function") {
+          var _loop2 = function(key3) {
+            if (!__hasOwnProp2.call(to, key3) && key3 !== except) __defProp2(to, key3, {
+              get: () => from[key3],
+              enumerable: !(desc = __getOwnPropDesc2(from, key3)) || desc.enumerable
+            });
+          };
+          for (var key2 of __getOwnPropNames2(from)) _loop2(key2);
+        }
+        return to;
+      };
+      var __toCommonJS2 = (mod) => __copyProps2(__defProp2({}, "__esModule", {
+        value: true
+      }), mod);
+      var src_exports = {};
+      __export2(src_exports, {
+        after: () => after2,
+        before: () => before3,
+        instead: () => instead4,
+        unpatchAll: () => resetPatches
+      });
+      module.exports = __toCommonJS2(src_exports);
+      var patchTypes = [
         "a",
         "b",
         "i"
       ];
-      resetPatches = () => patchedFunctions = /* @__PURE__ */ new WeakMap();
+      var patchedFunctions;
+      var resetPatches = () => patchedFunctions = /* @__PURE__ */ new WeakMap();
       resetPatches();
-      getPatchFunc_default = (patchType) => (funcName, funcParent, callback, oneTime = false) => {
+      function hook_default(patchedFunc, origFunc, funcArgs, ctxt) {
+        var patch = patchedFunctions.get(patchedFunc);
+        if (!patch) return origFunc(...funcArgs);
+        for (var hook of patch.b.values()) {
+          var maybefuncArgs = hook.call(ctxt, funcArgs);
+          if (Array.isArray(maybefuncArgs)) funcArgs = maybefuncArgs;
+        }
+        var workingRetVal = [
+          ...patch.i.values()
+        ].reduce((prev, current) => (...args) => current.call(ctxt, args, prev), origFunc)(...funcArgs);
+        for (var hook1 of patch.a.values()) workingRetVal = hook1.call(ctxt, funcArgs, workingRetVal) ?? workingRetVal;
+        for (var cleanup2 of patch.c) cleanup2();
+        patch.c = [];
+        return workingRetVal;
+      }
+      function unpatch2(patchRef, hookId, type) {
+        var patch = patchRef.deref();
+        if (!patch || !patch[type].delete(hookId)) return false;
+        var funcParent = patch.p.deref();
+        if (funcParent && patchTypes.every((t) => patch[t].size === 0)) {
+          var funcName = patch.n;
+          patchedFunctions.delete(funcParent[funcName]);
+          if (!Reflect.defineProperty(funcParent, funcName, {
+            value: patch.o,
+            writable: true,
+            configurable: true
+          })) funcParent[funcName] = patch.o;
+        }
+        return true;
+      }
+      var getPatchFunc_default = (patchType) => (funcName, funcParent, callback, oneTime = false) => {
         var origFunc = funcParent[funcName];
-        if (typeof origFunc !== "function") throw new Error(`${funcName} is not a function in ${funcParent.constructor.name}`);
+        if (typeof origFunc !== "function") throw new Error(`${String(funcName)} is not a function in ${funcParent.constructor.name}`);
         var funcPatch = patchedFunctions.get(origFunc);
         if (!funcPatch) {
           funcPatch = {
@@ -317,7 +343,7 @@
             apply: (_2, ctxt, args) => runHook(ctxt, args, false),
             construct: (_2, args) => runHook(origFunc, args, true),
             // @ts-expect-error this is manual minification. if you don't like it, kick rocks.
-            get: (target, prop2, receiver, resolvedProp) => (resolvedProp = Reflect.get(target, prop2, receiver), (typeof resolvedProp)[0] == "f") ? resolvedProp.bind(origFunc) : resolvedProp
+            get: (target, prop2, receiver, resolvedProp) => (resolvedProp = Reflect.get(target, prop2, receiver), resolvedProp == unpatch2.toString ? resolvedProp.bind(origFunc) : resolvedProp)
           });
           var runHook = (ctxt, args, construct) => hook_default(replaceProxy, (...args2) => construct ? Reflect.construct(origFunc, args2, ctxt) : origFunc.apply(ctxt, args2), args, ctxt);
           patchedFunctions.set(replaceProxy, funcPatch);
@@ -329,14 +355,14 @@
         }
         var hookId = /* @__PURE__ */ Symbol();
         var funcPatchRef = new WeakRefImpl(funcPatch);
-        var unpatchThisPatch = () => unpatch(funcPatchRef, hookId, patchType);
+        var unpatchThisPatch = () => unpatch2(funcPatchRef, hookId, patchType);
         if (oneTime) funcPatch.c.push(unpatchThisPatch);
         funcPatch[patchType].set(hookId, callback);
         return unpatchThisPatch;
       };
-      before = getPatchFunc_default("b");
-      instead = getPatchFunc_default("i");
-      after = getPatchFunc_default("a");
+      var before3 = getPatchFunc_default("b");
+      var instead4 = getPatchFunc_default("i");
+      var after2 = getPatchFunc_default("a");
     }
   });
 
@@ -449,6 +475,109 @@
       init_weakref();
       init_async_to_generator();
       init_modules();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_apply_descriptor_get.js
+  function _class_apply_descriptor_get(receiver, descriptor) {
+    if (descriptor.get) return descriptor.get.call(receiver);
+    return descriptor.value;
+  }
+  var init_class_apply_descriptor_get = __esm({
+    "node_modules/@swc/helpers/esm/_class_apply_descriptor_get.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_extract_field_descriptor.js
+  function _class_extract_field_descriptor(receiver, privateMap, action) {
+    if (!privateMap.has(receiver)) throw new TypeError("attempted to " + action + " private field on non-instance");
+    return privateMap.get(receiver);
+  }
+  var init_class_extract_field_descriptor = __esm({
+    "node_modules/@swc/helpers/esm/_class_extract_field_descriptor.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_private_field_get.js
+  function _class_private_field_get(receiver, privateMap) {
+    var descriptor = _class_extract_field_descriptor(receiver, privateMap, "get");
+    return _class_apply_descriptor_get(receiver, descriptor);
+  }
+  var init_class_private_field_get = __esm({
+    "node_modules/@swc/helpers/esm/_class_private_field_get.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+      init_class_apply_descriptor_get();
+      init_class_extract_field_descriptor();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_check_private_redeclaration.js
+  function _check_private_redeclaration(obj, privateCollection) {
+    if (privateCollection.has(obj)) {
+      throw new TypeError("Cannot initialize the same private elements twice on an object");
+    }
+  }
+  var init_check_private_redeclaration = __esm({
+    "node_modules/@swc/helpers/esm/_check_private_redeclaration.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_private_field_init.js
+  function _class_private_field_init(obj, privateMap, value) {
+    _check_private_redeclaration(obj, privateMap);
+    privateMap.set(obj, value);
+  }
+  var init_class_private_field_init = __esm({
+    "node_modules/@swc/helpers/esm/_class_private_field_init.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+      init_check_private_redeclaration();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_apply_descriptor_set.js
+  function _class_apply_descriptor_set(receiver, descriptor, value) {
+    if (descriptor.set) descriptor.set.call(receiver, value);
+    else {
+      if (!descriptor.writable) {
+        throw new TypeError("attempted to set read only private field");
+      }
+      descriptor.value = value;
+    }
+  }
+  var init_class_apply_descriptor_set = __esm({
+    "node_modules/@swc/helpers/esm/_class_apply_descriptor_set.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+    }
+  });
+
+  // node_modules/@swc/helpers/esm/_class_private_field_set.js
+  function _class_private_field_set(receiver, privateMap, value) {
+    var descriptor = _class_extract_field_descriptor(receiver, privateMap, "set");
+    _class_apply_descriptor_set(receiver, descriptor, value);
+    return value;
+  }
+  var init_class_private_field_set = __esm({
+    "node_modules/@swc/helpers/esm/_class_private_field_set.js"() {
+      init_asyncIteratorSymbol();
+      init_promiseAllSettled();
+      init_weakref();
+      init_class_apply_descriptor_set();
+      init_class_extract_field_descriptor();
     }
   });
 
@@ -718,7 +847,7 @@
       invoke();
     };
     var debounced = function debounced2(...args) {
-      if (signal?.aborted) return;
+      if (signal === null || signal === void 0 ? void 0 : signal.aborted) return;
       pendingThis = this;
       pendingArgs = args;
       var isFirstCall = timeoutId == null;
@@ -728,7 +857,7 @@
     debounced.schedule = schedule;
     debounced.cancel = cancel;
     debounced.flush = flush;
-    signal?.addEventListener("abort", cancel, {
+    signal === null || signal === void 0 || signal.addEventListener("abort", cancel, {
       once: true
     });
     return debounced;
@@ -746,8 +875,8 @@
     var result = {
       ...obj
     };
-    for (var i = 0; i < keys.length; i++) {
-      var key2 = keys[i];
+    for (var i2 = 0; i2 < keys.length; i2++) {
+      var key2 = keys[i2];
       delete result[key2];
     }
     return result;
@@ -773,7 +902,7 @@
   });
 
   // node_modules/es-toolkit/dist/index.mjs
-  var init_dist2 = __esm({
+  var init_dist = __esm({
     "node_modules/es-toolkit/dist/index.mjs"() {
       init_asyncIteratorSymbol();
       init_promiseAllSettled();
@@ -810,23 +939,23 @@
   var patcher_exports = {};
   __export(patcher_exports, {
     _patcherDelaySymbol: () => _patcherDelaySymbol,
-    after: () => after2,
-    before: () => before2,
+    after: () => after,
+    before: () => before,
     default: () => patcher_default,
-    instead: () => instead2
+    instead: () => instead
   });
   function create(fn) {
     function patchFn(...args) {
       if (typeof args[1][_patcherDelaySymbol] === "function") {
         var delayCallback = args[1][_patcherDelaySymbol];
         var cancel = false;
-        var unpatch3 = () => cancel = true;
+        var unpatch2 = () => cancel = true;
         delayCallback((target) => {
           if (cancel) return;
           args[1] = target;
-          unpatch3 = fn.apply(this, args);
+          unpatch2 = fn.apply(this, args);
         });
-        return () => unpatch3();
+        return () => unpatch2();
       }
       return fn.apply(this, args);
     }
@@ -834,34 +963,34 @@
       var thenable = args[1];
       if (!thenable || !("then" in thenable)) throw new Error("target is not a then-able object");
       var cancel = false;
-      var unpatch3 = () => cancel = true;
+      var unpatch2 = () => cancel = true;
       thenable.then((target) => {
         if (cancel) return;
         args[1] = target;
-        unpatch3 = patchFn.apply(this, args);
+        unpatch2 = patchFn.apply(this, args);
       });
-      return () => unpatch3();
+      return () => unpatch2();
     }
     return Object.assign(patchFn, {
       await: promisePatchFn
     });
   }
-  var _after, _before, _instead, _patcherDelaySymbol, after2, before2, instead2, patcher_default;
+  var _after, _before, _instead, _patcherDelaySymbol, after, before, instead, patcher_default;
   var init_patcher = __esm({
     "src/lib/api/patcher.ts"() {
       "use strict";
       init_asyncIteratorSymbol();
       init_promiseAllSettled();
       init_weakref();
-      ({ after: _after, before: _before, instead: _instead } = (init_dist(), __toCommonJS(dist_exports)));
+      ({ after: _after, before: _before, instead: _instead } = require_dist());
       _patcherDelaySymbol = /* @__PURE__ */ Symbol.for("bunny.api.patcher.delay");
-      after2 = create(_after);
-      before2 = create(_before);
-      instead2 = create(_instead);
+      after = create(_after);
+      before = create(_before);
+      instead = create(_instead);
       patcher_default = {
-        after: after2,
-        before: before2,
-        instead: instead2
+        after,
+        before,
+        instead
       };
     }
   });
@@ -875,11 +1004,11 @@
   function patchAssets(module) {
     if (assetsModule) return;
     assetsModule = module;
-    var unpatch3 = after2("registerAsset", assetsModule, () => {
+    var unpatch2 = after("registerAsset", assetsModule, () => {
       var moduleId = getImportingModuleId();
       if (moduleId !== -1) indexAssetModuleFlag(moduleId);
     });
-    return unpatch3;
+    return unpatch2;
   }
   var assetsModule;
   var init_patches = __esm({
@@ -1608,109 +1737,6 @@
     }
   });
 
-  // node_modules/@swc/helpers/esm/_class_apply_descriptor_get.js
-  function _class_apply_descriptor_get(receiver, descriptor) {
-    if (descriptor.get) return descriptor.get.call(receiver);
-    return descriptor.value;
-  }
-  var init_class_apply_descriptor_get = __esm({
-    "node_modules/@swc/helpers/esm/_class_apply_descriptor_get.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_extract_field_descriptor.js
-  function _class_extract_field_descriptor(receiver, privateMap, action) {
-    if (!privateMap.has(receiver)) throw new TypeError("attempted to " + action + " private field on non-instance");
-    return privateMap.get(receiver);
-  }
-  var init_class_extract_field_descriptor = __esm({
-    "node_modules/@swc/helpers/esm/_class_extract_field_descriptor.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_private_field_get.js
-  function _class_private_field_get(receiver, privateMap) {
-    var descriptor = _class_extract_field_descriptor(receiver, privateMap, "get");
-    return _class_apply_descriptor_get(receiver, descriptor);
-  }
-  var init_class_private_field_get = __esm({
-    "node_modules/@swc/helpers/esm/_class_private_field_get.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-      init_class_apply_descriptor_get();
-      init_class_extract_field_descriptor();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_check_private_redeclaration.js
-  function _check_private_redeclaration(obj, privateCollection) {
-    if (privateCollection.has(obj)) {
-      throw new TypeError("Cannot initialize the same private elements twice on an object");
-    }
-  }
-  var init_check_private_redeclaration = __esm({
-    "node_modules/@swc/helpers/esm/_check_private_redeclaration.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_private_field_init.js
-  function _class_private_field_init(obj, privateMap, value) {
-    _check_private_redeclaration(obj, privateMap);
-    privateMap.set(obj, value);
-  }
-  var init_class_private_field_init = __esm({
-    "node_modules/@swc/helpers/esm/_class_private_field_init.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-      init_check_private_redeclaration();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_apply_descriptor_set.js
-  function _class_apply_descriptor_set(receiver, descriptor, value) {
-    if (descriptor.set) descriptor.set.call(receiver, value);
-    else {
-      if (!descriptor.writable) {
-        throw new TypeError("attempted to set read only private field");
-      }
-      descriptor.value = value;
-    }
-  }
-  var init_class_apply_descriptor_set = __esm({
-    "node_modules/@swc/helpers/esm/_class_apply_descriptor_set.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-    }
-  });
-
-  // node_modules/@swc/helpers/esm/_class_private_field_set.js
-  function _class_private_field_set(receiver, privateMap, value) {
-    var descriptor = _class_extract_field_descriptor(receiver, privateMap, "set");
-    _class_apply_descriptor_set(receiver, descriptor, value);
-    return value;
-  }
-  var init_class_private_field_set = __esm({
-    "node_modules/@swc/helpers/esm/_class_private_field_set.js"() {
-      init_asyncIteratorSymbol();
-      init_promiseAllSettled();
-      init_weakref();
-      init_class_apply_descriptor_set();
-      init_class_extract_field_descriptor();
-    }
-  });
-
   // node_modules/@swc/helpers/esm/_class_private_method_get.js
   function _class_private_method_get(receiver, privateSet, fn) {
     if (!privateSet.has(receiver)) throw new TypeError("attempted to get private field on non-instance");
@@ -1796,12 +1822,12 @@
       ], void 0, t, this.proxy)
     ];
     d(this, o), delete r[e];
-    var n = g(t), i = [
+    var n = g(t), i2 = [
       new c(x, [
         e
       ], void 0, n, this.proxy)
     ];
-    return u(this, i), true;
+    return u(this, i2), true;
   }
   function $(r, e, t) {
     var o = r[e];
@@ -1816,26 +1842,26 @@
         ], t, o, this.proxy)
       ];
       d(this, n);
-      var i = y(t, e, this);
-      r[e] = i;
+      var i2 = y(t, e, this);
+      r[e] = i2;
       var s = g(o), p = s === void 0 ? [
         new c(v, [
           e
-        ], i, void 0, this.proxy)
+        ], i2, void 0, this.proxy)
       ] : [
         new c(w, [
           e
-        ], i, s, this.proxy)
+        ], i2, s, this.proxy)
       ];
       u(this, p);
     }
     return true;
   }
   function S(r, e, t) {
-    var o = this[f], n = o.target, i = n.length;
-    r = r < 0 ? Math.max(i + r, 0) : r, e = e === void 0 ? 0 : e < 0 ? Math.max(i + e, 0) : Math.min(e, i), t = t === void 0 ? i : t < 0 ? Math.max(i + t, 0) : Math.min(t, i);
-    var s = Math.min(t - e, i - r);
-    if (r < i && r !== e && s > 0) {
+    var o = this[f], n = o.target, i2 = n.length;
+    r = r < 0 ? Math.max(i2 + r, 0) : r, e = e === void 0 ? 0 : e < 0 ? Math.max(i2 + e, 0) : Math.min(e, i2), t = t === void 0 ? i2 : t < 0 ? Math.max(i2 + t, 0) : Math.min(t, i2);
+    var s = Math.min(t - e, i2 - r);
+    if (r < i2 && r !== e && s > 0) {
       var p = n.slice(0), a2 = [];
       n.copyWithin(r, e, t);
       for (var l = r; l < r + s; l++) {
@@ -1851,18 +1877,18 @@
     return this;
   }
   function C(r, e, t) {
-    var o = this[f], n = o.target, i = [], s = n.length, p = n.slice(0);
+    var o = this[f], n = o.target, i2 = [], s = n.length, p = n.slice(0);
     if (e = e === void 0 ? 0 : e < 0 ? Math.max(s + e, 0) : Math.min(e, s), t = t === void 0 ? s : t < 0 ? Math.max(s + t, 0) : Math.min(t, s), e < s && t > e) {
       n.fill(r, e, t);
       for (var a2 = e; a2 < t; a2++) if (n[a2] = y(n[a2], a2, o), a2 in p) {
         var l = g(p[a2]);
-        i.push(new c(w, [
+        i2.push(new c(w, [
           a2
         ], n[a2], l, this));
-      } else i.push(new c(v, [
+      } else i2.push(new c(v, [
         a2
       ], n[a2], void 0, this));
-      u(o, i);
+      u(o, i2);
     }
     return this;
   }
@@ -1873,19 +1899,19 @@
       ], void 0, o, this)
     ];
     d(r, n);
-    var i = g(e.pop()), s = [
+    var i2 = g(e.pop()), s = [
       new c(x, [
         t
-      ], void 0, i, this)
+      ], void 0, i2, this)
     ];
-    return u(r, s), i;
+    return u(r, s), i2;
   }
   function B(...r) {
-    var e = this[f], t = e.target, o = r.length, n = t.length, i = new Array(o);
-    for (var l = 0; l < o; l++) i[l] = new c(v, [
+    var e = this[f], t = e.target, o = r.length, n = t.length, i2 = new Array(o);
+    for (var l = 0; l < o; l++) i2[l] = new c(v, [
       n + l
     ], r[l], void 0, this);
-    d(e, i);
+    d(e, i2);
     var s = new Array(o);
     for (var l1 = 0; l1 < o; l1++) s[l1] = y(r[l1], n + l1, e);
     var p = Reflect.apply(t.push, t, s), a2 = new Array(o);
@@ -1909,12 +1935,12 @@
     d(r, o);
     var n = g(e.shift());
     O(e);
-    var i = [
+    var i2 = [
       new c(x, [
         0
       ], void 0, n, this)
     ];
-    return u(r, i), n;
+    return u(r, i2), n;
   }
   function V(r) {
     var e = this[f], t = e.target, o = [
@@ -1923,9 +1949,9 @@
     return d(e, o), t.sort(r), O(t), u(e, o), this;
   }
   function D(...r) {
-    var e = this[f], t = e.target, o = r.length, n = new Array(o), i = t.length;
+    var e = this[f], t = e.target, o = r.length, n = new Array(o), i2 = t.length;
     for (var m = 0; m < o; m++) n[m] = y(r[m], m, e);
-    var s = o === 0 ? 0 : n[0] < 0 ? i + n[0] : n[0], p = o < 2 ? i - s : n[1], a2 = Math.max(o - 2, 0), l = Reflect.apply(t.splice, t, n);
+    var s = o === 0 ? 0 : n[0] < 0 ? i2 + n[0] : n[0], p = o < 2 ? i2 - s : n[1], a2 = Math.max(o - 2, 0), l = Reflect.apply(t.splice, t, n);
     O(t);
     for (var m1 = 0, Y = l.length; m1 < Y; m1++) l[m1] = g(l[m1]);
     var b = [], h;
@@ -1945,9 +1971,9 @@
       a2
     ], r[a2], void 0, this);
     d(e, n);
-    var i = new Array(o);
-    for (var a1 = 0; a1 < o; a1++) i[a1] = y(r[a1], a1, e);
-    var s = Reflect.apply(t.unshift, t, i);
+    var i2 = new Array(o);
+    for (var a1 = 0; a1 < o; a1++) i2[a1] = y(r[a1], a1, e);
+    var s = Reflect.apply(t.unshift, t, i2);
     O(t);
     var p = new Array(o);
     for (var a22 = 0; a22 < o; a22++) p[a22] = new c(v, [
@@ -1958,15 +1984,15 @@
   function N(r, e) {
     var t = this[f], o = t.target, n = r.length;
     if (e = e || 0, n > 0) {
-      var i = o.slice(e, e + n), s = new Array(n);
+      var i2 = o.slice(e, e + n), s = new Array(n);
       for (var a2 = 0; a2 < n; a2++) s[a2] = new c(w, [
         e + a2
-      ], r[a2], i[a2], this);
+      ], r[a2], i2[a2], this);
       d(t, s), o.set(r, e);
       var p = new Array(n);
       for (var a1 = 0; a1 < n; a1++) p[a1] = new c(w, [
         e + a1
-      ], o[e + a1], i[a1], this);
+      ], o[e + a1], i2[a1], this);
       u(t, p);
     }
   }
@@ -2014,8 +2040,8 @@
     for (var t = e, o = r.length; t < o; t++) {
       var n = r[t];
       if (n && typeof n == "object") {
-        var i = n[f];
-        i && (i.ownKey = t);
+        var i2 = n[f];
+        i2 && (i2.ownKey = t);
       }
     }
   }
@@ -2031,20 +2057,20 @@
     for (; o.parent; ) t.unshift(o.ownKey), o = o.parent;
     var n = o.validators;
     if (n.length === 0) return;
-    var i = t.length === 0 ? e : e.map((s2) => new c(s2.type, [
+    var i2 = t.length === 0 ? e : e.map((s2) => new c(s2.type, [
       ...t,
       ...s2.path
     ], s2.value, s2.oldValue, s2.object));
-    for (var s = 0, p = n.length; s < p; s++) n[s].validate(i);
+    for (var s = 0, p = n.length; s < p; s++) n[s].validate(i2);
   }
   function u(r, e) {
-    var t = r, o, n, i, s, p, a2, l = e.length;
+    var t = r, o, n, i2, s, p, a2, l = e.length;
     do {
-      for (o = t.async, n = t.observers, a2 = n.length; a2--; ) if ([i, s] = n[a2], p = X(s, e), p.length) if (o) {
+      for (o = t.async, n = t.observers, a2 = n.length; a2--; ) if ([i2, s] = n[a2], p = X(s, e), p.length) if (o) {
         t.batches.size === 0 && queueMicrotask(Z.bind(t));
-        var h = t.batches.get(i);
-        h || (h = [], t.batches.set(i, h)), h.push(...p);
-      } else G(i, p);
+        var h = t.batches.get(i2);
+        h || (h = [], t.batches.set(i2, h)), h.push(...p);
+      } else G(i2, p);
       var b = t.parent;
       if (b) {
         for (var h1 = 0; h1 < l; h1++) {
@@ -2061,7 +2087,7 @@
   function X(r, e) {
     if (r === null || !r.filters) return e;
     var t = e, o = r.filters;
-    for (var n = 0, i = o.length; n < i && t.length; n++) t = o[n](t);
+    for (var n = 0, i2 = o.length; n < i2 && t.length; n++) t = o[n](t);
     return t;
   }
   function G(r, e) {
@@ -2112,7 +2138,7 @@
       R = "shuffle";
       c = (_e = /* @__PURE__ */ new WeakMap(), _t = /* @__PURE__ */ new WeakMap(), _o = /* @__PURE__ */ new WeakMap(), _i = /* @__PURE__ */ new WeakMap(), _n = /* @__PURE__ */ new WeakMap(), _r = /* @__PURE__ */ new WeakMap(), /* @__PURE__ */ (function() {
         "use strict";
-        function _class2(e, t, o, n, i) {
+        function _class2(e, t, o, n, i2) {
           _class_call_check(this, _class2);
           _class_private_field_init(this, _e, {
             writable: true,
@@ -2138,7 +2164,7 @@
             writable: true,
             value: void 0
           });
-          _class_private_field_set(this, _e, e), _class_private_field_set(this, _t, t), _class_private_field_set(this, _o, o), _class_private_field_set(this, _i, n), _class_private_field_set(this, _n, i);
+          _class_private_field_set(this, _e, e), _class_private_field_set(this, _t, t), _class_private_field_set(this, _o, o), _class_private_field_set(this, _i, n), _class_private_field_set(this, _n, i2);
         }
         _create_class(_class2, [
           {
@@ -2254,10 +2280,10 @@
             value: []
           });
           this.set = $, this.deleteProperty = W;
-          var { target: t, parent: o, ownKey: n, options: i, visited: s = /* @__PURE__ */ new Set() } = e;
+          var { target: t, parent: o, ownKey: n, options: i2, visited: s = /* @__PURE__ */ new Set() } = e;
           o && n !== void 0 ? (_class_private_field_set(this, _e2, o), this.ownKey = n) : (_class_private_field_set(this, _e2, null), this.ownKey = null), s.add(t), _class_private_field_set(this, _t2, this.observedGraphProcessor(t, this, s)), s.delete(t);
           var p = Proxy.revocable(_class_private_field_get(this, _t2), this);
-          _class_private_field_set(this, _o1, p.proxy), _class_private_field_set(this, _i1, p.revoke), _class_private_method_get(this, _a, a).call(this, i);
+          _class_private_field_set(this, _o1, p.proxy), _class_private_field_set(this, _i1, p.revoke), _class_private_method_get(this, _a, a).call(this, i2);
         }
         _create_class(_class2, [
           {
@@ -2333,9 +2359,9 @@
           {
             key: "observedGraphProcessor",
             value: function observedGraphProcessor(e, t, o) {
-              var n = e.length, i = new Array(n);
-              for (var s = 0; s < n; s++) i[s] = y(e[s], s, t, o);
-              return i[f] = t, i;
+              var n = e.length, i2 = new Array(n);
+              for (var s = 0; s < n; s++) i2[s] = y(e[s], s, t, o);
+              return i2[f] = t, i2;
             }
           }
         ]);
@@ -2354,7 +2380,7 @@
             value: function observedGraphProcessor(e, t, o) {
               var n = {};
               n[f] = t;
-              for (var i in e) n[i] = y(e[i], i, t, o);
+              for (var i2 in e) n[i2] = y(e[i2], i2, t, o);
               return n;
             }
           }
@@ -2437,7 +2463,7 @@
             value: function directChildrenOf(e) {
               if (typeof e != "string") throw new Error("directChildrenOf Filter requires a string as argument (MAY be empty)");
               var t = e.split(".").filter(Boolean), o = t.length, n = t.join(".");
-              return new r(_class_static_private_field_spec_get(r, _r3, _e3), (i) => i.filter((s) => {
+              return new r(_class_static_private_field_spec_get(r, _r3, _e3), (i2) => i2.filter((s) => {
                 var p = s.path, a2 = p.length;
                 if (a2 === o + 1) {
                   for (var l = 0; l < o; l++) if (p[l] !== t[l]) return false;
@@ -2458,13 +2484,13 @@
         var e = {}, t = [];
         for (var [o, n] of Object.entries(r)) if (o === "filters") {
           if (!Array.isArray(n) || n.length === 0) throw new Error('"filters" option, if/when provided, MUST be a non-empty array of Filter instances');
-          var i = new Array(n.length);
+          var i2 = new Array(n.length);
           for (var s = 0; s < n.length; s++) {
             var p = n[s];
             if (!(p instanceof k)) throw new Error('"filters" option, if/when provided, MUST be a non-empty array of Filter instances');
-            i[s] = p.fn;
+            i2[s] = p.fn;
           }
-          e.filters = i;
+          e.filters = i2;
         } else t.push(o);
         if (t.length) throw new Error(`'${t.join(", ")}' is/are not a valid observer option/s`);
         return Object.keys(e).length === 0 ? null : e;
@@ -2606,8 +2632,8 @@
           if (prop2 === /* @__PURE__ */ Symbol.for("vendetta.storage.emitter")) {
             if (emitter) return emitter;
             emitter = new Emitter();
-            getObservableRuntime().observe(target, (changes) => {
-              for (var change of changes) {
+            getObservableRuntime().observe(target, (changes2) => {
+              for (var change of changes2) {
                 emitter.emit(change.type !== "delete" ? "SET" : "DEL", {
                   path: change.path,
                   value: change.value
@@ -2680,7 +2706,7 @@
       init_async_to_generator();
       init_Emitter();
       init_fs();
-      init_dist2();
+      init_dist();
       _ObservableRuntime = null;
       storageInitErrorSymbol = /* @__PURE__ */ Symbol.for("bunny.storage.initError");
       storagePromiseSymbol = /* @__PURE__ */ Symbol.for("bunny.storage.promise");
@@ -2757,8 +2783,8 @@
   // src/lib/utils/cyrb64.ts
   function cyrb64(str, seed = 0) {
     var h1 = 3735928559 ^ seed, h2 = 1103547991 ^ seed;
-    for (var i = 0, ch; i < str.length; i++) {
-      ch = str.charCodeAt(i);
+    for (var i2 = 0, ch; i2 < str.length; i2++) {
+      ch = str.charCodeAt(i2);
       h1 = Math.imul(h1 ^ ch, 2654435761);
       h2 = Math.imul(h2 ^ ch, 1597334677);
     }
@@ -3648,7 +3674,7 @@
       init_promiseAllSettled();
       init_weakref();
       init_metro();
-      init_dist2();
+      init_dist();
       import_react_native3 = __toESM(require_react_native());
       init_preferences();
       getChroma = () => require_chroma_js();
@@ -3747,7 +3773,7 @@
         });
       };
       var patches3 = [
-        typeof MessagesModule.default === "function" ? after2("default", MessagesModule, patch) : after2("render", MessagesModule.default, patch)
+        typeof MessagesModule.default === "function" ? after("default", MessagesModule, patch) : after("render", MessagesModule.default, patch)
       ];
       return () => patches3.forEach((x2) => x2());
     } catch (e) {
@@ -3804,8 +3830,8 @@
       });
     });
     var unpatches2 = [
-      before2("updateTheme", NativeThemeModule, callback),
-      instead2("resolveSemanticColor", tokenReference.default.meta ?? tokenReference.default.internal, (args, orig) => {
+      before("updateTheme", NativeThemeModule, callback),
+      instead("resolveSemanticColor", tokenReference.default.meta ?? tokenReference.default.internal, (args, orig) => {
         if (!_colorRef.current) return orig(...args);
         if (args[0] !== _colorRef.key) return orig(...args);
         args[0] = _colorRef.current.reference;
@@ -3892,12 +3918,12 @@
       "SelectivelySyncedUserSettingsStore"
     ]);
     var patches3 = [
-      after2("get", mmkvStorage, ([key2], ret) => {
+      after("get", mmkvStorage, ([key2], ret) => {
         if (!_colorRef.current || !patchedKeys.has(key2)) return;
         var state = findInTree(ret._state, (s) => typeof s.theme === "string");
         if (state) state.theme = _colorRef.key;
       }),
-      before2("set", mmkvStorage, ([key2, value]) => {
+      before("set", mmkvStorage, ([key2, value]) => {
         if (!patchedKeys.has(key2)) return;
         var json = JSON.stringify(value);
         var lastSetDiscordTheme = _colorRef.lastSetDiscordTheme ?? "darker";
@@ -3961,7 +3987,7 @@
     var unsubscribe = ThemeStore2?.addChangeListener?.(applyStatusBar);
     applyStatusBar();
     var delay = 200;
-    for (var i = 0; i < 5; i++, delay *= 2) {
+    for (var i2 = 0; i2 < 5; i2++, delay *= 2) {
       setTimeout(applyStatusBar, delay);
     }
     return unsubscribe;
@@ -4552,7 +4578,7 @@
       "register",
       "get"
     ].every((x2) => moduleExports2[x2])) {
-      instead3("register", moduleExports2, ([name, cb], origFunc) => {
+      instead2("register", moduleExports2, ([name, cb], origFunc) => {
         try {
           return origFunc(name, cb);
         } catch (unused) {
@@ -4573,7 +4599,7 @@
       });
     }
     if (!patchedImportTracker && moduleExports2.fileFinishedImporting) {
-      before3("fileFinishedImporting", moduleExports2, ([filePath]) => {
+      before2("fileFinishedImporting", moduleExports2, ([filePath]) => {
         if (_importingModuleId === -1 || !filePath) return;
         metroModules[_importingModuleId].__filePath = filePath;
       });
@@ -4592,7 +4618,7 @@
       }
     }
     if (moduleExports2.isMoment) {
-      instead3("defineLocale", moduleExports2, (args, orig) => {
+      instead2("defineLocale", moduleExports2, (args, orig) => {
         var origLocale = moduleExports2.locale();
         orig(...args);
         moduleExports2.locale(origLocale);
@@ -4632,13 +4658,13 @@
     ErrorUtils.setGlobalHandler(originalHandler);
     return moduleExports2;
   }
-  function* getModules(uniq, all = false) {
+  function* getModules(uniq, all2 = false) {
     yield [
       -1,
       (init_redesign(), __toCommonJS(redesign_exports))
     ];
     var cache = getMetroCache().findIndex[uniq];
-    if (all && !cache?.[`_${ModulesMapInternal.FULL_LOOKUP}`]) cache = void 0;
+    if (all2 && !cache?.[`_${ModulesMapInternal.FULL_LOOKUP}`]) cache = void 0;
     if (cache?.[`_${ModulesMapInternal.NOT_FOUND}`]) return;
     for (var id2 in cache) {
       if (id2[0] === "_") continue;
@@ -4679,7 +4705,7 @@
       }
     }
   }
-  var _loop, before3, instead3, metroModules, metroRequire, moduleSubscriptions, blacklistedIds, noopHandler, functionToString, patchedInspectSource, patchedImportTracker, patchedNativeComponentRegistry, _importingModuleId, key;
+  var _loop, before2, instead2, metroModules, metroRequire, moduleSubscriptions, blacklistedIds, noopHandler, functionToString, patchedInspectSource, patchedImportTracker, patchedNativeComponentRegistry, _importingModuleId, key;
   var init_modules2 = __esm({
     "src/metro/internals/modules.ts"() {
       "use strict";
@@ -4697,7 +4723,7 @@
           return "continue";
         }
         if (metroModule.factory) {
-          instead3("factory", metroModule, (args, origFunc) => {
+          instead2("factory", metroModule, (args, origFunc) => {
             var originalImportingId = _importingModuleId;
             _importingModuleId = id2;
             var { 1: metroRequire2, 4: moduleObject } = args;
@@ -4729,7 +4755,7 @@
           });
         }
       };
-      ({ before: before3, instead: instead3 } = (init_dist(), __toCommonJS(dist_exports)));
+      ({ before: before2, instead: instead2 } = require_dist());
       metroModules = globalThis.modules;
       metroRequire = (id2) => globalThis.__r(+id2);
       moduleSubscriptions = /* @__PURE__ */ new Map();
@@ -4850,7 +4876,7 @@
       init_async_to_generator();
       init_fs();
       init_modules();
-      init_dist2();
+      init_dist();
       init_enums();
       CACHE_VERSION = 102;
       BUNNY_METRO_CACHE_PATH = "caches/metro_modules.json";
@@ -5504,7 +5530,7 @@
     return connected;
   }
   function patchLogHook() {
-    var unpatch3 = after2("nativeLoggingHook", globalThis, (args) => {
+    var unpatch2 = after("nativeLoggingHook", globalThis, (args) => {
       if (socket2?.readyState === WebSocket.OPEN) {
         sendLog2(args[1] === "error" ? "error" : args[1] === "warn" ? "warn" : "default", args[0]);
       }
@@ -5512,7 +5538,7 @@
     });
     return () => {
       socket2 && socket2.close();
-      unpatch3();
+      unpatch2();
     };
   }
   function getDebugInfo() {
@@ -5850,8 +5876,8 @@
     var lines = stack.split(/\n/);
     var entries = [];
     var lastMessageLine = -1;
-    for (var i = 0; i < lines.length; ++i) {
-      var line = lines[i];
+    for (var i2 = 0; i2 < lines.length; ++i2) {
+      var line = lines[i2];
       if (!line) {
         continue;
       }
@@ -5863,7 +5889,7 @@
       if (RE_COMPONENT_NO_STACK.test(line)) {
         continue;
       }
-      lastMessageLine = i;
+      lastMessageLine = i2;
       entries = [];
     }
     var message = lines.slice(0, lastMessageLine + 1).join("\n");
@@ -6638,7 +6664,7 @@
       }
       return null;
     });
-    var unpatch3 = after2.await("render", ctxPromise, function() {
+    var unpatch2 = after.await("render", ctxPromise, function() {
       try {
         if (!this || !this.state || !this.state.error) return;
         try {
@@ -6713,7 +6739,7 @@
       }
     } catch (unused) {
     }
-    return unpatch3;
+    return unpatch2;
   }
   var import_react4, ErrorBoundaryMount;
   var init_patchErrorBoundary = __esm({
@@ -6894,11 +6920,11 @@
       });
     });
     try {
-      unpatches2.push(after2("createList", createListModule, function(args, ret) {
+      unpatches2.push(after("createList", createListModule, function(args, ret) {
         var [config] = args;
         if (config?.sections && Array.isArray(config.sections)) {
           var sections = config.sections;
-          var accountSectionIndex = sections.findIndex((i) => i.settings?.includes("ACCOUNT"));
+          var accountSectionIndex = sections.findIndex((i2) => i2.settings?.includes("ACCOUNT"));
           if (accountSectionIndex !== -1) {
             var index = accountSectionIndex + 1;
             Object.keys(registeredSections).forEach((sect) => {
@@ -6916,10 +6942,10 @@
         return ret;
       }));
     } catch (unused) {
-      unpatches2.push(after2("default", SettingsOverviewScreen, (_2, ret) => {
+      unpatches2.push(after("default", SettingsOverviewScreen, (_2, ret) => {
         if (useIsFirstRender()) return;
-        var { sections } = findInReactTree(ret, (i) => i.props?.sections).props;
-        var index = -~sections.findIndex((i) => i.settings.includes("ACCOUNT")) || 1;
+        var { sections } = findInReactTree(ret, (i2) => i2.props?.sections).props;
+        var index = -~sections.findIndex((i2) => i2.settings.includes("ACCOUNT")) || 1;
         Object.keys(registeredSections).forEach((sect) => {
           sections.splice(index++, 0, {
             label: sect,
@@ -7141,27 +7167,27 @@
           }),
           /* @__PURE__ */ jsx(TableRowGroup, {
             title: "Core Components",
-            children: coreVersions.map((v2, i) => /* @__PURE__ */ jsx(Version, {
+            children: coreVersions.map((v2, i2) => /* @__PURE__ */ jsx(Version, {
               label: v2.label,
               version: v2.version,
               icon: v2.icon
-            }, i))
+            }, i2))
           }),
           /* @__PURE__ */ jsx(TableRowGroup, {
             title: "Runtime Environment",
-            children: runtimeVersions.map((v2, i) => /* @__PURE__ */ jsx(Version, {
+            children: runtimeVersions.map((v2, i2) => /* @__PURE__ */ jsx(Version, {
               label: v2.label,
               version: v2.version,
               icon: v2.icon
-            }, i))
+            }, i2))
           }),
           /* @__PURE__ */ jsx(TableRowGroup, {
             title: "Device Information",
-            children: deviceInfo.map((p, i) => /* @__PURE__ */ jsx(Version, {
+            children: deviceInfo.map((p, i2) => /* @__PURE__ */ jsx(Version, {
               label: p.label,
               version: p.version,
               icon: p.icon
-            }, i))
+            }, i2))
           }),
           /* @__PURE__ */ jsx(TableRowGroup, {
             title: "Additional Details",
@@ -7506,8 +7532,1112 @@
   });
 
   // node_modules/fuzzysort/fuzzysort.js
-  var require_fuzzysort = __commonJS({
-    "node_modules/fuzzysort/fuzzysort.js"(exports, module) {
+  var fuzzysort_exports = {};
+  __export(fuzzysort_exports, {
+    cleanup: () => cleanup,
+    default: () => fuzzysort_default,
+    go: () => go,
+    highlight: () => highlight,
+    prepare: () => prepare,
+    remap: () => remap,
+    score: () => score,
+    single: () => single,
+    snapshot: () => snapshot
+  });
+  function single(search, target) {
+    if (!search || !target) return null;
+    var query = getQuery(search);
+    if (!isPrepared(target)) target = getPrepared(target);
+    if ((query.bitflags & target._bitflags) !== query.bitflags) return null;
+    var result = !query.hasSpace && query.lowerCodes.length === 2 ? algorithm2(query, target) : algorithm(query, target);
+    return result && materialize(result);
+  }
+  function go(search, targets, options) {
+    if (targets instanceof SnapshotTargets) return goSnapshot(search, targets, options);
+    var key2 = options?.key;
+    var keys = !key2 && options?.keys;
+    var firstTarget = targets[0];
+    if (!key2 && !keys && typeof firstTarget === "object" && firstTarget !== null && !isPrepared(firstTarget)) {
+      throw new Error("fuzzysort: key or keys is required when searching object targets");
+    }
+    if (!search) return all(targets, options);
+    var query = getQuery(search);
+    if (keys) return goKeys(query, targets, options);
+    var searchBitflags = query.bitflags;
+    var twoChar = !query.hasSpace && query.lowerCodes.length === 2;
+    var threshold = denormalizeScore(options?.threshold ?? 0.5);
+    var limit = getLimit(options);
+    var scoreFn = options?.scoreFn;
+    var resultCount = 0;
+    var limited = 0;
+    var getter = key2 && makeGetter(key2);
+    for (var i2 = 0; i2 < targets.length; i2++) {
+      var obj = targets[i2];
+      var target = key2 ? getter === null ? obj[key2] : getter(obj) : obj;
+      if (!target) continue;
+      if (!isPrepared(target)) target = getPrepared(target);
+      if ((searchBitflags & target._bitflags) !== searchBitflags) continue;
+      var result = twoChar ? algorithm2(query, target) : algorithm(query, target);
+      if (result === null) continue;
+      var resultScore = result._score;
+      if (scoreFn) {
+        result = materialize(result, key2 ? obj : void 0);
+        resultScore = scoreFn(result);
+        if (!resultScore) continue;
+        result._score = resultScore = denormalizeScore(resultScore);
+      }
+      if (resultScore < threshold) continue;
+      var room = resultCount < limit;
+      if (room) resultCount++;
+      else {
+        limited++;
+        if (resultScore <= heap.peek()._score) continue;
+      }
+      if (!scoreFn) result = materialize(result, key2 ? obj : void 0);
+      room ? heap.add(result) : heap.replaceTop(result);
+    }
+    return finishResults(resultCount, limited);
+  }
+  function highlight(result, open = "<b>", close = "</b>", threshold = 0.5) {
+    var callback = typeof open === "function" ? open : null;
+    var target = result.target;
+    if (result._bestKeyScore !== void 0 && normalizeScore(result._score) < normalizeScore(result._bestKeyScore) * threshold) return callback ? [
+      target
+    ] : target;
+    var raw = result._indexes;
+    var indexes = raw === void 0 ? result.indexes : raw.slice(0, raw.len ?? raw.length).sort((a2, b) => a2 - b);
+    if (!indexes.length) return callback ? [
+      target
+    ] : target;
+    var output = callback ? [] : "";
+    var lastIndex = 0;
+    var matchI = 0;
+    for (var i2 = 0; i2 < indexes.length; ) {
+      var start2 = indexes[i2++];
+      var end = start2 + 1;
+      while (indexes[i2] === end) {
+        i2++;
+        end++;
+      }
+      var before3 = target.slice(lastIndex, start2);
+      var match = target.slice(start2, end);
+      if (callback) output.push(before3, callback(match, matchI++));
+      else output += before3 + open + match + close;
+      lastIndex = end;
+    }
+    if (callback) output.push(target.slice(lastIndex));
+    else output += target.slice(lastIndex);
+    return output;
+  }
+  function score(result) {
+    var value = result.score;
+    return value === void 0 ? normalizeScore(result._score) : value;
+  }
+  function remap(mappings) {
+    for (var char in mappings) {
+      remappings[char] = mappings[char];
+      if (char.charCodeAt(0) < 128) customAsciiRemappings = true;
+    }
+    cleanup();
+  }
+  function prepare(target) {
+    return prepTarget(target);
+  }
+  function snapshot(targets, options) {
+    return new SnapshotTargets(targets, options);
+  }
+  function cleanup() {
+    targetCache.clear();
+    searchCache.clear();
+    heap.clear();
+    simpleMatch = [];
+    strictMatch = [];
+    seen = [];
+    seenAt = [];
+    changes = [];
+    partials = [];
+    spaceScores = [];
+    partIndexes = [];
+    winnerIndexes = [];
+    winnerScores = [];
+    winnerKeys = [];
+    keyTargets = [];
+    keyResults = [];
+    candidateBitOffsets = [];
+    seenGeneration = 0;
+  }
+  function goSnapshotValues(search, snapshot2, options, singleChar) {
+    var targets = snapshot2._targets;
+    var objects = snapshot2._objects;
+    var threshold = denormalizeScore(options?.threshold ?? 0.5);
+    var limit = getLimit(options);
+    var scoreFn = options?.scoreFn;
+    var searchLen = search.lowerCodes.length;
+    var shortSearch = !search.hasSpace && searchLen <= 3;
+    var twoChar = !search.hasSpace && searchLen === 2;
+    var rows = snapshot2._candidateRows;
+    var rowsLength = snapshot2._candidateLength;
+    var matchedRows = snapshot2._rows;
+    var matchedCount = 0;
+    var resultCount = 0;
+    var limited = 0;
+    for (var n = 0; n < rowsLength; n++) {
+      var i2 = rows === null ? n : rows[n];
+      var target = targets[i2];
+      if (target === noTarget || (search.bitflags & target._bitflags) !== search.bitflags) continue;
+      var targetShort = shortSearch && target.target.length < 65535;
+      var cutoff = !scoreFn && threshold === -INF && resultCount >= limit ? heap.peek()._score : -INF;
+      var result = void 0;
+      if (singleChar && targetShort) result = algorithm1(search, target, snapshot2._first, i2);
+      else if (twoChar && targetShort) {
+        var start2 = snapshot2._offsets[i2];
+        var end = snapshot2._offsets[i2 + 1];
+        result = algorithm2(search, target, snapshot2._beginnings, start2, end, cutoff);
+      } else if (twoChar) result = algorithm2(search, target, null, 0, 0, cutoff);
+      else if (targetShort) {
+        var start1 = snapshot2._offsets[i2];
+        var end1 = snapshot2._offsets[i2 + 1];
+        result = algorithm(search, target, false, false, false, true, snapshot2._beginnings, start1, end1, cutoff);
+      } else result = algorithm(search, target, false, false, false, true, null, 0, 0, cutoff);
+      if (result === null) continue;
+      matchedRows[matchedCount++] = i2;
+      if (result === prunedMatch) {
+        limited++;
+        continue;
+      }
+      var resultScore = result._score;
+      if (scoreFn) {
+        result = materialize(result, objects?.[i2]);
+        resultScore = scoreFn(result);
+        if (!resultScore) continue;
+        result._score = resultScore = denormalizeScore(resultScore);
+      }
+      if (resultScore < threshold) continue;
+      var room = resultCount < limit;
+      if (room) resultCount++;
+      else {
+        limited++;
+        if (resultScore <= heap.peek()._score) continue;
+      }
+      if (objects && !scoreFn) result = materialize(result, objects[i2]);
+      room ? heap.add(result) : heap.replaceTop(result);
+    }
+    snapshot2._matchedRowsLen = matchedCount;
+    return finishResults(resultCount, limited, !objects && !scoreFn && materialize);
+  }
+  function goSnapshot(search, snapshot2, options) {
+    if (options?.key || options?.keys) throw new Error("fuzzysort: key/keys must be provided to snapshot(), not go()");
+    snapshot2._finish();
+    if (!search) return allSnapshot(snapshot2, options);
+    var query = getQuery(search);
+    var backtrack = snapshot2._backtrack(query, options);
+    if (backtrack) return backtrack;
+    snapshot2._beginSearch(query);
+    try {
+      var results;
+      if (snapshot2._mode < 2) {
+        var searchLen = query.lowerCodes.length;
+        var code = query.lowerCodes[0];
+        var singleChar = searchLen === 1 && code >= 97 && code <= 122;
+        results = goSnapshotValues(query, snapshot2, options, singleChar);
+      } else results = goKeys(query, snapshot2._objects, options, snapshot2);
+      snapshot2._endSearch(query);
+      snapshot2._remember(query, results, options);
+      return results;
+    } catch (error) {
+      snapshot2._resetSearch();
+      throw error;
+    }
+  }
+  function goKeys(query, objects, options, snapshot2) {
+    var indexed = snapshot2 !== void 0;
+    var keys = indexed ? null : options.keys;
+    var getters = indexed ? null : keys.map(makeGetter);
+    var targets = indexed ? snapshot2._targets : null;
+    var keysLength = indexed ? snapshot2._keysLength : keys.length;
+    var searchBitflags = query.bitflags;
+    var hasSpace = query.hasSpace;
+    var spaceCount = query.parts.length;
+    var threshold = denormalizeScore(options?.threshold ?? 0.5);
+    var limit = getLimit(options);
+    var searchLen = query.lowerCodes.length;
+    var short = indexed && !hasSpace && searchLen <= 3;
+    var twoChar = !hasSpace && searchLen === 2;
+    var code = query.lowerCodes[0];
+    var singleChar = short && searchLen === 1 && code >= 97 && code <= 122;
+    var scoreFn = options?.scoreFn;
+    var deferMaterialization = indexed && !scoreFn && (limit !== INF || threshold > -INF);
+    var rows = indexed ? snapshot2._candidateRows : null;
+    var rowsLength = indexed ? snapshot2._candidateLength : objects.length;
+    var matchedRows = indexed ? snapshot2._rows : null;
+    var matchedCount = 0;
+    var resultCount = 0;
+    var limited = 0;
+    outer: for (var n = 0; n < rowsLength; n++) {
+      var i2 = rows === null ? n : rows[n];
+      var row = i2 * keysLength;
+      if (indexed) {
+        if ((searchBitflags & snapshot2._bitflags[i2]) !== searchBitflags) continue;
+      } else {
+        var obj = objects[i2];
+        var keysBitflags = 0;
+        for (var k2 = 0; k2 < keysLength; k2++) {
+          var target = getters[k2] === null ? obj[keys[k2]] : getters[k2](obj);
+          if (!target) target = noTarget;
+          else if (!isPrepared(target)) target = getPrepared(target);
+          keyTargets[k2] = target;
+          keysBitflags |= target._bitflags;
+        }
+        if ((searchBitflags & keysBitflags) !== searchBitflags) continue;
+      }
+      if (hasSpace) for (var s = 0; s < spaceCount; s++) {
+        spaceScores[s] = winnerScores[s] = -INF;
+        winnerKeys[s] = -1;
+      }
+      for (var k1 = 0; k1 < keysLength; k1++) {
+        var target1 = indexed ? targets[row + k1] : keyTargets[k1];
+        if (target1 === noTarget) {
+          keyResults[k1] = noTarget;
+          continue;
+        }
+        if (hasSpace && indexed) {
+          var possible = false;
+          for (var s1 = 0; s1 < spaceCount; s1++) {
+            var partBitflags = query.parts[s1].bitflags;
+            if ((partBitflags & target1._bitflags) === partBitflags) {
+              possible = true;
+              break;
+            }
+          }
+          if (!possible) {
+            keyResults[k1] = noTarget;
+            continue;
+          }
+        } else if (!hasSpace && (searchBitflags & target1._bitflags) !== searchBitflags) {
+          keyResults[k1] = noTarget;
+          continue;
+        }
+        var match = void 0;
+        if (indexed) {
+          var valueRow = row + k1;
+          var targetShort = short && target1.target.length < 65535;
+          if (singleChar && targetShort) match = algorithm1(query, target1, snapshot2._first, valueRow);
+          else if (twoChar && targetShort) {
+            var start2 = snapshot2._offsets[valueRow];
+            var end = snapshot2._offsets[valueRow + 1];
+            match = algorithm2(query, target1, snapshot2._beginnings, start2, end);
+          } else if (twoChar) match = algorithm2(query, target1);
+          else if (targetShort) {
+            var start1 = snapshot2._offsets[valueRow];
+            var end1 = snapshot2._offsets[valueRow + 1];
+            match = algorithm(query, target1, false, false, false, true, snapshot2._beginnings, start1, end1);
+          } else match = algorithm(query, target1, false, hasSpace);
+        } else match = twoChar ? algorithm2(query, target1) : algorithm(query, target1, false, hasSpace);
+        if (match === null) {
+          keyResults[k1] = noTarget;
+          continue;
+        }
+        keyResults[k1] = deferMaterialization ? match : materialize(match);
+        if (hasSpace) {
+          mergePartScores(spaceCount);
+          for (var s2 = 0; s2 < spaceCount; s2++) {
+            var partScore = partials[s2];
+            if (partScore <= winnerScores[s2]) continue;
+            winnerScores[s2] = partScore;
+            winnerKeys[s2] = k1;
+            var source = partIndexes[s2];
+            var winner = winnerIndexes[s2] ||= [];
+            winner.length = source.length;
+            for (var j2 = 0; j2 < source.length; j2++) winner[j2] = source[j2];
+          }
+        }
+      }
+      if (hasSpace) {
+        for (var s3 = 0; s3 < spaceCount; s3++) if (winnerKeys[s3] !== -1) {
+          appendIndexes(keyResults[winnerKeys[s3]]._indexes, winnerIndexes[s3]);
+        }
+      }
+      var resultScore = void 0;
+      if (hasSpace) {
+        resultScore = 0;
+        for (var s4 = 0; s4 < spaceCount; s4++) {
+          var partScore1 = spaceScores[s4];
+          if (partScore1 === -INF) continue outer;
+          resultScore += partScore1;
+        }
+      } else {
+        resultScore = mergeScores(keyResults, keysLength);
+        if (resultScore === -INF) continue;
+      }
+      if (indexed) matchedRows[matchedCount++] = i2;
+      var result = deferMaterialization ? null : captureKeysResult(keyResults, keysLength, objects[i2], resultScore, hasSpace);
+      if (scoreFn) {
+        resultScore = scoreFn(result);
+        if (!resultScore) continue;
+        result._score = resultScore = denormalizeScore(resultScore);
+      }
+      if (resultScore < threshold) continue;
+      var room = resultCount < limit;
+      if (room) resultCount++;
+      else {
+        limited++;
+        if (resultScore <= heap.peek()._score) continue;
+      }
+      if (result === null) result = captureKeysResult(keyResults, keysLength, objects[i2], resultScore, hasSpace);
+      room ? heap.add(result) : heap.replaceTop(result);
+    }
+    if (indexed) snapshot2._matchedRowsLen = matchedCount;
+    return finishResults(resultCount, limited, deferMaterialization && materializeKeys);
+  }
+  function allSnapshot(snapshot2, options) {
+    var results = [];
+    var targets = snapshot2._targets;
+    var objects = snapshot2._objects;
+    var keysLength = snapshot2._keysLength;
+    var total = keysLength === void 0 ? targets.length : objects.length;
+    results.total = total;
+    var limit = getLimit(options);
+    for (var i2 = 0, length = Math.min(total, limit); i2 < length; i2++) {
+      if (keysLength === void 0) {
+        results.push(newResult(targets[i2].target, -INF, objects?.[i2]));
+        continue;
+      }
+      var row = i2 * keysLength;
+      for (var k2 = 0; k2 < keysLength; k2++) {
+        var target = targets[row + k2];
+        keyResults[k2] = target === noTarget ? noTarget : newResult(target.target, -INF);
+      }
+      results.push(captureKeysResult(keyResults, keysLength, objects[i2], -INF));
+    }
+    return results;
+  }
+  function all(targets, options) {
+    var results = [];
+    results.total = targets.length;
+    var limit = getLimit(options);
+    var key2 = options?.key;
+    var keys = !key2 && options?.keys;
+    if (keys) {
+      var getters = keys.map(makeGetter);
+      for (var obj of targets) {
+        for (var k2 = keys.length - 1; k2 >= 0; k2--) {
+          var target = getters[k2] === null ? obj[keys[k2]] : getters[k2](obj);
+          if (!target) keyResults[k2] = noTarget;
+          else {
+            if (!isPrepared(target)) target = getPrepared(target);
+            target._score = -INF;
+            target._indexes.len = 0;
+            keyResults[k2] = target;
+          }
+        }
+        results.push(captureKeysResult(keyResults, keys.length, obj, -INF));
+        if (results.length >= limit) break;
+      }
+      return results;
+    }
+    var getter = key2 && makeGetter(key2);
+    for (var obj1 of targets) {
+      var target1 = key2 ? getter === null ? obj1[key2] : getter(obj1) : obj1;
+      if (target1 == null) continue;
+      if (!isPrepared(target1)) target1 = getPrepared(target1);
+      if (key2) target1 = newResult(target1.target, -INF, obj1);
+      else {
+        target1._score = -INF;
+        target1._indexes.len = 0;
+      }
+      results.push(target1);
+      if (results.length >= limit) break;
+    }
+    return results;
+  }
+  function finishResults(length, limited, transform) {
+    if (!length) return noResults;
+    var results = new Array(length);
+    for (var i2 = length - 1; i2 >= 0; i2--) {
+      var result = heap.poll();
+      if (transform) result = transform(result);
+      if (result instanceof KeysResult && !result._partWinners) markBestKeyScore(result);
+      results[i2] = result;
+    }
+    results.total = length + limited;
+    return results;
+  }
+  function materializeKeys(result) {
+    for (var k2 = 0; k2 < result.length; k2++) if (result[k2] !== noTarget) result[k2] = materialize(result[k2]);
+    return result;
+  }
+  function algorithm1(search, target, firstTable, row) {
+    var matchI = target._targetLower.indexOf(search._lower);
+    if (matchI === -1) return null;
+    var beginning = firstTable[row * 26 + search.lowerCodes[0] - 97];
+    var strict = beginning !== 0;
+    if (strict) matchI = beginning - 1;
+    var _$score = matchI === 0 ? 0 : -matchI * matchI * 0.2;
+    if (!strict) _$score *= 1e3;
+    else if (target._beginningsLen > 24) _$score *= (target._beginningsLen - 24) * 10;
+    target._score = _$score - target._targetLowerCodes.length + 1;
+    target._indexes[0] = matchI;
+    target._indexes.len = 1;
+    return target;
+  }
+  function algorithm2(search, target, beginnings = null, start2 = 0, end = 0, cutoff = -INF) {
+    var targetCodes = target._targetLowerCodes;
+    var targetLen = targetCodes.length;
+    var firstCode = search.lowerCodes[0];
+    var secondCode = search.lowerCodes[1];
+    var first = 0;
+    while (targetCodes[first] !== firstCode) if (++first >= targetLen) return null;
+    var second = first + 1;
+    while (targetCodes[second] !== secondCode) if (++second >= targetLen) return null;
+    if (cutoff !== -INF && scoreCeiling(2, targetLen) <= cutoff) return prunedMatch;
+    if (beginnings === null) {
+      beginnings = target._beginnings;
+      if (beginnings === null) target._beginnings = beginnings = makeBeginnings(target);
+      end = beginnings.length;
+    }
+    var substringI = target._targetLower.indexOf(search._lower, first);
+    var substring = substringI !== -1;
+    var low = lowerBound(beginnings, start2, end, substringI);
+    var substringStart = substring && low < end && beginnings[low] === substringI;
+    var strict = substringStart && substringI === first;
+    if (!strict) {
+      var firstBeginning = start2;
+      while (firstBeginning < end && beginnings[firstBeginning] < first) firstBeginning++;
+      for (var backtracks = 0; firstBeginning < end; ) {
+        var strictFirst = beginnings[firstBeginning];
+        if (targetCodes[strictFirst] !== firstCode) {
+          firstBeginning++;
+          continue;
+        }
+        var consecutive = strictFirst + 1;
+        if (targetCodes[consecutive] === secondCode) {
+          first = strictFirst;
+          second = consecutive;
+          strict = true;
+          break;
+        }
+        var secondBeginning = firstBeginning + 1;
+        while (secondBeginning < end && beginnings[secondBeginning] <= consecutive) secondBeginning++;
+        while (secondBeginning < end && targetCodes[beginnings[secondBeginning]] !== secondCode) secondBeginning++;
+        if (secondBeginning < end) {
+          first = strictFirst;
+          second = beginnings[secondBeginning];
+          strict = true;
+          break;
+        }
+        if (++backtracks > 200) break;
+        firstBeginning++;
+      }
+    }
+    if (substring && !substringStart) {
+      while (low < end && beginnings[low] <= substringI) low++;
+      for (; low < end; low++) {
+        var index = beginnings[low];
+        if (targetCodes[index] === firstCode && targetCodes[index + 1] === secondCode) {
+          substringI = index;
+          substringStart = true;
+          break;
+        }
+      }
+    }
+    if (substring && (!strict || substringStart)) {
+      first = substringI;
+      second = substringI + 1;
+    }
+    var resultScore = second - first === 1 ? 0 : first - second * 2 - 11;
+    if (first) resultScore -= first * first * 0.2;
+    if (!strict) resultScore *= 1e3;
+    else if (end - start2 > 24) resultScore *= (end - start2 - 24) * 10;
+    var lengthPenalty = (targetLen - 2) / 2;
+    resultScore -= lengthPenalty;
+    if (substring) resultScore /= 5;
+    if (substringStart) resultScore /= 5;
+    resultScore -= lengthPenalty;
+    var substringEnd = substring && second === first + 1 && (second + 1 === targetLen || isBeginning(beginnings, start2, end, second + 1));
+    target._score = substringEnd ? resultScore + Math.min(4, -resultScore / 2) : resultScore;
+    target._indexes[0] = first;
+    target._indexes[1] = second;
+    target._indexes.len = 2;
+    return target;
+  }
+  function algorithm(search, target, spaces = false, partial = false, changed = false, singleMatch = true, beginnings = null, start2 = 0, end = 0, cutoff = -INF) {
+    if (!spaces && search.hasSpace) return algorithmSpaces(search, target, partial);
+    var searchCodes = search.lowerCodes;
+    var targetCodes = target._targetLowerCodes;
+    var searchLen = searchCodes.length;
+    var targetLen = targetCodes.length;
+    var searchCode = searchCodes[0];
+    var searchI = 0;
+    var targetI = 0;
+    for (; ; ) {
+      if (searchCode === targetCodes[targetI]) {
+        simpleMatch[searchI] = targetI;
+        if (++searchI === searchLen) break;
+        searchCode = searchCodes[searchI];
+      }
+      if (++targetI >= targetLen) return null;
+    }
+    if (cutoff !== -INF && searchLen > 1 && scoreCeiling(searchLen, targetLen) <= cutoff) return prunedMatch;
+    if (searchLen === 1 && !changed && singleMatch) {
+      var matchI;
+      var strict;
+      if (target._singleMatchCode === searchCode) {
+        matchI = target._singleMatchIndex;
+        strict = target._singleMatchStrict;
+      } else if (target._nextBeginningIndexes !== null) {
+        var next = target._nextBeginningIndexes;
+        targetI = simpleMatch[0] === 0 ? 0 : next[simpleMatch[0] - 1];
+        while (targetI < targetLen && searchCode !== targetCodes[targetI]) targetI = next[targetI];
+        strict = targetI < targetLen;
+        matchI = strict ? targetI : simpleMatch[0];
+      } else {
+        prepareSingleMatch(target, searchCode, simpleMatch[0]);
+        matchI = target._singleMatchIndex;
+        strict = target._singleMatchStrict;
+      }
+      var resultScore = matchI === 0 ? 0 : -matchI * matchI * 0.2;
+      if (!strict) resultScore *= 1e3;
+      else if (target._beginningsLen > 24) resultScore *= (target._beginningsLen - 24) * 10;
+      target._score = resultScore - (targetLen - 1);
+      target._indexes[0] = matchI;
+      target._indexes.len = 1;
+      return target;
+    }
+    searchI = 0;
+    var strict1 = false;
+    var strictLen = 0;
+    var next1 = target._nextBeginningIndexes;
+    if (beginnings === null && next1 === null) next1 = target._nextBeginningIndexes = makeNextBeginnings(target);
+    var beginningLen = beginnings === null ? changed ? 0 : target._beginningsLen : end - start2;
+    if (!beginningLen) {
+      beginningLen = 1;
+      for (var i2 = next1[0]; i2 < targetLen; i2 = next1[i2]) beginningLen++;
+      if (!changed) target._beginningsLen = beginningLen;
+    }
+    var substringI = searchLen <= 1 ? -1 : target._targetLower.indexOf(search._lower, simpleMatch[0]);
+    var isSubstring = substringI !== -1;
+    var substringStart = isSubstring && (substringI === 0 || (beginnings ? isBeginning(beginnings, start2, end, substringI) : next1[substringI - 1] === substringI));
+    if (substringStart && substringI === simpleMatch[0]) strict1 = true;
+    else {
+      targetI = simpleMatch[0] === 0 ? 0 : beginnings ? nextBeginning(beginnings, start2, end, simpleMatch[0] - 1, targetLen) : next1[simpleMatch[0] - 1];
+      var backtracks = 0;
+      if (targetI !== targetLen) for (; ; ) {
+        if (targetI >= targetLen) {
+          if (searchI <= 0 || ++backtracks > 200) break;
+          searchI--;
+          var previous = strictMatch[--strictLen];
+          targetI = beginnings ? nextBeginning(beginnings, start2, end, previous, targetLen) : next1[previous];
+        } else if (searchCodes[searchI] === targetCodes[targetI]) {
+          strictMatch[strictLen++] = targetI;
+          if (++searchI === searchLen) {
+            strict1 = true;
+            break;
+          }
+          targetI++;
+        } else targetI = beginnings ? nextBeginning(beginnings, start2, end, targetI, targetLen) : next1[targetI];
+      }
+    }
+    if (isSubstring && !substringStart) {
+      if (beginnings) {
+        for (var b = start2; b < end; b++) {
+          var i1 = beginnings[b];
+          if (i1 <= substringI) continue;
+          var s = 0;
+          for (; s < searchLen && searchCodes[s] === targetCodes[i1 + s]; s++) ;
+          if (s === searchLen) {
+            substringI = i1;
+            substringStart = true;
+            break;
+          }
+        }
+      } else for (var i22 = 0; i22 < next1.length; i22 = next1[i22]) {
+        if (i22 <= substringI) continue;
+        var s1 = 0;
+        for (; s1 < searchLen && searchCodes[s1] === targetCodes[i22 + s1]; s1++) ;
+        if (s1 === searchLen) {
+          substringI = i22;
+          substringStart = true;
+          break;
+        }
+      }
+    }
+    var matches;
+    if (!strict1) {
+      if (isSubstring) for (var i3 = 0; i3 < searchLen; i3++) simpleMatch[i3] = substringI + i3;
+      matches = simpleMatch;
+    } else if (substringStart) {
+      for (var i4 = 0; i4 < searchLen; i4++) simpleMatch[i4] = substringI + i4;
+      matches = simpleMatch;
+    } else matches = strictMatch;
+    var matchEnd = matches[searchLen - 1] + 1;
+    var substringEnd = isSubstring && matchEnd - matches[0] === searchLen && (matchEnd === targetLen || (beginnings ? isBeginning(beginnings, start2, end, matchEnd) : next1[matchEnd - 1] === matchEnd));
+    target._score = calculateScore(matches, searchLen, targetLen, strict1, beginningLen, isSubstring, substringStart, substringEnd);
+    for (var i5 = 0; i5 < searchLen; i5++) target._indexes[i5] = matches[i5];
+    target._indexes.len = searchLen;
+    return target;
+  }
+  function mergePartScores(length) {
+    for (var i2 = 0; i2 < length; i2++) {
+      var partial = partials[i2];
+      var best = spaceScores[i2];
+      if (partial > -1e3 && best > -INF) best = Math.max(best, (best + partial) / 4);
+      spaceScores[i2] = Math.max(best, partial);
+    }
+  }
+  function appendIndexes(indexes, additions) {
+    var length = indexes.len;
+    outer: for (var i2 = 0; i2 < additions.length; i2++) {
+      var index = additions[i2];
+      for (var j2 = 0; j2 < length; j2++) if (indexes[j2] === index) continue outer;
+      indexes[length++] = index;
+    }
+    indexes.len = length;
+  }
+  function mergeScores(results, length) {
+    var total = -INF;
+    for (var i2 = 0; i2 < length; i2++) {
+      var _$score = results[i2]._score;
+      if (_$score > -1e3 && total > -INF) total = Math.max(total, (total + _$score) / 4);
+      if (_$score > total) total = _$score;
+    }
+    return total;
+  }
+  function calculateScore(matches, searchLen, targetLen, strict, beginningLen, substring, substringStart, substringEnd) {
+    var _$score = 0;
+    var groups = 0;
+    for (var i2 = 1; i2 < searchLen; i2++) if (matches[i2] - matches[i2 - 1] !== 1) {
+      _$score -= matches[i2];
+      groups++;
+    }
+    var unmatchedDistance = matches[searchLen - 1] - matches[0] - (searchLen - 1);
+    _$score -= (12 + unmatchedDistance) * groups;
+    if (matches[0] !== 0) _$score -= matches[0] * matches[0] * 0.2;
+    if (!strict) _$score *= 1e3;
+    else if (beginningLen > 24) _$score *= (beginningLen - 24) * 10;
+    var lengthPenalty = (targetLen - searchLen) / 2;
+    _$score -= lengthPenalty;
+    var substringBonus = 1 + searchLen * searchLen;
+    if (substring) _$score /= substringBonus;
+    if (substringStart) _$score /= substringBonus;
+    _$score -= lengthPenalty;
+    return substringEnd ? _$score + Math.min(4, -_$score / 2) : _$score;
+  }
+  function algorithmSpaces(search, target, partial) {
+    var seenLen = 0;
+    var generation = ++seenGeneration;
+    var _$score = 0;
+    var result = null;
+    var previousFirst = 0;
+    var searches = search.parts;
+    var changesLen = 0;
+    var matched = false;
+    for (var i2 = 0; i2 < searches.length; i2++) {
+      partials[i2] = -INF;
+      if (partial) (partIndexes[i2] ||= []).length = 0;
+      result = algorithm(searches[i2], target, false, false, changesLen !== 0, false);
+      if (result === null) {
+        if (partial) continue;
+        resetBeginnings(target, changesLen);
+        return null;
+      }
+      matched = true;
+      if (i2 < searches.length - 1) {
+        var indexes = result._indexes;
+        var consecutive = true;
+        for (var j2 = 0; j2 < indexes.len - 1; j2++) if (indexes[j2 + 1] - indexes[j2] !== 1) {
+          consecutive = false;
+          break;
+        }
+        if (consecutive) {
+          var beginning = indexes[indexes.len - 1] + 1;
+          var previous = target._nextBeginningIndexes[beginning - 1];
+          for (var j1 = beginning - 1; j1 >= 0 && target._nextBeginningIndexes[j1] === previous; j1--) {
+            target._nextBeginningIndexes[j1] = beginning;
+            changes[changesLen * 2] = j1;
+            changes[changesLen * 2 + 1] = previous;
+            changesLen++;
+          }
+        }
+      }
+      if (partial) {
+        var indexes1 = partIndexes[i2];
+        indexes1.length = result._indexes.len;
+        for (var j22 = 0; j22 < indexes1.length; j22++) indexes1[j22] = result._indexes[j22];
+      }
+      var partScore = result._score / searches.length;
+      _$score += partScore;
+      partials[i2] = partScore;
+      if (result._indexes[0] < previousFirst) _$score -= (previousFirst - result._indexes[0]) * 2;
+      previousFirst = result._indexes[0];
+      if (!partial) for (var j3 = 0; j3 < result._indexes.len; j3++) {
+        var index = result._indexes[j3];
+        if (seenAt[index] === generation) continue;
+        seenAt[index] = generation;
+        seen[seenLen++] = index;
+      }
+    }
+    if (partial && !matched) return null;
+    resetBeginnings(target, changesLen);
+    if (target._bitflags & SPACE_BIT) {
+      var spacedResult = algorithm(search, target, true);
+      if (spacedResult !== null && spacedResult._score > _$score) {
+        if (partial) {
+          var searchFrom = 0;
+          for (var i1 = 0; i1 < searches.length; i1++) {
+            partials[i1] = spacedResult._score / searches.length;
+            var part = searches[i1]._lower;
+            var searchI = search._lower.indexOf(part, searchFrom);
+            var indexes2 = partIndexes[i1];
+            indexes2.length = part.length;
+            for (var j4 = 0; j4 < part.length; j4++) indexes2[j4] = spacedResult._indexes[searchI + j4];
+            searchFrom = searchI + part.length;
+          }
+          if (spacedResult._score < GOOD_PART_SCORE) spacedResult._indexes.len = 0;
+        }
+        return spacedResult;
+      }
+    }
+    if (partial) {
+      result = target;
+      var targetLower = target._targetLower;
+      for (var i22 = 1; i22 < searches.length; i22++) {
+        var previous1 = partIndexes[i22 - 1];
+        if (!previous1.length || !partIndexes[i22].length) continue;
+        var previousEnd = previous1[previous1.length - 1] + 1;
+        var at = previousEnd;
+        var code = void 0;
+        while ((code = targetLower.charCodeAt(at)) === 32 || code >= 9 && code <= 13) at++;
+        var part1 = searches[i22]._lower;
+        if (!targetLower.startsWith(part1, at)) continue;
+        for (var j5 = previousEnd; j5 < at; j5++) previous1.push(j5);
+        var indexes3 = partIndexes[i22];
+        indexes3.length = part1.length;
+        for (var j6 = 0; j6 < part1.length; j6++) indexes3[j6] = at + j6;
+      }
+      result._indexes.len = 0;
+      for (var i3 = 0; i3 < searches.length; i3++) if (partials[i3] * searches.length >= GOOD_PART_SCORE) {
+        appendIndexes(result._indexes, partIndexes[i3]);
+      }
+    } else {
+      for (var i4 = 0; i4 < seenLen; i4++) result._indexes[i4] = seen[i4];
+      result._indexes.len = seenLen;
+    }
+    result._score = _$score;
+    return result;
+  }
+  function resetBeginnings(target, changesLen) {
+    for (var i2 = changesLen - 1; i2 >= 0; i2--) {
+      target._nextBeginningIndexes[changes[i2 * 2]] = changes[i2 * 2 + 1];
+    }
+  }
+  function copyResult(result) {
+    if (result === noTarget) return noTarget;
+    if (result instanceof KeysResult) {
+      var copy = result.map(copyResult);
+      copy.obj = result.obj;
+      copy._score = result._score;
+      if (result._partWinners) copy._partWinners = true;
+      return copy;
+    }
+    var copy1 = materialize(result, result.obj);
+    if (result._bestKeyScore !== void 0) copy1._bestKeyScore = result._bestKeyScore;
+    var indexes = result._indexes;
+    copy1._indexes = indexes.slice(0, indexes.len ?? indexes.length);
+    copy1._indexes.len = copy1._indexes.length;
+    return copy1;
+  }
+  function copyResults(results) {
+    var copies = results.map(copyResult);
+    copies.total = results.total;
+    return copies;
+  }
+  function prepTarget(target) {
+    if (isPrepared(target)) target = target.target;
+    else if (typeof target === "number") target = "" + target;
+    else if (typeof target !== "string") target = "";
+    var info = lowerInfo(target);
+    return newResult(target, -INF, null, info._lower, info.lowerCodes, info.bitflags);
+  }
+  function prepQuery(search) {
+    if (typeof search === "number") search = "" + search;
+    else if (typeof search !== "string") search = "";
+    search = remapChars(search).trim();
+    var info = lowerInfoRemapped(search);
+    info.bitflags &= ~SPACE_BIT;
+    info.parts = info.hasSpace ? [
+      ...new Set(info._lower.split(/\s+/))
+    ].map(prepQuery) : [];
+    return info;
+  }
+  function getPrepared(target) {
+    if (target.length > 999) return prepTarget(target);
+    var prepared = targetCache.get(target);
+    if (prepared === void 0) targetCache.set(target, prepared = prepTarget(target));
+    return prepared;
+  }
+  function getQuery(search) {
+    if (search.length > 999) return prepQuery(search);
+    var prepared = searchCache.get(search);
+    if (prepared === void 0) {
+      if (searchCache.size >= 512) searchCache.clear();
+      searchCache.set(search, prepared = prepQuery(search));
+    }
+    return prepared;
+  }
+  function scanBeginnings(prepared, visit) {
+    var target = remapChars(prepared.target);
+    var wasUpper = false;
+    var wasAlnum = false;
+    var count = 0;
+    for (var i2 = 0; i2 < target.length; i2++) {
+      var code = target.charCodeAt(i2);
+      var upper = code >= 65 && code <= 90;
+      var alnum = upper || code >= 97 && code <= 122 || code >= 48 && code <= 57;
+      var beginning = upper && !wasUpper || !wasAlnum || !alnum;
+      wasUpper = upper;
+      wasAlnum = alnum;
+      if (beginning) {
+        count++;
+        visit(i2);
+      }
+    }
+    prepared._beginningsLen = count;
+  }
+  function indexBeginnings(prepared, firstTable, row, packed) {
+    if (prepared.target.length >= 65535) return;
+    var target = remapChars(prepared.target);
+    var lowerCodes = prepared._targetLowerCodes;
+    var offset = row * 26;
+    var wasUpper = false;
+    var wasAlnum = false;
+    var count = 0;
+    for (var i2 = 0; i2 < target.length; i2++) {
+      var code = target.charCodeAt(i2);
+      var upper = code >= 65 && code <= 90;
+      var alnum = upper || code >= 97 && code <= 122 || code >= 48 && code <= 57;
+      var beginning = upper && !wasUpper || !wasAlnum || !alnum;
+      wasUpper = upper;
+      wasAlnum = alnum;
+      if (!beginning) continue;
+      count++;
+      packed.push(i2);
+      code = lowerCodes[i2];
+      if (code >= 97 && code <= 122) {
+        var slot = offset + code - 97;
+        if (firstTable[slot] === 0) firstTable[slot] = i2 + 1;
+      }
+    }
+    prepared._beginningsLen = count;
+  }
+  function prepareSingleMatch(prepared, searchCode, fallbackIndex) {
+    var matchI = fallbackIndex;
+    var strict = false;
+    scanBeginnings(prepared, (i2) => {
+      if (!strict && searchCode === prepared._targetLowerCodes[i2]) {
+        matchI = i2;
+        strict = true;
+      }
+    });
+    prepared._singleMatchCode = searchCode;
+    prepared._singleMatchIndex = matchI;
+    prepared._singleMatchStrict = strict;
+  }
+  function makeBeginnings(prepared) {
+    var beginnings = [];
+    scanBeginnings(prepared, (i2) => beginnings.push(i2));
+    return beginnings;
+  }
+  function makeNextBeginnings(prepared) {
+    var next = [];
+    var fill = 0;
+    scanBeginnings(prepared, (i2) => {
+      for (; fill < i2; fill++) next[fill] = i2;
+    });
+    for (; fill < prepared.target.length; fill++) next[fill] = prepared.target.length;
+    return next;
+  }
+  function remapCharacter(char) {
+    var remapped = remappings[char];
+    if (remapped !== void 0) return remapped;
+    if (char.charCodeAt(0) < 128) return char;
+    remapped = char.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+    return remapped.length === 1 ? remapped : char;
+  }
+  function remapChars(value) {
+    if (customAsciiRemappings) return value.replace(/[\s\S]/g, remapCharacter);
+    return /[^\x00-\x7F]|[\\"`]/.test(value) ? value.replace(/[^\x00-\x7F]|[\\"`]/g, remapCharacter) : value;
+  }
+  function lowerInfo(value) {
+    return lowerInfoRemapped(remapChars(value));
+  }
+  function lowerInfoRemapped(value) {
+    var lower = value.toLowerCase();
+    var lowerCodes = [];
+    var bitflags = 0;
+    var hasSpace = false;
+    for (var i2 = 0; i2 < lower.length; i2++) {
+      var code = lowerCodes[i2] = lower.charCodeAt(i2);
+      if (code === 32) {
+        hasSpace = true;
+        bitflags |= SPACE_BIT;
+        continue;
+      }
+      var bit = code >= 97 && code <= 122 ? code - 97 : code >= 48 && code <= 57 ? 26 : code <= 127 ? 30 : 31;
+      bitflags |= 1 << bit;
+    }
+    return {
+      lowerCodes,
+      bitflags,
+      hasSpace,
+      _lower: lower
+    };
+  }
+  function newResult(target, score2 = -INF, obj = null, lower = "", lowerCodes = null, bitflags = 0) {
+    var result = new Result();
+    result.target = target;
+    result.obj = obj;
+    result._score = score2;
+    result._indexes = [];
+    result._targetLower = lower;
+    result._targetLowerCodes = lowerCodes;
+    result._nextBeginningIndexes = null;
+    result._beginnings = null;
+    result._beginningsLen = 0;
+    result._singleMatchCode = result._singleMatchIndex = -1;
+    result._singleMatchStrict = false;
+    result._bitflags = bitflags;
+    return result;
+  }
+  function materialize(prepared, obj = null) {
+    var result = new Result();
+    result.target = prepared.target;
+    result.obj = obj;
+    result._score = prepared._score;
+    result._indexes = prepared._indexes;
+    return result;
+  }
+  function markBestKeyScore(result) {
+    var best = -INF;
+    for (var i2 = 0; i2 < result.length; i2++) if (result[i2] !== noTarget && result[i2]._score > best) best = result[i2]._score;
+    for (var i1 = 0; i1 < result.length; i1++) if (result[i1] !== noTarget) result[i1]._bestKeyScore = best;
+    return result;
+  }
+  function captureKeysResult(matches, keysLength, obj, score2, partWinners = false) {
+    var result = new KeysResult(keysLength);
+    for (var k2 = 0; k2 < keysLength; k2++) result[k2] = matches[k2];
+    result.obj = obj;
+    result._score = score2;
+    if (partWinners) result._partWinners = true;
+    return result;
+  }
+  function makeGetter(key2) {
+    if (typeof key2 === "function") return key2;
+    var path = Array.isArray(key2) ? key2 : typeof key2 === "string" && key2.includes(".") ? key2.split(".") : null;
+    if (path === null) return null;
+    return (obj) => {
+      if (path !== key2) {
+        var direct = obj[key2];
+        if (direct !== void 0) return direct;
+      }
+      for (var i2 = 0; obj && i2 < path.length; i2++) obj = obj[path[i2]];
+      return obj;
+    };
+  }
+  function scoreCeiling(searchLen, targetLen) {
+    var lengthPenalty = (targetLen - searchLen) / 2;
+    var bonus = 1 + searchLen * searchLen;
+    var _$score = -lengthPenalty - lengthPenalty / (bonus * bonus);
+    return _$score + Math.min(4, -_$score / 2);
+  }
+  function bitCount(value) {
+    value -= value >>> 1 & 1431655765;
+    value = (value & 858993459) + (value >>> 2 & 858993459);
+    return (value + (value >>> 4) & 252645135) * 16843009 >>> 24;
+  }
+  function lowerBound(values, start2, end, value) {
+    while (start2 < end) {
+      var middle = start2 + end >> 1;
+      if (values[middle] < value) start2 = middle + 1;
+      else end = middle;
+    }
+    return start2;
+  }
+  function nextBeginning(indexes, start2, end, index, targetLen) {
+    var next = lowerBound(indexes, start2, end, index + 1);
+    return next < end ? indexes[next] : targetLen;
+  }
+  function isBeginning(indexes, start2, end, index) {
+    var found = lowerBound(indexes, start2, end, index);
+    return found < end && indexes[found] === index;
+  }
+  function getLimit(options) {
+    return (options?.limit ?? 10) || INF;
+  }
+  function scheduleTask(run) {
+    var id2;
+    if (typeof requestIdleCallback === "function") {
+      id2 = requestIdleCallback(run, {
+        timeout: 100
+      });
+      return () => typeof cancelIdleCallback === "function" && cancelIdleCallback(id2);
+    }
+    if (typeof setImmediate === "function") {
+      id2 = setImmediate(run);
+      return () => typeof clearImmediate === "function" && clearImmediate(id2);
+    }
+    id2 = setTimeout(run);
+    return () => clearTimeout(id2);
+  }
+  function createHeap() {
+    var items = [];
+    var length = 0;
+    function down() {
+      var index = 0;
+      var item = items[0];
+      for (var child = 1; child < length; child = 1 + index * 2) {
+        var right = child + 1;
+        index = right < length && items[right]._score < items[child]._score ? right : child;
+        items[index - 1 >> 1] = items[index];
+      }
+      for (var parent = index - 1 >> 1; index > 0 && item._score < items[parent]._score; parent = (index = parent) - 1 >> 1) {
+        items[index] = items[parent];
+      }
+      items[index] = item;
+    }
+    return {
+      add(item) {
+        var index = length++;
+        for (var parent = index - 1 >> 1; index > 0 && item._score < items[parent]._score; parent = (index = parent) - 1 >> 1) {
+          items[index] = items[parent];
+        }
+        items[index] = item;
+      },
+      poll() {
+        if (!length) return;
+        var root = items[0];
+        var last = items[--length];
+        items[length] = void 0;
+        if (length) {
+          items[0] = last;
+          down();
+        }
+        return root;
+      },
+      peek() {
+        return length ? items[0] : void 0;
+      },
+      replaceTop(item) {
+        items[0] = item;
+        down();
+      },
+      clear() {
+        items.length = length = 0;
+      }
+    };
+  }
+  var SnapshotTargets, Result, KeysResult, normalizeScore, denormalizeScore, GOOD_PART_SCORE, isPrepared, INF, SPACE_BIT, noResults, targetCache, searchCache, simpleMatch, strictMatch, seen, seenAt, changes, partials, spaceScores, partIndexes, winnerIndexes, winnerScores, winnerKeys, keyTargets, keyResults, candidateBitOffsets, seenGeneration, remappings, remapFrom, remapTo, i, customAsciiRemappings, heap, noTarget, prunedMatch, fuzzysort_default;
+  var init_fuzzysort = __esm({
+    "node_modules/fuzzysort/fuzzysort.js"() {
       init_asyncIteratorSymbol();
       init_promiseAllSettled();
       init_weakref();
@@ -7516,717 +8646,369 @@
       init_create_class();
       init_inherits();
       init_wrap_native_super();
-      ((root, UMD) => {
-        if (typeof define === "function" && define.amd) define([], UMD);
-        else if (typeof module === "object" && module.exports) module.exports = UMD();
-        else root["fuzzysort"] = UMD();
-      })(exports, (_2) => {
+      SnapshotTargets = /* @__PURE__ */ (function() {
         "use strict";
-        var single = (search, target) => {
-          if (!search || !target) return NULL;
-          var preparedSearch = getPreparedSearch(search);
-          if (!isPrepared(target)) target = getPrepared(target);
-          var searchBitflags = preparedSearch.bitflags;
-          if ((searchBitflags & target._bitflags) !== searchBitflags) return NULL;
-          return algorithm(preparedSearch, target);
-        };
-        var go = (search, targets, options) => {
-          if (!search) return options?.all ? all(targets, options) : noResults;
-          var preparedSearch = getPreparedSearch(search);
-          var searchBitflags = preparedSearch.bitflags;
-          var containsSpace = preparedSearch.containsSpace;
-          var threshold = denormalizeScore(options?.threshold || 0);
-          var limit = options?.limit || INFINITY;
-          var resultsLen = 0;
-          var limitedCount = 0;
-          var targetsLen = targets.length;
-          function push_result(result2) {
-            if (resultsLen < limit) {
-              q2.add(result2);
-              ++resultsLen;
-            } else {
-              ++limitedCount;
-              if (result2._score > q2.peek()._score) q2.replaceTop(result2);
-            }
-          }
-          if (options?.key) {
-            var key2 = options.key;
-            for (var i = 0; i < targetsLen; ++i) {
-              var obj = targets[i];
-              var target = getValue(obj, key2);
-              if (!target) continue;
-              if (!isPrepared(target)) target = getPrepared(target);
-              if ((searchBitflags & target._bitflags) !== searchBitflags) continue;
-              var result = algorithm(preparedSearch, target);
-              if (result === NULL) continue;
-              if (result._score < threshold) continue;
-              result.obj = obj;
-              push_result(result);
-            }
-          } else if (options?.keys) {
-            var keys = options.keys;
-            var keysLen = keys.length;
-            outer: for (var i = 0; i < targetsLen; ++i) {
-              var obj = targets[i];
-              {
-                var keysBitflags = 0;
-                for (var keyI = 0; keyI < keysLen; ++keyI) {
-                  var key2 = keys[keyI];
-                  var target = getValue(obj, key2);
-                  if (!target) {
-                    tmpTargets[keyI] = noTarget;
-                    continue;
-                  }
-                  if (!isPrepared(target)) target = getPrepared(target);
-                  tmpTargets[keyI] = target;
-                  keysBitflags |= target._bitflags;
-                }
-                if ((searchBitflags & keysBitflags) !== searchBitflags) continue;
-              }
-              if (containsSpace) for (var i1 = 0; i1 < preparedSearch.spaceSearches.length; i1++) keysSpacesBestScores[i1] = NEGATIVE_INFINITY;
-              for (var keyI = 0; keyI < keysLen; ++keyI) {
-                target = tmpTargets[keyI];
-                if (target === noTarget) {
-                  tmpResults[keyI] = noTarget;
-                  continue;
-                }
-                tmpResults[keyI] = algorithm(
-                  preparedSearch,
-                  target,
-                  /*allowSpaces=*/
-                  false,
-                  /*allowPartialMatch=*/
-                  containsSpace
-                );
-                if (tmpResults[keyI] === NULL) {
-                  tmpResults[keyI] = noTarget;
-                  continue;
-                }
-                if (containsSpace) for (var i2 = 0; i2 < preparedSearch.spaceSearches.length; i2++) {
-                  if (allowPartialMatchScores[i2] > -1e3) {
-                    if (keysSpacesBestScores[i2] > NEGATIVE_INFINITY) {
-                      var tmp = (keysSpacesBestScores[i2] + allowPartialMatchScores[i2]) / 4;
-                      if (tmp > keysSpacesBestScores[i2]) keysSpacesBestScores[i2] = tmp;
-                    }
-                  }
-                  if (allowPartialMatchScores[i2] > keysSpacesBestScores[i2]) keysSpacesBestScores[i2] = allowPartialMatchScores[i2];
-                }
-              }
-              if (containsSpace) {
-                for (var i3 = 0; i3 < preparedSearch.spaceSearches.length; i3++) {
-                  if (keysSpacesBestScores[i3] === NEGATIVE_INFINITY) continue outer;
-                }
-              } else {
-                var hasAtLeast1Match = false;
-                for (var i4 = 0; i4 < keysLen; i4++) {
-                  if (tmpResults[i4]._score !== NEGATIVE_INFINITY) {
-                    hasAtLeast1Match = true;
-                    break;
-                  }
-                }
-                if (!hasAtLeast1Match) continue;
-              }
-              var objResults = new KeysResult(keysLen);
-              for (var i5 = 0; i5 < keysLen; i5++) {
-                objResults[i5] = tmpResults[i5];
-              }
-              if (containsSpace) {
-                var score = 0;
-                for (var i6 = 0; i6 < preparedSearch.spaceSearches.length; i6++) score += keysSpacesBestScores[i6];
-              } else {
-                var score = NEGATIVE_INFINITY;
-                for (var i7 = 0; i7 < keysLen; i7++) {
-                  var result = objResults[i7];
-                  if (result._score > -1e3) {
-                    if (score > NEGATIVE_INFINITY) {
-                      var tmp = (score + result._score) / 4;
-                      if (tmp > score) score = tmp;
-                    }
-                  }
-                  if (result._score > score) score = result._score;
-                }
-              }
-              objResults.obj = obj;
-              objResults._score = score;
-              if (options?.scoreFn) {
-                score = options.scoreFn(objResults);
-                if (!score) continue;
-                score = denormalizeScore(score);
-                objResults._score = score;
-              }
-              if (score < threshold) continue;
-              push_result(objResults);
-            }
-          } else {
-            for (var i = 0; i < targetsLen; ++i) {
-              var target = targets[i];
-              if (!target) continue;
-              if (!isPrepared(target)) target = getPrepared(target);
-              if ((searchBitflags & target._bitflags) !== searchBitflags) continue;
-              var result = algorithm(preparedSearch, target);
-              if (result === NULL) continue;
-              if (result._score < threshold) continue;
-              push_result(result);
-            }
-          }
-          if (resultsLen === 0) return noResults;
-          var results = new Array(resultsLen);
-          for (var i = resultsLen - 1; i >= 0; --i) results[i] = q2.poll();
-          results.total = resultsLen + limitedCount;
-          return results;
-        };
-        var highlight = (result, open = "<b>", close = "</b>") => {
-          var callback = typeof open === "function" ? open : void 0;
-          var target = result.target;
-          var targetLen = target.length;
-          var indexes = result.indexes;
-          var highlighted = "";
-          var matchI = 0;
-          var indexesI = 0;
-          var opened = false;
-          var parts = [];
-          for (var i = 0; i < targetLen; ++i) {
-            var char = target[i];
-            if (indexes[indexesI] === i) {
-              ++indexesI;
-              if (!opened) {
-                opened = true;
-                if (callback) {
-                  parts.push(highlighted);
-                  highlighted = "";
-                } else {
-                  highlighted += open;
-                }
-              }
-              if (indexesI === indexes.length) {
-                if (callback) {
-                  highlighted += char;
-                  parts.push(callback(highlighted, matchI++));
-                  highlighted = "";
-                  parts.push(target.substr(i + 1));
-                } else {
-                  highlighted += char + close + target.substr(i + 1);
-                }
-                break;
-              }
-            } else {
-              if (opened) {
-                opened = false;
-                if (callback) {
-                  parts.push(callback(highlighted, matchI++));
-                  highlighted = "";
-                } else {
-                  highlighted += close;
-                }
-              }
-            }
-            highlighted += char;
-          }
-          return callback ? parts : highlighted;
-        };
-        var prepare = (target) => {
-          if (typeof target === "number") target = "" + target;
-          else if (typeof target !== "string") target = "";
-          var info = prepareLowerInfo(target);
-          return new_result(target, {
-            _targetLower: info._lower,
-            _targetLowerCodes: info.lowerCodes,
-            _bitflags: info.bitflags
-          });
-        };
-        var cleanup = () => {
-          preparedCache.clear();
-          preparedSearchCache.clear();
-        };
-        var Result = /* @__PURE__ */ (function() {
-          function Result2() {
-            _class_call_check(this, Result2);
-          }
-          _create_class(Result2, [
-            {
-              key: "indexes",
-              get: function get() {
-                return this._indexes.slice(0, this._indexes.len).sort((a2, b) => a2 - b);
-              }
-            },
-            {
-              key: "indexes",
-              set: function set(indexes) {
-                return this._indexes = indexes;
-              }
-            },
-            {
-              key: "highlight",
-              value: function value(open, close) {
-                return highlight(this, open, close);
-              }
-            },
-            {
-              key: "score",
-              get: function get() {
-                return normalizeScore(this._score);
-              }
-            },
-            {
-              key: "score",
-              set: function set(score) {
-                this._score = denormalizeScore(score);
-              }
-            }
-          ]);
-          return Result2;
-        })();
-        var KeysResult = /* @__PURE__ */ (function(Array1) {
-          _inherits(KeysResult2, Array1);
-          function KeysResult2() {
-            _class_call_check(this, KeysResult2);
-            return _call_super(this, KeysResult2, arguments);
-          }
-          _create_class(KeysResult2, [
-            {
-              key: "score",
-              get: function get() {
-                return normalizeScore(this._score);
-              }
-            },
-            {
-              key: "score",
-              set: function set(score) {
-                this._score = denormalizeScore(score);
-              }
-            }
-          ]);
-          return KeysResult2;
-        })(_wrap_native_super(Array));
-        var new_result = (target, options) => {
-          var result = new Result();
-          result["target"] = target;
-          result["obj"] = options.obj ?? NULL;
-          result._score = options._score ?? NEGATIVE_INFINITY;
-          result._indexes = options._indexes ?? [];
-          result._targetLower = options._targetLower ?? "";
-          result._targetLowerCodes = options._targetLowerCodes ?? NULL;
-          result._nextBeginningIndexes = options._nextBeginningIndexes ?? NULL;
-          result._bitflags = options._bitflags ?? 0;
-          return result;
-        };
-        var normalizeScore = (score) => {
-          if (score === NEGATIVE_INFINITY) return 0;
-          if (score > 1) return score;
-          return Math.E ** (((-score + 1) ** 0.04307 - 1) * -2);
-        };
-        var denormalizeScore = (normalizedScore) => {
-          if (normalizedScore === 0) return NEGATIVE_INFINITY;
-          if (normalizedScore > 1) return normalizedScore;
-          return 1 - Math.pow(Math.log(normalizedScore) / -2 + 1, 1 / 0.04307);
-        };
-        var prepareSearch = (search) => {
-          if (typeof search === "number") search = "" + search;
-          else if (typeof search !== "string") search = "";
-          search = search.trim();
-          var info = prepareLowerInfo(search);
-          var spaceSearches = [];
-          if (info.containsSpace) {
-            var searches = search.split(/\s+/);
-            searches = [
-              ...new Set(searches)
-            ];
-            for (var i = 0; i < searches.length; i++) {
-              if (searches[i] === "") continue;
-              var _info = prepareLowerInfo(searches[i]);
-              spaceSearches.push({
-                lowerCodes: _info.lowerCodes,
-                _lower: searches[i].toLowerCase(),
-                containsSpace: false
+        function SnapshotTargets2(targets, options) {
+          _class_call_check(this, SnapshotTargets2);
+          this._mode = options?.keys ? 2 : options?.key ? 1 : 0;
+          this._keys = this._mode === 2 ? options.keys.slice() : [
+            options?.key
+          ];
+          this._input = targets.slice();
+          this._index = 0;
+          this._done = false;
+          this._error = null;
+          this._scheduled = null;
+          if (targets.length === 0) this._finish();
+          else this._schedule();
+        }
+        _create_class(SnapshotTargets2, [
+          {
+            key: "_schedule",
+            value: function _schedule() {
+              if (this._scheduled !== null) return;
+              this._scheduled = scheduleTask((deadline) => {
+                this._scheduled = null;
+                this._run(deadline);
               });
             }
-          }
-          return {
-            lowerCodes: info.lowerCodes,
-            _lower: info._lower,
-            containsSpace: info.containsSpace,
-            bitflags: info.bitflags,
-            spaceSearches
-          };
-        };
-        var getPrepared = (target) => {
-          if (target.length > 999) return prepare(target);
-          var targetPrepared = preparedCache.get(target);
-          if (targetPrepared !== void 0) return targetPrepared;
-          targetPrepared = prepare(target);
-          preparedCache.set(target, targetPrepared);
-          return targetPrepared;
-        };
-        var getPreparedSearch = (search) => {
-          if (search.length > 999) return prepareSearch(search);
-          var searchPrepared = preparedSearchCache.get(search);
-          if (searchPrepared !== void 0) return searchPrepared;
-          searchPrepared = prepareSearch(search);
-          preparedSearchCache.set(search, searchPrepared);
-          return searchPrepared;
-        };
-        var all = (targets, options) => {
-          var results = [];
-          results.total = targets.length;
-          var limit = options?.limit || INFINITY;
-          if (options?.key) {
-            for (var i = 0; i < targets.length; i++) {
-              var obj = targets[i];
-              var target = getValue(obj, options.key);
-              if (target == NULL) continue;
-              if (!isPrepared(target)) target = getPrepared(target);
-              var result = new_result(target.target, {
-                _score: target._score,
-                obj
-              });
-              results.push(result);
-              if (results.length >= limit) return results;
+          },
+          {
+            key: "_cancel",
+            value: function _cancel() {
+              if (this._scheduled !== null) this._scheduled();
+              this._scheduled = null;
             }
-          } else if (options?.keys) {
-            for (var i = 0; i < targets.length; i++) {
-              var obj = targets[i];
-              var objResults = new KeysResult(options.keys.length);
-              for (var keyI = options.keys.length - 1; keyI >= 0; --keyI) {
-                var target = getValue(obj, options.keys[keyI]);
-                if (!target) {
-                  objResults[keyI] = noTarget;
+          },
+          {
+            key: "_initialize",
+            value: function _initialize() {
+              if (this._targets) return;
+              var keysLength = this._mode === 2 ? this._keys.length : 1;
+              var valueCount = this._input.length * keysLength;
+              var rowCount = this._input.length;
+              this._targets = new Array(valueCount);
+              this._first = new Uint16Array(valueCount * 26);
+              this._offsets = new Uint32Array(valueCount + 1);
+              this._buildingBeginnings = [];
+              this._rowCount = rowCount;
+              this._rowWords = rowCount + 31 >> 5;
+              this._rowBits = new Uint32Array(this._rowWords * 32);
+              this._rows = new Uint32Array(rowCount);
+              this._lastRowsLen = 0;
+              this._matchedRowsLen = 0;
+              this._lastQuery = null;
+              this._candidateRows = null;
+              this._candidateLength = rowCount;
+              this._history = [];
+              if (this._mode) {
+                this._objects = this._input;
+                this._getters = this._keys.map(makeGetter);
+              }
+              if (this._mode === 2) {
+                this._keysLength = keysLength;
+                this._bitflags = new Int32Array(rowCount);
+              }
+            }
+          },
+          {
+            key: "_run",
+            value: function _run(deadline) {
+              if (this._done || this._error) return;
+              var end = Date.now() + 4;
+              var hasTime = () => deadline && !deadline.didTimeout ? deadline.timeRemaining() > 1 : Date.now() < end;
+              try {
+                this._initialize();
+                do
+                  this._prepareOne();
+                while (this._index < this._input.length && hasTime());
+                if (this._index === this._input.length) this._complete();
+                else this._schedule();
+              } catch (error) {
+                this._error = error;
+                this._done = true;
+              }
+            }
+          },
+          {
+            key: "_indexRow",
+            value: function _indexRow(row, bitflags) {
+              var flags = bitflags >>> 0;
+              var word = row >> 5;
+              var mask = 1 << (row & 31);
+              var words = this._rowWords;
+              var bits = this._rowBits;
+              while (flags) {
+                var lowest = flags & -flags;
+                var bit = 31 - Math.clz32(lowest);
+                bits[bit * words + word] |= mask;
+                flags = (flags & flags - 1) >>> 0;
+              }
+            }
+          },
+          {
+            key: "_prepareOne",
+            value: function _prepareOne() {
+              var i2 = this._index++;
+              var mode = this._mode;
+              var obj = this._input[i2];
+              var keysLength = mode === 2 ? this._keysLength : 1;
+              var bitflags = 0;
+              for (var k2 = 0; k2 < keysLength; k2++) {
+                var value = mode === 0 ? obj : this._getters[k2] === null ? obj[this._keys[k2]] : this._getters[k2](obj);
+                var row = mode === 2 ? i2 * keysLength + k2 : i2;
+                var prepared = this._targets[row] = value ? prepTarget(value) : noTarget;
+                if (prepared !== noTarget) indexBeginnings(prepared, this._first, row, this._buildingBeginnings);
+                this._offsets[row + 1] = this._buildingBeginnings.length;
+                bitflags |= prepared._bitflags;
+              }
+              if (mode === 2) this._bitflags[i2] = bitflags;
+              this._indexRow(i2, bitflags);
+            }
+          },
+          {
+            key: "_complete",
+            value: function _complete() {
+              this._beginnings = Uint16Array.from(this._buildingBeginnings);
+              this._buildingBeginnings = this._input = this._getters = this._keys = null;
+              this._done = true;
+            }
+          },
+          {
+            key: "_bitOffsets",
+            value: function _bitOffsets(bitflags) {
+              var offsetsLen = 0;
+              var words = this._rowWords;
+              for (var bit = 0; bit < 32; bit++) if (bitflags & 1 << bit) candidateBitOffsets[offsetsLen++] = bit * words;
+              return offsetsLen;
+            }
+          },
+          {
+            key: "_matchRows",
+            value: function _matchRows(bitflags, fill = false, stop = INF) {
+              var offsetsLen = this._bitOffsets(bitflags);
+              if (!offsetsLen) {
+                if (fill) {
+                  this._candidateRows = null;
+                  this._candidateLength = this._rowCount;
+                }
+                return this._rowCount;
+              }
+              var bits = this._rowBits;
+              var words = this._rowWords;
+              var rowsLen = 0;
+              for (var word = 0; word < words; word++) {
+                var matches = bits[candidateBitOffsets[0] + word];
+                for (var i2 = 1; i2 < offsetsLen && matches; i2++) matches &= bits[candidateBitOffsets[i2] + word];
+                if (!fill) {
+                  rowsLen += bitCount(matches);
+                  if (rowsLen >= stop) return rowsLen;
                   continue;
                 }
-                if (!isPrepared(target)) target = getPrepared(target);
-                target._score = NEGATIVE_INFINITY;
-                target._indexes.len = 0;
-                objResults[keyI] = target;
-              }
-              objResults.obj = obj;
-              objResults._score = NEGATIVE_INFINITY;
-              results.push(objResults);
-              if (results.length >= limit) return results;
-            }
-          } else {
-            for (var i = 0; i < targets.length; i++) {
-              var target = targets[i];
-              if (target == NULL) continue;
-              if (!isPrepared(target)) target = getPrepared(target);
-              target._score = NEGATIVE_INFINITY;
-              target._indexes.len = 0;
-              results.push(target);
-              if (results.length >= limit) return results;
-            }
-          }
-          return results;
-        };
-        var algorithm = (preparedSearch, prepared, allowSpaces = false, allowPartialMatch = false) => {
-          if (allowSpaces === false && preparedSearch.containsSpace) return algorithmSpaces(preparedSearch, prepared, allowPartialMatch);
-          var searchLower = preparedSearch._lower;
-          var searchLowerCodes = preparedSearch.lowerCodes;
-          var searchLowerCode = searchLowerCodes[0];
-          var targetLowerCodes = prepared._targetLowerCodes;
-          var searchLen = searchLowerCodes.length;
-          var targetLen = targetLowerCodes.length;
-          var searchI = 0;
-          var targetI = 0;
-          var matchesSimpleLen = 0;
-          for (; ; ) {
-            var isMatch = searchLowerCode === targetLowerCodes[targetI];
-            if (isMatch) {
-              matchesSimple[matchesSimpleLen++] = targetI;
-              ++searchI;
-              if (searchI === searchLen) break;
-              searchLowerCode = searchLowerCodes[searchI];
-            }
-            ++targetI;
-            if (targetI >= targetLen) return NULL;
-          }
-          var searchI = 0;
-          var successStrict = false;
-          var matchesStrictLen = 0;
-          var nextBeginningIndexes = prepared._nextBeginningIndexes;
-          if (nextBeginningIndexes === NULL) nextBeginningIndexes = prepared._nextBeginningIndexes = prepareNextBeginningIndexes(prepared.target);
-          targetI = matchesSimple[0] === 0 ? 0 : nextBeginningIndexes[matchesSimple[0] - 1];
-          var backtrackCount = 0;
-          if (targetI !== targetLen) for (; ; ) {
-            if (targetI >= targetLen) {
-              if (searchI <= 0) break;
-              ++backtrackCount;
-              if (backtrackCount > 200) break;
-              --searchI;
-              var lastMatch = matchesStrict[--matchesStrictLen];
-              targetI = nextBeginningIndexes[lastMatch];
-            } else {
-              var isMatch = searchLowerCodes[searchI] === targetLowerCodes[targetI];
-              if (isMatch) {
-                matchesStrict[matchesStrictLen++] = targetI;
-                ++searchI;
-                if (searchI === searchLen) {
-                  successStrict = true;
-                  break;
-                }
-                ++targetI;
-              } else {
-                targetI = nextBeginningIndexes[targetI];
-              }
-            }
-          }
-          var substringIndex = searchLen <= 1 ? -1 : prepared._targetLower.indexOf(searchLower, matchesSimple[0]);
-          var isSubstring = !!~substringIndex;
-          var isSubstringBeginning = !isSubstring ? false : substringIndex === 0 || prepared._nextBeginningIndexes[substringIndex - 1] === substringIndex;
-          if (isSubstring && !isSubstringBeginning) {
-            for (var i = 0; i < nextBeginningIndexes.length; i = nextBeginningIndexes[i]) {
-              if (i <= substringIndex) continue;
-              for (var s = 0; s < searchLen; s++) if (searchLowerCodes[s] !== prepared._targetLowerCodes[i + s]) break;
-              if (s === searchLen) {
-                substringIndex = i;
-                isSubstringBeginning = true;
-                break;
-              }
-            }
-          }
-          var calculateScore = (matches) => {
-            var score2 = 0;
-            var extraMatchGroupCount = 0;
-            for (var i2 = 1; i2 < searchLen; ++i2) {
-              if (matches[i2] - matches[i2 - 1] !== 1) {
-                score2 -= matches[i2];
-                ++extraMatchGroupCount;
-              }
-            }
-            var unmatchedDistance = matches[searchLen - 1] - matches[0] - (searchLen - 1);
-            score2 -= (12 + unmatchedDistance) * extraMatchGroupCount;
-            if (matches[0] !== 0) score2 -= matches[0] * matches[0] * 0.2;
-            if (!successStrict) {
-              score2 *= 1e3;
-            } else {
-              var uniqueBeginningIndexes = 1;
-              for (var i2 = nextBeginningIndexes[0]; i2 < targetLen; i2 = nextBeginningIndexes[i2]) ++uniqueBeginningIndexes;
-              if (uniqueBeginningIndexes > 24) score2 *= (uniqueBeginningIndexes - 24) * 10;
-            }
-            score2 -= (targetLen - searchLen) / 2;
-            if (isSubstring) score2 /= 1 + searchLen * searchLen * 1;
-            if (isSubstringBeginning) score2 /= 1 + searchLen * searchLen * 1;
-            score2 -= (targetLen - searchLen) / 2;
-            return score2;
-          };
-          if (!successStrict) {
-            if (isSubstring) for (var i = 0; i < searchLen; ++i) matchesSimple[i] = substringIndex + i;
-            var matchesBest = matchesSimple;
-            var score = calculateScore(matchesBest);
-          } else {
-            if (isSubstringBeginning) {
-              for (var i = 0; i < searchLen; ++i) matchesSimple[i] = substringIndex + i;
-              var matchesBest = matchesSimple;
-              var score = calculateScore(matchesSimple);
-            } else {
-              var matchesBest = matchesStrict;
-              var score = calculateScore(matchesStrict);
-            }
-          }
-          prepared._score = score;
-          for (var i = 0; i < searchLen; ++i) prepared._indexes[i] = matchesBest[i];
-          prepared._indexes.len = searchLen;
-          var result = new Result();
-          result.target = prepared.target;
-          result._score = prepared._score;
-          result._indexes = prepared._indexes;
-          return result;
-        };
-        var algorithmSpaces = (preparedSearch, target, allowPartialMatch) => {
-          var seen_indexes = /* @__PURE__ */ new Set();
-          var score = 0;
-          var result = NULL;
-          var first_seen_index_last_search = 0;
-          var searches = preparedSearch.spaceSearches;
-          var searchesLen = searches.length;
-          var changeslen = 0;
-          var resetNextBeginningIndexes = () => {
-            for (var i3 = changeslen - 1; i3 >= 0; i3--) target._nextBeginningIndexes[nextBeginningIndexesChanges[i3 * 2 + 0]] = nextBeginningIndexesChanges[i3 * 2 + 1];
-          };
-          var hasAtLeast1Match = false;
-          for (var i = 0; i < searchesLen; ++i) {
-            allowPartialMatchScores[i] = NEGATIVE_INFINITY;
-            var search = searches[i];
-            result = algorithm(search, target);
-            if (allowPartialMatch) {
-              if (result === NULL) continue;
-              hasAtLeast1Match = true;
-            } else {
-              if (result === NULL) {
-                resetNextBeginningIndexes();
-                return NULL;
-              }
-            }
-            var isTheLastSearch = i === searchesLen - 1;
-            if (!isTheLastSearch) {
-              var indexes = result._indexes;
-              var indexesIsConsecutiveSubstring = true;
-              for (var i1 = 0; i1 < indexes.len - 1; i1++) {
-                if (indexes[i1 + 1] - indexes[i1] !== 1) {
-                  indexesIsConsecutiveSubstring = false;
-                  break;
+                while (matches) {
+                  var lowest = matches & -matches;
+                  this._rows[rowsLen++] = (word << 5) + 31 - Math.clz32(lowest);
+                  matches = (matches & matches - 1) >>> 0;
                 }
               }
-              if (indexesIsConsecutiveSubstring) {
-                var newBeginningIndex = indexes[indexes.len - 1] + 1;
-                var toReplace = target._nextBeginningIndexes[newBeginningIndex - 1];
-                for (var i2 = newBeginningIndex - 1; i2 >= 0; i2--) {
-                  if (toReplace !== target._nextBeginningIndexes[i2]) break;
-                  target._nextBeginningIndexes[i2] = newBeginningIndex;
-                  nextBeginningIndexesChanges[changeslen * 2 + 0] = i2;
-                  nextBeginningIndexesChanges[changeslen * 2 + 1] = toReplace;
-                  changeslen++;
+              if (fill) {
+                this._candidateRows = this._rows;
+                this._candidateLength = rowsLen;
+              }
+              return rowsLen;
+            }
+          },
+          {
+            key: "_beginSearch",
+            value: function _beginSearch(query) {
+              this._matchedRowsLen = 0;
+              var previousQuery = this._lastQuery;
+              var previousLength = this._lastRowsLen;
+              this._lastQuery = null;
+              var bitflags = query.bitflags >>> 0;
+              if (previousQuery !== null && query._lower.startsWith(previousQuery)) {
+                var staticCount = this._matchRows(bitflags, false, previousLength);
+                if (previousLength <= staticCount) {
+                  this._candidateRows = this._rows;
+                  this._candidateLength = previousLength;
+                  return;
                 }
               }
+              this._matchRows(bitflags, true);
             }
-            score += result._score / searchesLen;
-            allowPartialMatchScores[i] = result._score / searchesLen;
-            if (result._indexes[0] < first_seen_index_last_search) {
-              score -= (first_seen_index_last_search - result._indexes[0]) * 2;
+          },
+          {
+            key: "_endSearch",
+            value: function _endSearch(query) {
+              this._lastRowsLen = this._matchedRowsLen;
+              this._matchedRowsLen = 0;
+              this._lastQuery = query._lower || null;
+              this._candidateRows = null;
+              this._candidateLength = 0;
             }
-            first_seen_index_last_search = result._indexes[0];
-            for (var j2 = 0; j2 < result._indexes.len; ++j2) seen_indexes.add(result._indexes[j2]);
-          }
-          if (allowPartialMatch && !hasAtLeast1Match) return NULL;
-          resetNextBeginningIndexes();
-          var allowSpacesResult = algorithm(
-            preparedSearch,
-            target,
-            /*allowSpaces=*/
-            true
-          );
-          if (allowSpacesResult !== NULL && allowSpacesResult._score > score) {
-            if (allowPartialMatch) {
-              for (var i = 0; i < searchesLen; ++i) {
-                allowPartialMatchScores[i] = allowSpacesResult._score / searchesLen;
+          },
+          {
+            key: "_backtrack",
+            value: function _backtrack(query, options) {
+              var history = this._history;
+              if (history.length < 2 || options?.scoreFn || options?.threshold !== void 0) return null;
+              var limit = getLimit(options);
+              if (limit === INF) return null;
+              var current = history[history.length - 1];
+              var value = query._lower;
+              if (current.query === value && current.limit === limit && current.results) return copyResults(current.results);
+              if (value.length >= current.query.length || !current.query.startsWith(value)) return null;
+              var i2 = history.length - 2;
+              while (i2 >= 0 && history[i2].query.length > value.length) i2--;
+              var entry = history[i2];
+              if (!entry || entry.query !== value || entry.limit !== limit) return null;
+              history.length = i2 + 1;
+              if (!entry.results) return null;
+              this._resetSearch();
+              return copyResults(entry.results);
+            }
+          },
+          {
+            key: "_remember",
+            value: function _remember(query, results, options) {
+              var history = this._history;
+              var limit = getLimit(options);
+              if (options?.scoreFn || options?.threshold !== void 0 || limit === INF || results.length > 256) {
+                history.length = 0;
+                return;
+              }
+              var value = query._lower;
+              var last = history[history.length - 1];
+              if (last && !value.startsWith(last.query)) history.length = 0;
+              else if (last?.query === value && last.limit === limit) history.pop();
+              history.push({
+                query: value,
+                limit,
+                results: value.length <= 32 ? copyResults(results) : null
+              });
+            }
+          },
+          {
+            key: "_resetSearch",
+            value: function _resetSearch() {
+              this._lastQuery = null;
+              this._lastRowsLen = this._matchedRowsLen = this._candidateLength = 0;
+              this._candidateRows = null;
+            }
+          },
+          {
+            key: "_finish",
+            value: function _finish() {
+              if (this._error) throw this._error;
+              if (this._done) return;
+              this._cancel();
+              try {
+                this._initialize();
+                while (this._index < this._input.length) this._prepareOne();
+                this._complete();
+              } catch (error) {
+                this._error = error;
+                this._done = true;
+                throw error;
               }
             }
-            return allowSpacesResult;
           }
-          if (allowPartialMatch) result = target;
-          result._score = score;
-          var i = 0;
-          for (var index of seen_indexes) result._indexes[i++] = index;
-          result._indexes.len = i;
-          return result;
-        };
-        var remove_accents = (str) => str.replace(RegExp("[\\u0041-\\u005A\\u0061-\\u007A\\u00AA\\u00BA\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02B8\\u02E0-\\u02E4\\u1D00-\\u1D25\\u1D2C-\\u1D5C\\u1D62-\\u1D65\\u1D6B-\\u1D77\\u1D79-\\u1DBE\\u1E00-\\u1EFF\\u2071\\u207F\\u2090-\\u209C\\u212A-\\u212B\\u2132\\u214E\\u2160-\\u2188\\u2C60-\\u2C7F\\uA722-\\uA787\\uA78B-\\uA7DC\\uA7F1-\\uA7FF\\uAB30-\\uAB5A\\uAB5C-\\uAB64\\uAB66-\\uAB69\\uFB00-\\uFB06\\uFF21-\\uFF3A\\uFF41-\\uFF5A\\u{10780}-\\u{10785}\\u{10787}-\\u{107B0}\\u{107B2}-\\u{107BA}\\u{1DF00}-\\u{1DF1E}\\u{1DF25}-\\u{1DF2A}]+", "gu"), (match) => match.normalize("NFD")).replace(/[\u0300-\u036f]/g, "");
-        var prepareLowerInfo = (str) => {
-          str = remove_accents(str);
-          var strLen = str.length;
-          var lower = str.toLowerCase();
-          var lowerCodes = [];
-          var bitflags = 0;
-          var containsSpace = false;
-          for (var i = 0; i < strLen; ++i) {
-            var lowerCode = lowerCodes[i] = lower.charCodeAt(i);
-            if (lowerCode === 32) {
-              containsSpace = true;
-              continue;
+        ]);
+        return SnapshotTargets2;
+      })();
+      Result = /* @__PURE__ */ (function() {
+        "use strict";
+        function Result2() {
+          _class_call_check(this, Result2);
+        }
+        _create_class(Result2, [
+          {
+            key: "indexes",
+            get: function get() {
+              return this._indexes.slice(0, this._indexes.len).sort((a2, b) => a2 - b);
             }
-            var bit = lowerCode >= 97 && lowerCode <= 122 ? lowerCode - 97 : lowerCode >= 48 && lowerCode <= 57 ? 26 : lowerCode <= 127 ? 30 : 31;
-            bitflags |= 1 << bit;
-          }
-          return {
-            lowerCodes,
-            bitflags,
-            containsSpace,
-            _lower: lower
-          };
-        };
-        var prepareBeginningIndexes = (target) => {
-          var targetLen = target.length;
-          var beginningIndexes = [];
-          var beginningIndexesLen = 0;
-          var wasUpper = false;
-          var wasAlphanum = false;
-          for (var i = 0; i < targetLen; ++i) {
-            var targetCode = target.charCodeAt(i);
-            var isUpper = targetCode >= 65 && targetCode <= 90;
-            var isAlphanum = isUpper || targetCode >= 97 && targetCode <= 122 || targetCode >= 48 && targetCode <= 57;
-            var isBeginning = isUpper && !wasUpper || !wasAlphanum || !isAlphanum;
-            wasUpper = isUpper;
-            wasAlphanum = isAlphanum;
-            if (isBeginning) beginningIndexes[beginningIndexesLen++] = i;
-          }
-          return beginningIndexes;
-        };
-        var prepareNextBeginningIndexes = (target) => {
-          target = remove_accents(target);
-          var targetLen = target.length;
-          var beginningIndexes = prepareBeginningIndexes(target);
-          var nextBeginningIndexes = [];
-          var lastIsBeginning = beginningIndexes[0];
-          var lastIsBeginningI = 0;
-          for (var i = 0; i < targetLen; ++i) {
-            if (lastIsBeginning > i) {
-              nextBeginningIndexes[i] = lastIsBeginning;
-            } else {
-              lastIsBeginning = beginningIndexes[++lastIsBeginningI];
-              nextBeginningIndexes[i] = lastIsBeginning === void 0 ? targetLen : lastIsBeginning;
+          },
+          {
+            key: "indexes",
+            set: function set(value) {
+              this._indexes = value;
+            }
+          },
+          {
+            key: "highlight",
+            value: function value(open, close, threshold) {
+              return highlight(this, open, close, threshold);
+            }
+          },
+          {
+            key: "score",
+            get: function get() {
+              return normalizeScore(this._score);
             }
           }
-          return nextBeginningIndexes;
-        };
-        var preparedCache = /* @__PURE__ */ new Map();
-        var preparedSearchCache = /* @__PURE__ */ new Map();
-        var matchesSimple = [];
-        var matchesStrict = [];
-        var nextBeginningIndexesChanges = [];
-        var keysSpacesBestScores = [];
-        var allowPartialMatchScores = [];
-        var tmpTargets = [];
-        var tmpResults = [];
-        var getValue = (obj, prop2) => {
-          var tmp = obj[prop2];
-          if (tmp !== void 0) return tmp;
-          if (typeof prop2 === "function") return prop2(obj);
-          var segs = prop2;
-          if (!Array.isArray(prop2)) segs = prop2.split(".");
-          var len = segs.length;
-          var i = -1;
-          while (obj && ++i < len) obj = obj[segs[i]];
-          return obj;
-        };
-        var isPrepared = (x2) => {
-          return typeof x2 === "object" && typeof x2._bitflags === "number";
-        };
-        var INFINITY = Infinity;
-        var NEGATIVE_INFINITY = -INFINITY;
-        var noResults = [];
-        noResults.total = 0;
-        var NULL = null;
-        var noTarget = prepare("");
-        var fastpriorityqueue = (r) => {
-          var e = [], o = 0, a2 = {}, v2 = (r2) => {
-            for (var a3 = 0, v3 = e[a3], c2 = 1; c2 < o; ) {
-              var s = c2 + 1;
-              a3 = c2, s < o && e[s]._score < e[c2]._score && (a3 = s), e[a3 - 1 >> 1] = e[a3], c2 = 1 + (a3 << 1);
+        ]);
+        return Result2;
+      })();
+      KeysResult = /* @__PURE__ */ (function(Array1) {
+        "use strict";
+        _inherits(KeysResult2, Array1);
+        function KeysResult2() {
+          _class_call_check(this, KeysResult2);
+          return _call_super(this, KeysResult2, arguments);
+        }
+        _create_class(KeysResult2, [
+          {
+            key: "score",
+            get: function get() {
+              return normalizeScore(this._score);
             }
-            for (var f2 = a3 - 1 >> 1; a3 > 0 && v3._score < e[f2]._score; f2 = (a3 = f2) - 1 >> 1) e[a3] = e[f2];
-            e[a3] = v3;
-          };
-          return a2.add = (r2) => {
-            var a3 = o;
-            e[o++] = r2;
-            for (var v3 = a3 - 1 >> 1; a3 > 0 && r2._score < e[v3]._score; v3 = (a3 = v3) - 1 >> 1) e[a3] = e[v3];
-            e[a3] = r2;
-          }, a2.poll = (r2) => {
-            if (0 !== o) {
-              var a3 = e[0];
-              return e[0] = e[--o], v2(), a3;
-            }
-          }, a2.peek = (r2) => {
-            if (0 !== o) return e[0];
-          }, a2.replaceTop = (r2) => {
-            e[0] = r2, v2();
-          }, a2;
-        };
-        var q2 = fastpriorityqueue();
-        return {
-          "single": single,
-          "go": go,
-          "prepare": prepare,
-          "cleanup": cleanup
-        };
-      });
+          }
+        ]);
+        return KeysResult2;
+      })(_wrap_native_super(Array));
+      normalizeScore = (value) => value === -INF ? 0 : value > 1 ? value : Math.E ** (((-value + 1) ** 0.04307 - 1) * -2);
+      denormalizeScore = (value) => value === 0 ? -INF : value > 1 ? value : 1 - Math.pow(Math.log(value) / -2 + 1, 1 / 0.04307);
+      GOOD_PART_SCORE = denormalizeScore(0.5);
+      isPrepared = (value) => typeof value === "object" && typeof value?._bitflags === "number";
+      INF = Infinity;
+      SPACE_BIT = 1 << 27;
+      noResults = [];
+      noResults.total = 0;
+      targetCache = /* @__PURE__ */ new Map();
+      searchCache = /* @__PURE__ */ new Map();
+      simpleMatch = [];
+      strictMatch = [];
+      seen = [];
+      seenAt = [];
+      changes = [];
+      partials = [];
+      spaceScores = [];
+      partIndexes = [];
+      winnerIndexes = [];
+      winnerScores = [];
+      winnerKeys = [];
+      keyTargets = [];
+      keyResults = [];
+      candidateBitOffsets = [];
+      seenGeneration = 0;
+      remappings = {};
+      remapFrom = '\\"`\u2018\u2019\u201A\u201B\u201C\u201D\u201E\u201F\xAB\xBB\u2039\u203A\u2010\u2013\u2014\u2212\u2044\u2215\u2026\xF8\xD8\u0142\u0141\u0111\u0110\xF0\xD0\u0131\u0127\u0126\u0167\u0166';
+      remapTo = "/''''''''''''''----//.oOlLdDdDihHtT";
+      for (i = 0; i < remapFrom.length; i++) remappings[remapFrom[i]] = remapTo[i];
+      customAsciiRemappings = false;
+      heap = createHeap();
+      noTarget = prepTarget("");
+      prunedMatch = {};
+      fuzzysort_default = {
+        single,
+        go,
+        highlight,
+        score,
+        remap,
+        prepare,
+        snapshot,
+        cleanup
+      };
     }
   });
 
@@ -8334,7 +9116,7 @@
     var [fuzzysortReady, setFuzzysortReady] = React.useState(false);
     React.useEffect(() => {
       var mounted = true;
-      Promise.resolve().then(() => __toESM(require_fuzzysort())).then((mod) => {
+      Promise.resolve().then(() => (init_fuzzysort(), fuzzysort_exports)).then((mod) => {
         var f2 = mod.default ?? mod;
         if (mounted) {
           fuzzysortRef.current = f2;
@@ -8363,7 +9145,7 @@
     var results = (0, import_react6.useMemo)(() => {
       var values = props.items;
       if (props.resolveItem) values = values.map(props.resolveItem).filter(isNotNil);
-      var items = values.filter((i) => isNotNil(i) && typeof i === "object");
+      var items = values.filter((i2) => isNotNil(i2) && typeof i2 === "object");
       if (!search && sortFn) items.sort(sortFn);
       if (!fuzzysortReady || !fuzzysortRef.current) return [];
       return fuzzysortRef.current.go(search, items, {
@@ -8539,7 +9321,7 @@
       init_common();
       init_components();
       init_components2();
-      init_dist2();
+      init_dist();
       import_react6 = __toESM(require_react());
       import_react_native20 = __toESM(require_react_native());
       ({ showSimpleActionSheet, hideActionSheet } = lazyDestructure(() => findByProps("showSimpleActionSheet")));
@@ -8585,12 +9367,12 @@
   function Title() {
     var styles = usePluginCardStyles();
     var { plugin, result } = useCardContext();
-    var highlightedNode = result[0].highlight((m, i) => /* @__PURE__ */ jsx(Text, {
+    var highlightedNode = result[0].highlight((m, i2) => /* @__PURE__ */ jsx(Text, {
       style: {
         backgroundColor: getHighlightColor()
       },
       children: m
-    }, i));
+    }, i2));
     var icon = plugin.icon && findAssetId(plugin.icon);
     var textNode = /* @__PURE__ */ jsx(Text, {
       numberOfLines: 1,
@@ -8616,12 +9398,12 @@
     var { plugin, result } = useCardContext();
     var styles = usePluginCardStyles();
     if (!plugin.authors) return null;
-    var highlightedNode = result[2].highlight((m, i) => /* @__PURE__ */ jsx(Text, {
+    var highlightedNode = result[2].highlight((m, i2) => /* @__PURE__ */ jsx(Text, {
       style: {
         backgroundColor: getHighlightColor()
       },
       children: m
-    }, i));
+    }, i2));
     var badges = plugin.getBadges();
     var authorText = highlightedNode.length > 0 ? highlightedNode : plugin.authors.map((a2) => a2.name).join(", ");
     return /* @__PURE__ */ jsxs(import_react_native21.View, {
@@ -8642,22 +9424,22 @@
         }),
         badges.length > 0 && /* @__PURE__ */ jsx(import_react_native21.View, {
           style: styles.badgesContainer,
-          children: badges.map((b, i) => /* @__PURE__ */ jsx(import_react_native21.Image, {
+          children: badges.map((b, i2) => /* @__PURE__ */ jsx(import_react_native21.Image, {
             source: b.source,
             style: styles.badgeIcon
-          }, i))
+          }, i2))
         })
       ]
     });
   }
   function Description() {
     var { plugin, result } = useCardContext();
-    var highlightedNode = result[1].highlight((m, i) => /* @__PURE__ */ jsx(Text, {
+    var highlightedNode = result[1].highlight((m, i2) => /* @__PURE__ */ jsx(Text, {
       style: {
         backgroundColor: getHighlightColor()
       },
       children: m
-    }, i));
+    }, i2));
     return /* @__PURE__ */ jsx(Text, {
       variant: "text-md/medium",
       children: highlightedNode.length ? highlightedNode : plugin.description
@@ -8925,8 +9707,8 @@
               var staggerInterval = 500;
               if (enabledIds.length > 0) {
                 var sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-                for (var i = 0; i < enabledIds.length; i += batchSize) {
-                  var batch = enabledIds.slice(i, i + batchSize);
+                for (var i2 = 0; i2 < enabledIds.length; i2 += batchSize) {
+                  var batch = enabledIds.slice(i2, i2 + batchSize);
                   yield allSettled(batch.map((id2) => _async_to_generator(function* () {
                     try {
                       if (!plugins[id2]) return;
@@ -8935,7 +9717,7 @@
                       logger.error(`Unexpected error while starting vendetta plugin ${id2}:`, err);
                     }
                   }).call(this)));
-                  if (i + batchSize < enabledIds.length) {
+                  if (i2 + batchSize < enabledIds.length) {
                     yield sleep(staggerInterval);
                   }
                 }
@@ -9054,7 +9836,7 @@
           }
         }
       };
-      installButtonPatch = () => after2("MostCommonForumPostReaction", forumReactions, ([{ thread, firstMessage }], res) => {
+      installButtonPatch = () => after("MostCommonForumPostReaction", forumReactions, ([{ thread, firstMessage }], res) => {
         var [shouldReturn, _2, installed, loading, installOrRemove] = useInstaller(thread, firstMessage, true);
         if (shouldReturn) return;
         return /* @__PURE__ */ jsxs(Fragment, {
@@ -9214,7 +9996,7 @@
       ({ getChannel } = lazyDestructure(() => findByProps("getChannel")));
       url_default = (() => {
         var patches3 = new Array();
-        patches3.push(after2("showSimpleActionSheet", showSimpleActionSheet2, (args) => {
+        patches3.push(after("showSimpleActionSheet", showSimpleActionSheet2, (args) => {
           if (args[0].key !== "LongPressUrl") return;
           var { header: { title: url2 }, options } = args[0];
           var urlType = typeFromUrl(url2);
@@ -9224,7 +10006,7 @@
             onPress: () => installWithToast(urlType, url2)
           });
         }));
-        patches3.push(instead2("handleClick", handleClick, function(args, orig) {
+        patches3.push(instead("handleClick", handleClick, function(args, orig) {
           return _async_to_generator(function* () {
             var { href: url2 } = args[0];
             var urlType = typeFromUrl(url2);
@@ -9327,10 +10109,10 @@
       }
     };
     var patches3 = [
-      after2("jsx", jsxRuntime2, callback),
-      after2("jsxs", jsxRuntime2, callback)
+      after("jsx", jsxRuntime2, callback),
+      after("jsxs", jsxRuntime2, callback)
     ];
-    return () => patches3.forEach((unpatch3) => unpatch3());
+    return () => patches3.forEach((unpatch2) => unpatch2());
   }
   var callbacks, jsxRuntime2;
   var init_jsx = __esm({
@@ -9437,8 +10219,8 @@
                 allBadges.push(...userBadgeData.custom);
               }
               badgesCache.set(userId, allBadges);
-              allBadges.forEach((badge, i) => {
-                var badgeId = `rain-${userId}-${i}`;
+              allBadges.forEach((badge, i2) => {
+                var badgeId = `rain-${userId}-${i2}`;
                 var safeUrl = /^https?:\/\//.test(badge.url) ? badge.url : null;
                 if (!safeUrl) return;
                 badgeProps.set(badgeId, {
@@ -9460,7 +10242,7 @@
               pendingRequests.delete(userId);
             }
           })();
-          after2("default", useBadgesModule, ([user], result) => {
+          after("default", useBadgesModule, ([user], result) => {
             if (!user) return;
             var userId = user.userId;
             var cached = badgesCache.get(userId);
@@ -9470,8 +10252,8 @@
               }
               return;
             }
-            cached.forEach((badge, i) => {
-              var badgeId = `rain-${userId}-${i}`;
+            cached.forEach((badge, i2) => {
+              var badgeId = `rain-${userId}-${i2}`;
               result.unshift({
                 id: badgeId,
                 description: badge.label,
@@ -9492,13 +10274,13 @@
   function patchNetwork() {
     var analyticsTest = /client-analytics\.braintreegateway\.com|discord\.com\/api\/v9\/(science|track)|app\.adjust\..*|.*\.ingest\.sentry\.io/;
     try {
-      var unpatch3 = instead2("send", XMLHttpRequest.prototype, function(args, orig) {
+      var unpatch2 = instead("send", XMLHttpRequest.prototype, function(args, orig) {
         if (this.__sentry_xhr__?.url && analyticsTest.test(this.__sentry_xhr__.url)) {
           return void 0;
         }
         return orig.apply(this, args);
       });
-      return unpatch3;
+      return unpatch2;
     } catch (e) {
       return () => false;
     }
@@ -9602,7 +10384,7 @@
       };
       noop = (prop2, parent) => {
         try {
-          return instead2(prop2, parent, () => void 0);
+          return instead(prop2, parent, () => void 0);
         } catch (e) {
           return () => false;
         }
@@ -9664,7 +10446,7 @@
     }
     return result;
   }
-  var TableRowGroup2, TableRow2, TableSwitchRow2, Stack2, ScrollView4, Text3, MessageActions, unpatch2, fixembed_default;
+  var TableRowGroup2, TableRow2, TableSwitchRow2, Stack2, ScrollView4, Text3, MessageActions, unpatch, fixembed_default;
   var init_fixembed = __esm({
     "src/core/plugins/fixembed/index.ts"() {
       "use strict";
@@ -9680,7 +10462,7 @@
       ({ TableRowGroup: TableRowGroup2, TableRow: TableRow2, TableSwitchRow: TableSwitchRow2, Stack: Stack2 } = findByProps("TableRowGroup", "TableRow", "TableSwitchRow", "Stack"));
       ({ ScrollView: ScrollView4, Text: Text3 } = require_react_native());
       MessageActions = findByProps("sendMessage");
-      unpatch2 = null;
+      unpatch = null;
       fixembed_default = defineCorePlugin({
         manifest: {
           id: "bunny.fixembed",
@@ -9775,8 +10557,8 @@
             tiktok: true,
             reddit: true
           };
-          if (!unpatch2) {
-            unpatch2 = after2("sendMessage", MessageActions, (args) => {
+          if (!unpatch) {
+            unpatch = after("sendMessage", MessageActions, (args) => {
               var config = settings.fixembed;
               if (args[1]?.content) {
                 args[1].content = transformLinks(args[1].content, config);
@@ -9788,9 +10570,9 @@
         },
         stop() {
           logger.log("FixEmbed: Stopping plugin");
-          if (unpatch2) {
-            unpatch2();
-            unpatch2 = null;
+          if (unpatch) {
+            unpatch();
+            unpatch = null;
           }
           logger.log("FixEmbed: Unpatched outgoing messages");
         }
@@ -10161,7 +10943,7 @@
     registerCommand: () => registerCommand
   });
   function patchCommands() {
-    var unpatch3 = after2("getBuiltInCommands", commands, ([type], res) => {
+    var unpatch2 = after("getBuiltInCommands", commands, ([type], res) => {
       return [
         ...res,
         ...commands2.filter((c2) => (type instanceof Array ? type.includes(c2.type) : type === c2.type) && c2.__bunny?.shouldHide?.() !== false)
@@ -10175,7 +10957,7 @@
     ].forEach((r) => registerCommand(r.default()));
     return () => {
       commands2 = [];
-      unpatch3();
+      unpatch2();
     };
   }
   function registerCommand(command) {
@@ -10202,7 +10984,7 @@
       opt.displayName ??= opt.name;
       opt.displayDescription ??= opt.description;
     }
-    instead2("execute", command, (args, orig) => {
+    instead("execute", command, (args, orig) => {
       Promise.resolve(orig.apply(command, args)).then((ret) => {
         if (ret && typeof ret === "object") {
           messageUtil.sendMessage(args[1].channel.id, ret);
@@ -10257,7 +11039,7 @@
       if (idx !== void 0) {
         intercepts.splice(idx, 1);
         interceptIndex.delete(cb);
-        intercepts.forEach((intercept2, i) => interceptIndex.set(intercept2, i));
+        intercepts.forEach((intercept2, i2) => interceptIndex.set(intercept2, i2));
       }
     };
   }
@@ -10270,7 +11052,7 @@
       if (idx !== void 0) {
         intercepts.splice(idx, 1);
         interceptIndex.delete(cb);
-        intercepts.forEach((intercept2, i) => interceptIndex.set(intercept2, i));
+        intercepts.forEach((intercept2, i2) => interceptIndex.set(intercept2, i2));
       }
     };
   }
@@ -11816,7 +12598,7 @@
   }
   function BrowsePluginPage(props) {
     var indexMap = /* @__PURE__ */ new Map();
-    (props.plugins || []).forEach((p, i) => indexMap.set(normalizeIdFromInstallUrl(p.installUrl), i));
+    (props.plugins || []).forEach((p, i2) => indexMap.set(normalizeIdFromInstallUrl(p.installUrl), i2));
     var findBunnyIdForAddon = (addon) => {
       for (var [id2, manifest] of registeredPlugins) {
         if (!manifest) continue;
@@ -11861,16 +12643,16 @@
         "Date (Oldest)": (a2, b) => getIndexForAddon(a2) - getIndexForAddon(b),
         // Health-based sorts: surface problematic plugins first or working ones first
         "Broken First": (a2, b) => {
-          var score = (p) => p.status === "broken" ? 3 : p.status === "warning" ? 2 : p.status === "working" ? 1 : 0;
-          return score(b) - score(a2);
+          var score2 = (p) => p.status === "broken" ? 3 : p.status === "warning" ? 2 : p.status === "working" ? 1 : 0;
+          return score2(b) - score2(a2);
         },
         "Warning First": (a2, b) => {
-          var score = (p) => p.status === "warning" ? 3 : p.status === "broken" ? 2 : p.status === "working" ? 1 : 0;
-          return score(b) - score(a2);
+          var score2 = (p) => p.status === "warning" ? 3 : p.status === "broken" ? 2 : p.status === "working" ? 1 : 0;
+          return score2(b) - score2(a2);
         },
         "Working First": (a2, b) => {
-          var score = (p) => p.status === "working" ? 3 : p.status === "warning" ? 2 : p.status === "broken" ? 1 : 0;
-          return score(b) - score(a2);
+          var score2 = (p) => p.status === "working" ? 3 : p.status === "warning" ? 2 : p.status === "broken" ? 1 : 0;
+          return score2(b) - score2(a2);
         },
         // Keep name sorts
         "Name (A-Z)": (a2, b) => a2.name.localeCompare(b.name),
@@ -12096,9 +12878,9 @@
                               source: findAssetId(props.headerIcon)
                             })
                           },
-                          options: props.overflowActions?.map((i) => ({
-                            ...i,
-                            icon: findAssetId(i.icon)
+                          options: props.overflowActions?.map((i2) => ({
+                            ...i2,
+                            icon: findAssetId(i2.icon)
                           }))
                         }),
                         size: "sm",
@@ -12433,7 +13215,7 @@
     var { authors } = theme.data;
     return /* @__PURE__ */ jsx(AddonCard, {
       headerLabel: theme.data.name,
-      headerSublabel: authors ? `by ${authors.map((i) => i.name).join(", ")}` : "",
+      headerSublabel: authors ? `by ${authors.map((i2) => i2.name).join(", ")}` : "",
       descriptionLabel: theme.data.description ?? "No description.",
       toggleType: !settings.safeMode?.enabled ? "radio" : void 0,
       toggleValue: () => themes[theme.id].selected,
@@ -14207,7 +14989,7 @@ Type: ${asset.type}`,
     }, [
       updateTick
     ]);
-    var all = (0, import_react14.useMemo)(() => getFilteredAssets(), [
+    var all2 = (0, import_react14.useMemo)(() => getFilteredAssets(), [
       getFilteredAssets
     ]);
     var toggleFilter = (filterId) => {
@@ -14279,7 +15061,7 @@ Type: ${asset.type}`,
               backgroundColor: "transparent"
             },
             children: /* @__PURE__ */ jsx(import_react_native32.FlatList, {
-              data: all.filter((a2) => a2.name.includes(search) || a2.id.toString() === search),
+              data: all2.filter((a2) => a2.name.includes(search) || a2.id.toString() === search),
               renderItem: ({ item }) => /* @__PURE__ */ jsx(AssetDisplay, {
                 asset: item
               }),
@@ -14849,7 +15631,7 @@ Type: ${asset.type}`,
       init_components2();
       init_styles();
       init_toasts();
-      init_dist2();
+      init_dist();
       import_react16 = __toESM(require_react());
       import_react_native35 = __toESM(require_react_native());
       init_plugins();
@@ -15462,7 +16244,7 @@ Type: ${asset.type}`,
   init_promiseAllSettled();
   init_weakref();
   init_async_to_generator();
-  var { instead: instead4 } = (init_dist(), __toCommonJS(dist_exports));
+  var { instead: instead3 } = require_dist();
   globalThis.window = globalThis;
   function initializeShiggyCord() {
     return _async_to_generator(function* () {
@@ -15486,7 +16268,7 @@ Type: ${asset.type}`,
     deferredCalls = [];
     unpatches = [];
     deferMethodExecution = (object, method, condition, resume, returnWith) => {
-      var restore = instead4(method, object, function(args, original) {
+      var restore = instead3(method, object, function(args, original) {
         if (!condition || condition(...args)) {
           var queue = {
             object,
@@ -15534,7 +16316,7 @@ Type: ${asset.type}`,
       }
       var startDiscord = () => _async_to_generator(function* () {
         yield initializeShiggyCord();
-        for (var unpatch3 of unpatches) unpatch3();
+        for (var unpatch2 of unpatches) unpatch2();
         unpatches.length = 0;
         originalRequire(0);
         resumeDeferred();
