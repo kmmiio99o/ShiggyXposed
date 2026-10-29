@@ -5310,7 +5310,6 @@
           toastModule.open({
             key: `vd-toast-${safeUuid4()}`,
             content,
-            source: asset,
             icon: asset
           });
         } catch (e) {
