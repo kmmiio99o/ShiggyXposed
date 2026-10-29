@@ -85,7 +85,7 @@ object HookScriptLoaderModule : Module() {
             val ready = async { HookStateHolder.readyDeferred.join() }
             val isCustomUrl = UpdaterModule.isCustomUrlEnabled
 
-            if (!mainScript.exists() || isCustomUrl) {
+            if (!mainScript.exists()) {
                 val reason = if (isCustomUrl) "Custom URL enabled" else "Main script does not exist"
                 Log.i("$reason, downloading before load...")
                 val download =
