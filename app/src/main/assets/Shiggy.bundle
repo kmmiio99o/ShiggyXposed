@@ -5667,7 +5667,7 @@
       rdtClient = null;
       rdtConnected = false;
       changeHooks = /* @__PURE__ */ new Set();
-      versionHash = "1.4.2.0";
+      versionHash = "1.4.2";
     }
   });
 
@@ -15541,7 +15541,7 @@ Type: ${asset.type}`,
             uri: shiggy_default
           },
           render: () => Promise.resolve().then(() => (init_General(), General_exports)),
-          useTrailing: () => `(${"1.4.2.0"})`
+          useTrailing: () => `(${"1.4.2"})`
         },
         {
           key: "BUNNY_PLUGINS",
@@ -16278,7 +16278,7 @@ Type: ${asset.type}`,
         alert([
           "Failed to load ShiggyCord!\n",
           `Build Number: ${ClientInfoManager.getConstants().Build}`,
-          `ShiggyCord: ${"1.4.2.0"}`,
+          `ShiggyCord: ${"1.4.2"}`,
           stack || e?.toString?.()
         ].join("\n"));
       }
