@@ -49,6 +49,7 @@ object FontsModule : Module() {
     private var fontsDownloadsDir: File? = null
     private var fontsAbsPath: String? = null
 
+    @Deprecated("This will be removed in future versions. Payloads can be replaced via synchronous bridge methods.")
     override fun buildPayload(builder: JsonObjectBuilder) {
         builder.apply {
             put("fontPatch", 2)

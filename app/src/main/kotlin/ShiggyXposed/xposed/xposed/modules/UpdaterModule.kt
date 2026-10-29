@@ -66,13 +66,13 @@ object UpdaterModule : Module() {
         cacheDir = File(appInfo.dataDir, Constants.CACHE_DIR).apply { mkdirs() }
         val filesDir = File(appInfo.dataDir, Constants.FILES_DIR).apply { mkdirs() }
 
-        bundle = File(cacheDir, Constants.MAIN_SCRIPT_FILE)
-        etag = File(cacheDir, ETAG_FILE)
-
         val configFile = File(filesDir, CONFIG_FILE)
         config = runCatching {
             if (configFile.exists()) JSON.decodeFromString<LoaderConfig>(configFile.readText()) else LoaderConfig()
         }.getOrDefault(LoaderConfig())
+
+        bundle = File(cacheDir, Constants.MAIN_SCRIPT_FILE)
+        etag = File(cacheDir, if (config.customLoadUrl.enabled && config.customLoadUrl.url.isNotEmpty()) "etag.custom.txt" else ETAG_FILE)
 
         BridgeModule.registerMethod("revenge.updater.clear") {
             if (bundle.exists()) bundle.delete()
@@ -89,7 +89,7 @@ object UpdaterModule : Module() {
             val builder = Request.Builder().url(targetUrl)
                 .header("User-Agent", Constants.USER_AGENT)
 
-            if (etag.exists() && bundle.exists()) {
+            if (!isCustomUrlEnabled && etag.exists() && bundle.exists()) {
                 builder.header("If-None-Match", etag.readText())
             }
 
@@ -114,7 +114,7 @@ object UpdaterModule : Module() {
                             }
                         }
 
-                        response.header("ETag")?.let { etag.writeText(it) } ?: etag.delete()
+                        if (!isCustomUrlEnabled) { response.header("ETag")?.let { etag.writeText(it) } ?: etag.delete() } else { etag.delete() }
                         Log.i("Bundle updated: ${bytes.size} bytes")
                     }
 

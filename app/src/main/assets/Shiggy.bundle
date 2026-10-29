@@ -5279,6 +5279,14 @@
   __export(toasts_exports, {
     showToast: () => showToast
   });
+  function safeUuid4() {
+    try {
+      var fn = uuid4();
+      return typeof fn === "string" ? fn : "vd-toast-fallback-" + Math.random().toString(36).slice(2, 8);
+    } catch (_2) {
+      return "vd-toast-fallback-" + Math.random().toString(36).slice(2, 8);
+    }
+  }
   var uuid4, showToast;
   var init_toasts = __esm({
     "src/lib/ui/toasts.ts"() {
@@ -5292,16 +5300,28 @@
       init_common();
       init_wrappers();
       ({ uuid4 } = lazyDestructure(() => findByProps("uuid4")));
-      showToast = (content, asset) => toasts.open({
-        // ? In build 182205/44707, Discord changed their toasts, source is no longer used, rather icon, and a key is needed.
-        // TODO: We could probably have the developer specify a key themselves, but this works to fix toasts
-        key: `vd-toast-${uuid4()}`,
-        content,
-        source: asset,
-        icon: asset
-      });
+      showToast = (content, asset) => {
+        try {
+          var toastModule = toasts;
+          if (!toastModule || typeof toastModule.open !== "function") {
+            console.warn("[Shiggy] Toast module not resolved; skipping toast:", content);
+            return;
+          }
+          toastModule.open({
+            key: `vd-toast-${safeUuid4()}`,
+            content,
+            icon: asset
+          });
+        } catch (e) {
+          console.warn("[Shiggy] Toast failed:", content, e);
+        }
+      };
       showToast.showCopyToClipboard = (message = Strings.COPIED_TO_CLIPBOARD) => {
-        showToast(message, findAssetId("toast_copy_link"));
+        try {
+          showToast(message, findAssetId("toast_copy_link"));
+        } catch (e) {
+          console.warn("[Shiggy] Toast (clipboard) failed:", message, e);
+        }
       };
     }
   });
@@ -5647,7 +5667,7 @@
       rdtClient = null;
       rdtConnected = false;
       changeHooks = /* @__PURE__ */ new Set();
-      versionHash = "1.4.1.11";
+      versionHash = "1.4.2";
     }
   });
 
@@ -15521,7 +15541,7 @@ Type: ${asset.type}`,
             uri: shiggy_default
           },
           render: () => Promise.resolve().then(() => (init_General(), General_exports)),
-          useTrailing: () => `(${"1.4.1.11"})`
+          useTrailing: () => `(${"1.4.2"})`
         },
         {
           key: "BUNNY_PLUGINS",
@@ -16258,7 +16278,7 @@ Type: ${asset.type}`,
         alert([
           "Failed to load ShiggyCord!\n",
           `Build Number: ${ClientInfoManager.getConstants().Build}`,
-          `ShiggyCord: ${"1.4.1.11"}`,
+          `ShiggyCord: ${"1.4.2"}`,
           stack || e?.toString?.()
         ].join("\n"));
       }
