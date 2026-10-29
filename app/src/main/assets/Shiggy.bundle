@@ -3370,7 +3370,7 @@
       invites = findByPropsLazy("acceptInviteAndTransitionToInviteChannel");
       commands = findByPropsLazy("getBuiltInCommands");
       navigation = findByPropsLazy("pushLazy");
-      toasts = findByPropsLazy("open");
+      toasts = findByFilePathLazy("modules/toast/native/ToastActionCreators.tsx", true);
       messageUtil = findByPropsLazy("sendBotMessage");
       navigationStack = findByPropsLazy("createStackNavigator");
       NavigationNative = findByPropsLazy("NavigationContainer");
