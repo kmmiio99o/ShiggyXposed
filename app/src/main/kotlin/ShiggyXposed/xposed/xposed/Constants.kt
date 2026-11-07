@@ -3,7 +3,8 @@ package ShiggyXposed.xposed
 class Constants {
     companion object {
         const val TARGET_PACKAGE = "com.discord"
-        const val TARGET_ACTIVITY = "$TARGET_PACKAGE.react_activities.ReactActivity"
+        const val TARGET_ACTIVITY = "$TARGET_PACKAGE.main.MainActivity"
+        const val FALLBACK_TARGET_ACTIVITY = "$TARGET_PACKAGE.react_activities.ReactActivity"
 
         const val FILES_DIR = "files/pyoncord"
         const val CACHE_DIR = "cache/pyoncord"

@@ -64,7 +64,8 @@ class Main : Module(), IXposedHookLoadPackage, IXposedHookZygoteInit {
     override fun handleLoadPackage(param: XC_LoadPackage.LoadPackageParam) = with(param) {
         if (hooked) return
 
-        val reactActivity = classLoader.loadClass(Constants.TARGET_ACTIVITY)
+        val reactActivity = runCatching { classLoader.loadClass(Constants.TARGET_ACTIVITY) }
+            .getOrElse { classLoader.loadClass(Constants.FALLBACK_TARGET_ACTIVITY) }
 
         ContextWrapper::class.java.hookMethod("attachBaseContext", Context::class.java) {
             after {
