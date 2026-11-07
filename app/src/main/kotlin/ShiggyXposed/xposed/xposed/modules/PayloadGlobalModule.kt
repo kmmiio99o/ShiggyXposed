@@ -33,7 +33,8 @@ class PayloadGlobalModule(private val modules: List<Module>) : Module() {
 
     override fun onLoad(packageParam: XC_LoadPackage.LoadPackageParam) = with(packageParam) {
         val catalystInstance = classLoader.safeLoadClass("com.facebook.react.bridge.CatalystInstanceImpl")
-        val scriptLoader = classLoader.safeLoadClass("com.facebook.react.runtime.ReactInstance\$loadJSBundle$1")
+        val scriptLoader = classLoader.safeLoadClass("org.chromium.net.j")
+            ?: classLoader.safeLoadClass("com.facebook.react.runtime.ReactInstance\$loadJSBundle$1")
             ?: classLoader.safeLoadClass("com.facebook.react.runtime.ReactInstance$1")
 
         val setGlobalVariable: (XC_MethodHook.MethodHookParam, String, String) -> Unit = { param, key, json ->

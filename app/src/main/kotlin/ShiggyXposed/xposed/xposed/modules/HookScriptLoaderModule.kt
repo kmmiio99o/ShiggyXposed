@@ -45,6 +45,7 @@ object HookScriptLoaderModule : Module() {
         mainScript = File(cacheDir, Constants.MAIN_SCRIPT_FILE).apply { asFile() }
 
         listOf(
+            "org.chromium.net.j",
             "com.facebook.react.runtime.ReactInstance\$loadJSBundle$1",
             "com.facebook.react.runtime.ReactInstance$1",
             // Backward-compat for versions < 351011 (e.g., 349009, 350008) that still use CatalystInstanceImpl
